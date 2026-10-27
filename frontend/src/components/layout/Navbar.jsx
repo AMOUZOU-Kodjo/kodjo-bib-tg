@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 
 const desktopLink =
-  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-primary-600";
+  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/5 hover:text-white";
 const mobileLink =
-  "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50";
+  "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium text-gray-300 transition-colors hover:bg-white/5 hover:text-white";
 const mobileAccentLink =
   "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors";
 
@@ -33,16 +33,16 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
+    <nav className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/95 backdrop-blur supports-[backdrop-filter]:bg-slate-950/80">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3 py-3">
           <Link to="/" onClick={closeMenu} className="flex min-w-0 items-center gap-2.5 group">
-            <div className="shrink-0 rounded-lg bg-indigo-600 p-2 transition-all group-hover:bg-indigo-700">
+            <div className="shrink-0 rounded-lg bg-teal-600 p-2 transition-all group-hover:bg-teal-500">
               <Archive className="h-5 w-5 text-white sm:h-6 sm:w-6" />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-base font-bold leading-tight text-gray-900 sm:text-lg">{siteName}</div>
-              <div className="hidden truncate text-xs leading-tight text-gray-600 sm:block">Plateforme de documents</div>
+              <div className="truncate text-base font-bold leading-tight text-white sm:text-lg">{siteName}</div>
+              <div className="hidden truncate text-xs leading-tight text-gray-400 sm:block">Plateforme de documents</div>
             </div>
           </Link>
 
@@ -54,7 +54,7 @@ export default function Navbar() {
             {user ? (
               <>
                 {user.role === "admin" && (
-                  <Link to="/admin" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-red-50 px-2.5 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100">
+                  <Link to="/admin" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-red-500/10 px-2.5 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20">
                     <Shield className="h-4 w-4 shrink-0" />
                     <span>Administration</span>
                   </Link>
@@ -72,7 +72,7 @@ export default function Navbar() {
                   </>
                 ) : (
                   <>
-                    <Link to="/verify-email" state={{ email: user.email }} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-50 px-2.5 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-100">
+                    <Link to="/verify-email" state={{ email: user.email }} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-500/10 px-2.5 py-2 text-sm font-medium text-amber-300 transition-colors hover:bg-amber-500/20">
                       <Mail className="h-4 w-4 shrink-0" />
                       <span>Vérifier mon email</span>
                     </Link>
@@ -93,7 +93,7 @@ export default function Navbar() {
                   <LogIn className="h-4 w-4 shrink-0" />
                   <span>Connexion</span>
                 </Link>
-                <Link to="/register" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700">
+                <Link to="/register" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-500">
                   <UserPlus className="h-4 w-4 shrink-0" />
                   <span>Inscription</span>
                 </Link>
@@ -104,7 +104,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-gray-200 text-gray-700 transition-colors hover:bg-gray-50 lg:hidden"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 text-gray-300 transition-colors hover:bg-white/5 lg:hidden"
             aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
@@ -114,7 +114,7 @@ export default function Navbar() {
         </div>
 
         {menuOpen && (
-          <div id="mobile-menu" className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-gray-100 pb-3 lg:hidden">
+          <div id="mobile-menu" className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-white/10 pb-3 lg:hidden">
             <div className="flex flex-col gap-1 pt-3">
               <Link to="/documents" onClick={closeMenu} className={mobileLink}>
                 <BookOpen className="h-4 w-4 shrink-0" />
@@ -124,7 +124,7 @@ export default function Navbar() {
               {user ? (
                 <>
                   {user.role === "admin" && (
-                    <Link to="/admin" onClick={closeMenu} className={`${mobileAccentLink} bg-red-50 text-red-700 hover:bg-red-100`}>
+                    <Link to="/admin" onClick={closeMenu} className={`${mobileAccentLink} bg-red-500/10 text-red-400 hover:bg-red-500/20`}>
                       <Shield className="h-4 w-4 shrink-0" />
                       Administration
                     </Link>
@@ -139,14 +139,14 @@ export default function Navbar() {
                       <Link to="/profile" onClick={closeMenu} className={mobileLink}>
                         <User className="h-4 w-4 shrink-0" />
                         Mon profil
-                        <span className="ml-auto rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700">
+                        <span className="ml-auto rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-semibold text-teal-300">
                           {user.credits} cr.
                         </span>
                       </Link>
                     </>
                   ) : (
                     <>
-                      <Link to="/verify-email" state={{ email: user.email }} onClick={closeMenu} className={`${mobileAccentLink} bg-amber-50 text-amber-800 hover:bg-amber-100`}>
+                      <Link to="/verify-email" state={{ email: user.email }} onClick={closeMenu} className={`${mobileAccentLink} bg-amber-500/10 text-amber-300 hover:bg-amber-500/20`}>
                         <Mail className="h-4 w-4 shrink-0" />
                         Vérifier mon email
                       </Link>
@@ -157,7 +157,7 @@ export default function Navbar() {
                     </>
                   )}
 
-                  <button onClick={handleLogout} className={`${mobileAccentLink} text-red-600 hover:bg-red-50`}>
+                  <button onClick={handleLogout} className={`${mobileAccentLink} text-red-400 hover:bg-red-500/10`}>
                     <LogOut className="h-4 w-4 shrink-0" />
                     Déconnexion
                   </button>
@@ -168,7 +168,7 @@ export default function Navbar() {
                     <LogIn className="h-4 w-4 shrink-0" />
                     Connexion
                   </Link>
-                  <Link to="/register" onClick={closeMenu} className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-700">
+                  <Link to="/register" onClick={closeMenu} className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-500">
                     <UserPlus className="h-4 w-4" />
                     Inscription gratuite
                   </Link>
