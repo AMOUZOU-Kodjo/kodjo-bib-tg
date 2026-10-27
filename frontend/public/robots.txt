@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /upload
+Disallow: /verify-email
+Disallow: /share/
+
+Sitemap: https://kodjo-bib-tg.pages.dev/sitemap.xml

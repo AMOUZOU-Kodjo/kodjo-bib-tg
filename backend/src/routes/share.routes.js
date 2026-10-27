@@ -144,6 +144,7 @@ router.get("/:token", async (req, res, next) => {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${title} | Document partagé</title>
   <meta name="description" content="${description}">
+  <meta name="robots" content="noindex, nofollow">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="Archives de Documents">
   <meta property="og:title" content="${title}">
