@@ -284,13 +284,13 @@ router.get("/:id/share", authRequired, requireVerified, async (req, res, next) =
     );
     if (docRes.rows.length === 0) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     const doc = docRes.rows[0];
-    if (doc.owner_id !== req.user.id) {
+    if (doc.visibility === "private" && doc.owner_id !== req.user.id) {
       return res.status(403).json({ error: { code: "FORBIDDEN", message: "Interdit" } });
     }
     if (doc.visibility === "private" && !doc.share_enabled) {
       return res.json({ enabled: false, visibility: doc.visibility });
     }
-    if (!doc.share_enabled && doc.visibility === "public") {
+    if (!doc.share_enabled) {
       await query(
         `UPDATE documents SET share_enabled = true, share_version = share_version + 1 WHERE id = $1 RETURNING share_version`,
         [doc.id]
@@ -298,9 +298,6 @@ router.get("/:id/share", authRequired, requireVerified, async (req, res, next) =
       const up2 = await query("SELECT share_version FROM documents WHERE id = $1", [doc.id]);
       const token = createDocumentShareToken(doc.id, up2.rows[0].share_version);
       return res.json({ enabled: true, url: getDocumentShareUrl(token) });
-    }
-    if (!doc.share_enabled) {
-      return res.json({ enabled: false, visibility: doc.visibility });
     }
     const token = createDocumentShareToken(doc.id, doc.share_version);
     res.json({ enabled: true, url: getDocumentShareUrl(token) });
@@ -317,7 +314,7 @@ router.post("/:id/share", authRequired, requireVerified, async (req, res, next) 
     );
     if (docRes.rows.length === 0) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     const doc = docRes.rows[0];
-    if (doc.owner_id !== req.user.id) {
+    if (doc.visibility === "private" && doc.owner_id !== req.user.id) {
       return res.status(403).json({ error: { code: "FORBIDDEN", message: "Interdit" } });
     }
     const rotate = req.body?.rotate === true;
