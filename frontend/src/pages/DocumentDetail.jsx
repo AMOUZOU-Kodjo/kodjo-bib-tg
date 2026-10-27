@@ -123,10 +123,10 @@ export default function DocumentDetail() {
   const share = async () => {
     try {
       let shareUrl = window.location.href;
-      if (doc.visibility === "private") {
-        const res = doc.shareEnabled
-          ? await getDocumentShareLink(doc.id)
-          : await createDocumentShareLink(doc.id);
+      const res = doc.shareEnabled
+        ? await getDocumentShareLink(doc.id)
+        : await createDocumentShareLink(doc.id);
+      if (res?.data?.url) {
         shareUrl = res.data.url;
         setDoc((current) => ({ ...current, shareEnabled: true }));
       }
@@ -214,7 +214,7 @@ export default function DocumentDetail() {
           {(doc.visibility !== "private" || doc.isOwner) && (
             <button onClick={share} className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition-colors mb-3">
               <Share2 className="w-4 h-4" />
-              {doc.visibility === "private" ? "Copier le lien privé" : "Partager ce livre"}
+              "Partager le lien"
             </button>
           )}
           {!doc.isOwner && !isAdmin && (
