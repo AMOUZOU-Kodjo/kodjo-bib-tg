@@ -1,4 +1,5 @@
 import express from "express";
+import { Readable } from "node:stream";
 import { query } from "../config/db.js";
 import { getDocumentThumbnailUrl, getSignedDownloadUrl } from "../services/cloudinary.service.js";
 import { streamDocumentFile } from "../services/documentStream.service.js";
@@ -67,6 +68,38 @@ function escapeHtml(text = "") {
     .replace(/'/g, "&#039;");
 }
 
+router.get("/:token/og-image", async (req, res, next) => {
+  try {
+    const doc = await loadSharedDocument(req.params.token);
+    if (!doc) return res.status(404).end();
+    let thumbUrl = null;
+    try {
+      thumbUrl = getDocumentThumbnailUrl(doc.cloudinary_public_id, doc.mime_type, doc.preview_public_id, 7200);
+    } catch {
+      thumbUrl = null;
+    }
+    if (!thumbUrl) return res.status(404).end();
+    const response = await fetch(thumbUrl);
+    if (!response.ok) return res.status(404).end();
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600");
+    res.setHeader("Referrer-Policy", "no-referrer");
+    if (!response.body) return res.end();
+    Readable.fromWeb(response.body)
+      .on("error", () => {
+        if (!res.destroyed) res.destroy();
+      })
+      .pipe(res);
+  } catch (err) {
+    if (res.headersSent) {
+      res.destroy();
+      return;
+    }
+    next(err);
+  }
+});
+
 router.get("/:token", async (req, res, next) => {
   try {
     const doc = await loadSharedDocument(req.params.token);
@@ -85,18 +118,13 @@ router.get("/:token", async (req, res, next) => {
 
     const frontendUrl = config.frontendUrl || "https://kodjo-bib-tg.pages.dev";
     const shareUrl = `${frontendUrl}/shared/${req.params.token}`;
+    const backendOrigin = `${req.protocol}://${req.get("host")}`;
+    const ogImageUrl = `${backendOrigin}/share/${req.params.token}/og-image`;
     const title = escapeHtml(doc.title || "Document partagé");
     const author = escapeHtml(doc.author_name || "Auteur inconnu");
     const description = doc.description
       ? escapeHtml(doc.description).slice(0, 200)
-      : `Document partagé par ${author} sur ${frontendUrl.replace(/^https?:\/\//, "")}`;
-    let image = "";
-    try {
-      const thumb = getDocumentThumbnailUrl(doc.cloudinary_public_id, doc.mime_type, doc.preview_public_id, 1200);
-      if (thumb) image = escapeHtml(thumb);
-    } catch {
-      image = "";
-    }
+      : `Document partagé par ${author} sur Archives de Documents`;
 
     const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -110,11 +138,13 @@ router.get("/:token", async (req, res, next) => {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
   <meta property="og:url" content="${escapeHtml(shareUrl)}">
-  ${image ? `<meta property="og:image" content="${image}">` : ""}
-  <meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}">
+  <meta property="og:image" content="${escapeHtml(ogImageUrl)}">
+  <meta property="og:image:width" content="600">
+  <meta property="og:image:height" content="800">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${description}">
-  ${image ? `<meta name="twitter:image" content="${image}">` : ""}
+  <meta name="twitter:image" content="${escapeHtml(ogImageUrl)}">
   <meta name="author" content="${author}">
   <meta http-equiv="refresh" content="0;url=${escapeHtml(shareUrl)}">
   <script>window.location.replace(${JSON.stringify(shareUrl)});</script>
