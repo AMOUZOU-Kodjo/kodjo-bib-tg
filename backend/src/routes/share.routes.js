@@ -124,7 +124,7 @@ router.get("/:token", async (req, res, next) => {
     }
 
     const frontendUrl = config.frontendUrl || "https://kodjo-bib-tg.pages.dev";
-    const shareUrl = `${frontendUrl}/shared/${req.params.token}`;
+    const shareUrl = `${frontendUrl}/share/${req.params.token}`;
     const backendOrigin = `${req.protocol}://${req.get("host")}`;
     const ogImageUrl = `${backendOrigin}/share/${req.params.token}/og-image`;
     const title = escapeHtml(doc.title || "Document partagé");
