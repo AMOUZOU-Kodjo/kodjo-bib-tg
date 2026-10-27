@@ -3,6 +3,7 @@ import client from "./client";
 export const getDocuments = (params) => client.get("/documents", { params });
 export const getDocument = (id) => client.get(`/documents/${id}`);
 export const getDocumentCategories = () => client.get("/documents/meta/categories");
+export const suggestDocumentCategory = (filename) => client.post("/documents/suggest-category", { filename });
 export const getDocumentPreview = (id) => client.get(`/documents/${id}/preview`);
 export const getDocumentViewFile = (id) => {
   const base = import.meta.env.VITE_API_URL || "http://localhost:4000/api";

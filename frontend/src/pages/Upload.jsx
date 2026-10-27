@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
-import { uploadDocument } from "../api/documents";
+import { uploadDocument, suggestDocumentCategory } from "../api/documents";
 import toast from "react-hot-toast";
-import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock } from "lucide-react";
+import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles } from "lucide-react";
 import { Input, Button } from "../components/ui";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 
@@ -20,6 +20,12 @@ const CATEGORIES = [
   "Sport",
   "Divertissement",
   "Santé",
+  "Cours",
+  "TD / TP",
+  "Examens / Annales",
+  "Rapports / Mémoires",
+  "Fiches",
+  "CV & Lettres"
 ];
 
 function formatFileSize(bytes) {
@@ -39,14 +45,27 @@ export default function Upload() {
   const [visibility, setVisibility] = useState("public");
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [suggestedCategory, setSuggestedCategory] = useState(null);
+  const [suggestionApplied, setSuggestionApplied] = useState(false);
   const inputRef = useRef(null);
 
-  const handleFile = (selectedFile) => {
+  const handleFile = async (selectedFile) => {
     if (!selectedFile) return;
     setFile(selectedFile);
+    setSuggestedCategory(null);
+    setSuggestionApplied(false);
     if (!title) {
       const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, "");
       setTitle(nameWithoutExt);
+    }
+    try {
+      const res = await suggestDocumentCategory(selectedFile.name);
+      const suggested = res.data?.suggestedCategory;
+      if (suggested && !category) {
+        setSuggestedCategory(suggested);
+      }
+    } catch (err) {
+      // Ignorer silencieusement
     }
   };
 
@@ -153,10 +172,12 @@ export default function Upload() {
                   <button
                     type="button"
                     onClick={(e) => {
-                      e.stopPropagation();
-                      setFile(null);
-                      if (inputRef.current) inputRef.current.value = "";
-                    }}
+                    e.stopPropagation();
+                    setFile(null);
+                    setSuggestedCategory(null);
+                    setSuggestionApplied(false);
+                    if (inputRef.current) inputRef.current.value = "";
+                  }}
                     className="shrink-0 rounded-lg p-2 transition-colors hover:bg-gray-100"
                   >
                     <X className="w-5 h-5 text-gray-500" />
@@ -188,9 +209,15 @@ export default function Upload() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">Catégorie</label>
-              <select
+                <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  if (e.target.value) {
+                    setSuggestedCategory(null);
+                    setSuggestionApplied(false);
+                  }
+                }}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
               >
                 <option value="">Sélectionner une catégorie</option>
@@ -200,6 +227,35 @@ export default function Upload() {
                   </option>
                 ))}
               </select>
+              {suggestedCategory && !category && !suggestionApplied && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-teal-50 px-3 py-2 text-xs text-teal-800">
+                  <Sparkles className="w-4 h-4" />
+                  <span>
+                    Suggestion automatique : <strong>{suggestedCategory}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategory(suggestedCategory);
+                      setSuggestionApplied(true);
+                      setSuggestedCategory(null);
+                    }}
+                    className="ml-auto rounded-md bg-teal-700 px-2.5 py-1 text-white hover:bg-teal-800"
+                  >
+                    Appliquer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSuggestedCategory(null);
+                      setSuggestionApplied(false);
+                    }}
+                    className="rounded-md px-2.5 py-1 text-teal-700 hover:bg-teal-100"
+                  >
+                    Ignorer
+                  </button>
+                </div>
+              )}
             </div>
 
             <div>

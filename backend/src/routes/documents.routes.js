@@ -14,6 +14,7 @@ import { streamDocumentFile } from "../services/documentStream.service.js";
 import { createDocumentShareToken, getDocumentShareUrl } from "../services/share.service.js";
 import { config } from "../config/env.js";
 import { getSettings } from "../services/settings.service.js";
+import { suggestCategory } from "../services/categoryClassifier.js";
 
 const router = express.Router();
 
@@ -52,6 +53,19 @@ router.get("/meta/categories", globalLimiter, async (req, res, next) => {
       query("SELECT COUNT(*)::int as total FROM documents WHERE visibility = 'public'")
     ]);
     res.json({ categories: categoriesRes.rows, total: totalRes.rows[0].total });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/suggest-category", authRequired, requireVerified, globalLimiter, async (req, res, next) => {
+  try {
+    const filename = req.body?.filename || req.body?.originalFilename || "";
+    if (!filename) {
+      return res.json({ suggestedCategory: null });
+    }
+    const suggestedCategory = suggestCategory(filename);
+    res.json({ suggestedCategory });
   } catch (err) {
     next(err);
   }
