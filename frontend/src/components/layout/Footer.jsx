@@ -2,7 +2,9 @@ import { Link } from "react-router-dom";
 import { Heart, Mail, Cookie, MessageCircle } from "lucide-react";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 
-const whatsappChannelUrl = import.meta.env.VITE_WHATSAPP_CHANNEL_URL;
+const whatsappChannelUrl =
+  import.meta.env.VITE_WHATSAPP_CHANNEL_URL ||
+  "https://whatsapp.com/channel/0029VbDXjk63QxS6ImkHYk3K";
 
 export default function Footer() {
   const { siteName } = useSiteSettings();
