@@ -126,7 +126,11 @@ router.get("/:token", async (req, res, next) => {
     const frontendUrl = String(config.frontendUrl || "https://kodjo-bib-tg.pages.dev").replace(/\/+$/, "");
     const shareUrl = `${frontendUrl}/share/${req.params.token}`;
     const backendOrigin = `${req.protocol}://${req.get("host")}`;
-    const ogImageUrl = `${backendOrigin}/share/${req.params.token}/og-image`;
+    const mimeType = String(doc.mime_type || "").toLowerCase();
+    const hasThumbnail = Boolean(doc.preview_public_id) || mimeType === "application/pdf" || mimeType.startsWith("image/");
+    const ogImageUrl = hasThumbnail
+      ? `${backendOrigin}/share/${req.params.token}/og-image`
+      : `${frontendUrl}/og-image.png`;
     const title = escapeHtml(doc.title || "Document partagé");
     const author = escapeHtml(doc.author_name || "Auteur inconnu");
     const description = doc.description
