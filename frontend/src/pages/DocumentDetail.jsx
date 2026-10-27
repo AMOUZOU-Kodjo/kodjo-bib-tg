@@ -122,16 +122,15 @@ export default function DocumentDetail() {
 
   const share = async () => {
     try {
-      let shareUrl = window.location.href;
       const res = doc.shareEnabled
         ? await getDocumentShareLink(doc.id)
         : await createDocumentShareLink(doc.id);
+      const shareUrl = res?.data?.url || window.location.href;
       if (res?.data?.url) {
-        shareUrl = res.data.url;
         setDoc((current) => ({ ...current, shareEnabled: true }));
       }
       await navigator.clipboard.writeText(shareUrl);
-      toast.success(doc.visibility === "private" ? "Lien privé copié" : "Lien copié");
+      toast.success("Lien copié");
     } catch (err) {
       toast.error(err.response?.data?.error?.message || "Impossible de copier le lien");
     }
