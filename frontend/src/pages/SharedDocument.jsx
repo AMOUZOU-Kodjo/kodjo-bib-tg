@@ -102,7 +102,7 @@ export default function SharedDocument() {
     <div className="max-w-5xl mx-auto">
       <div className="inline-flex items-center gap-2 rounded-full bg-gray-900 text-white px-3 py-1 text-xs font-medium mb-5">
         <Lock className="w-3.5 h-3.5" />
-        Document partagé en privé
+        Document partagé
       </div>
 
       <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:gap-8">
