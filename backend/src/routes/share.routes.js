@@ -30,10 +30,15 @@ async function loadSharedDocument(token) {
   );
   const doc = docRes.rows[0];
   if (!doc) return null;
-  if (doc.visibility !== "private") return null;
-  if (!doc.share_enabled) return null;
-  if (doc.share_version !== payload.shareVersion) return null;
-  return doc;
+  if (doc.visibility === "private") {
+    if (!doc.share_enabled) return null;
+    if (doc.share_version !== payload.shareVersion) return null;
+    return doc;
+  }
+  if (doc.visibility === "public") {
+    return doc;
+  }
+  return null;
 }
 
 function serializeSharedDocument(doc) {

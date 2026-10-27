@@ -287,7 +287,19 @@ router.get("/:id/share", authRequired, requireVerified, async (req, res, next) =
     if (doc.owner_id !== req.user.id) {
       return res.status(403).json({ error: { code: "FORBIDDEN", message: "Interdit" } });
     }
-    if (doc.visibility !== "private" || !doc.share_enabled) {
+    if (doc.visibility === "private" && !doc.share_enabled) {
+      return res.json({ enabled: false, visibility: doc.visibility });
+    }
+    if (!doc.share_enabled && doc.visibility === "public") {
+      await query(
+        `UPDATE documents SET share_enabled = true, share_version = share_version + 1 WHERE id = $1 RETURNING share_version`,
+        [doc.id]
+      );
+      const up2 = await query("SELECT share_version FROM documents WHERE id = $1", [doc.id]);
+      const token = createDocumentShareToken(doc.id, up2.rows[0].share_version);
+      return res.json({ enabled: true, url: getDocumentShareUrl(token) });
+    }
+    if (!doc.share_enabled) {
       return res.json({ enabled: false, visibility: doc.visibility });
     }
     const token = createDocumentShareToken(doc.id, doc.share_version);
@@ -307,9 +319,6 @@ router.post("/:id/share", authRequired, requireVerified, async (req, res, next) 
     const doc = docRes.rows[0];
     if (doc.owner_id !== req.user.id) {
       return res.status(403).json({ error: { code: "FORBIDDEN", message: "Interdit" } });
-    }
-    if (doc.visibility !== "private") {
-      return res.status(400).json({ error: { code: "NOT_PRIVATE", message: "Le document doit être privé pour générer un lien" } });
     }
     const rotate = req.body?.rotate === true;
     const up = await query(
