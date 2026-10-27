@@ -12,7 +12,6 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 const app = express();
 
 app.use("/share", shareRoutes);
-app.use("/api/share", shareRoutes);
 
 app.set("trust proxy", 1);
 
