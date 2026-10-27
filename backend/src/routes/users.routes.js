@@ -70,7 +70,7 @@ router.patch("/me", authRequired, async (req, res, next) => {
       config.jwtSecret,
       { expiresIn: config.jwtExpiresIn }
     );
-    res.cookie("token", token, { httpOnly: true, sameSite: "lax", secure: config.nodeEnv === "production" });
+    res.cookie("token", token, { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
 
     res.json({ user });
   } catch (err) {

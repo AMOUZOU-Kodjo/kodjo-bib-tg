@@ -88,7 +88,7 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
     const user = userRes.rows[0];
     if (user.email_verified) {
       const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
-      res.cookie("token", token, { httpOnly: true, sameSite: "lax", secure: config.nodeEnv === "production" });
+      res.cookie("token", token, { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
       return res.json({ ok: true, user: publicUser(user) });
     }
     const codeRes = await query(
@@ -110,7 +110,7 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
     user.email_verified = true;
     user.credits = creditsRes.rows[0]?.credits ?? 0;
     const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
-    res.cookie("token", token, { httpOnly: true, sameSite: "lax", secure: config.nodeEnv === "production" });
+    res.cookie("token", token, { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
     return res.json({ ok: true, user: publicUser(user) });
   } catch (err) {
     next(err);
@@ -178,7 +178,7 @@ router.post("/login", authLimiter, async (req, res, next) => {
       return res.status(403).json({ error: { code: "EMAIL_NOT_VERIFIED", message: "Vérification de l'e-mail requise", email: user.email } });
     }
     const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
-    res.cookie("token", token, { httpOnly: true, sameSite: "lax", secure: config.nodeEnv === "production" });
+    res.cookie("token", token, { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
     res.json({ ok: true, user: publicUser(user) });
   } catch (err) {
     next(err);
@@ -186,7 +186,11 @@ router.post("/login", authLimiter, async (req, res, next) => {
 });
 
 router.post("/logout", authRequired, (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: config.nodeEnv === "production" ? "none" : "lax",
+    secure: config.nodeEnv === "production"
+  });
   res.json({ ok: true });
 });
 
