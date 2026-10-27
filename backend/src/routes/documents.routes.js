@@ -177,7 +177,7 @@ router.get("/:id", globalLimiter, optionalAuth, async (req, res, next) => {
         likedByMe,
         isOwner,
         thumbnail,
-        shareEnabled: isOwner ? share_enabled : undefined
+        shareEnabled: share_enabled
       }
     });
   } catch (err) {
