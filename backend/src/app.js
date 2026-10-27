@@ -10,6 +10,8 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 let frontendOrigin = null;
 try {
   frontendOrigin = new URL(config.frontendUrl).origin;
