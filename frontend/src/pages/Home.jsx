@@ -63,33 +63,33 @@ export default function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="mb-8 sm:mb-10 overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-800/60 bg-slate-950">
+      <section className="mb-8 sm:mb-10 overflow-x-hidden rounded-2xl sm:rounded-3xl border border-slate-800/60 bg-slate-950">
         <div className="grid lg:grid-cols-2">
-          <div className="relative px-5 py-7 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
+          <div className="relative px-4 py-6 min-[360px]:px-5 min-[360px]:py-7 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
             <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-teal-500/20 blur-3xl" />
-            <div className="relative">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold text-white mb-2.5 leading-tight">
+            <div className="relative min-w-0">
+              <h1 className="text-lg min-[360px]:text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold text-white mb-2.5 leading-tight break-words">
                 Partagez et découvrez
                 <span className="text-teal-300 block">des documents gratuitement</span>
               </h1>
-              <p className="text-sm sm:text-base text-gray-200 mb-4 leading-relaxed">
+              <p className="text-xs min-[360px]:text-sm sm:text-base text-gray-200 mb-4 leading-relaxed break-words">
                 Une archive collaborative au service du partage du savoir. Déposez, gagnez des crédits, téléchargez librement.
               </p>
 
-              <form onSubmit={submitSearch} className="mx-auto mb-4 max-w-md lg:max-w-lg">
-                <div className="flex items-center gap-2 bg-white/95 rounded-lg p-1 shadow-lg">
-                  <Search className="w-4 h-4 text-gray-400 ml-2 shrink-0" />
+              <form onSubmit={submitSearch} className="w-full mb-4 max-w-full sm:max-w-md lg:max-w-lg">
+                <div className="flex items-center gap-1.5 min-[360px]:gap-2 bg-white/95 rounded-lg p-1 shadow-lg w-full">
+                  <Search className="w-4 h-4 text-gray-400 ml-1 min-[360px]:ml-2 shrink-0" />
                   <input
                     type="search"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Rechercher un document, un auteur..."
+                    placeholder="Rechercher..."
                     aria-label="Rechercher un document"
-                    className="flex-1 min-w-0 bg-transparent px-1 py-1.5 text-sm text-gray-900 placeholder-gray-500 focus:outline-none"
+                    className="flex-1 min-w-0 bg-transparent px-0.5 min-[360px]:px-1 py-1.5 text-xs min-[360px]:text-sm text-gray-900 placeholder-gray-500 focus:outline-none"
                   />
                   <button
                     type="submit"
-                    className="shrink-0 bg-teal-700 text-white text-xs sm:text-sm px-3.5 py-1.5 rounded-md hover:bg-teal-800 transition-colors font-medium"
+                    className="shrink-0 bg-teal-700 text-white text-[11px] min-[360px]:text-xs sm:text-sm px-2.5 min-[360px]:px-3.5 py-1.5 rounded-md hover:bg-teal-800 transition-colors font-medium"
                   >
                     Rechercher
                   </button>
