@@ -1,0 +1,9 @@
+{
+  "optionalDependencies": {
+    "@esbuild/linux-x64": "^0.21.5"
+  },
+  "dependencies": {
+    "esbuild": "^0.21.5",
+    "statuses": "^2.0.2"
+  }
+}
