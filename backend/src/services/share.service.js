@@ -20,5 +20,10 @@ export function verifyDocumentShareToken(token) {
 }
 
 export function getDocumentShareUrl(token) {
-  return `${config.frontendUrl}/share/${token}`;
+  const backendBase =
+    process.env.BACKEND_PUBLIC_URL ||
+    process.env.RENDER_EXTERNAL_URL ||
+    process.env.API_BASE_URL ||
+    config.frontendUrl;
+  return `${String(backendBase).replace(/\/$/, "")}/share/${token}`;
 }
