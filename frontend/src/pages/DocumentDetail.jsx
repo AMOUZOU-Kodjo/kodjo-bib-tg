@@ -121,6 +121,14 @@ export default function DocumentDetail() {
   };
 
   const share = async () => {
+    if (!user) {
+      toast.error("Connectez-vous pour partager ce document");
+      return;
+    }
+    if (!user.email_verified) {
+      toast.error("Vérifiez votre email pour partager ce document");
+      return;
+    }
     try {
       const res = doc.shareEnabled
         ? await getDocumentShareLink(doc.id)
@@ -210,12 +218,14 @@ export default function DocumentDetail() {
             <Download className="w-5 h-5" />
             Télécharger (PDF)
           </button>
-          {(doc.visibility !== "private" || doc.isOwner) && (
-            <button onClick={share} className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition-colors mb-3">
-              <Share2 className="w-4 h-4" />
-              "Partager le lien"
-            </button>
-          )}
+          <button
+            onClick={share}
+            disabled={!user?.email_verified}
+            className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Share2 className="w-4 h-4" />
+            {user && !user.email_verified ? "Vérifiez votre email pour partager" : "Partager le lien"}
+          </button>
           {!doc.isOwner && !isAdmin && (
             <button onClick={openContact} className="w-full flex items-center justify-center gap-2 bg-white text-teal-700 px-6 py-2.5 rounded-xl font-medium hover:bg-teal-50 border border-teal-200 transition-colors">
               <Mail className="w-4 h-4" />
