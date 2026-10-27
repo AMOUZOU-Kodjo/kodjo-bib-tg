@@ -86,11 +86,6 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
     const userRes = await query("SELECT id, email, display_name, email_verified, role, credits FROM users WHERE email = $1", [email.toLowerCase()]);
     if (userRes.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     const user = userRes.rows[0];
-    if (user.email_verified) {
-      const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
-      res.cookie("token", token, { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
-      return res.json({ ok: true, user: publicUser(user) });
-    }
     const codeRes = await query(
       "SELECT id, code_hash, attempts, expires_at, used_at FROM email_codes WHERE user_id = $1 AND purpose = 'verify_email' AND used_at IS NULL ORDER BY created_at DESC LIMIT 1",
       [user.id]
@@ -207,7 +202,9 @@ router.post("/forgot-password", authLimiter, async (req, res, next) => {
     try {
       await sendEmail({ to: user.email, subject: "Réinitialisation du mot de passe", html: `<p>Votre code : <strong>${code}</strong></p>` });
     } catch (e) {
-      console.log("[DEV] CODE RESET MOT DE PASSE", user.email, "->", code);
+      if (config.nodeEnv !== "production") {
+        console.log("[DEV] CODE RESET MOT DE PASSE", user.email, "->", code);
+      }
     }
     res.json({ ok: true });
   } catch (err) {

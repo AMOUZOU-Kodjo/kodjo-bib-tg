@@ -30,7 +30,7 @@ app.use(helmet({
   }
 }));
 app.use(cors({
-  origin: config.frontendUrl,
+  origin: frontendOrigin || config.frontendUrl,
   credentials: true
 }));
 app.use(express.json());

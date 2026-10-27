@@ -22,14 +22,16 @@ router.get("/documents/:id/comments", optionalAuth, async (req, res, next) => {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     }
     const { page = 1, limit = 10 } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
+    const pageNum = Math.min(Math.max(1, Number(page) || 1), 10000);
+    const limitNum = Math.min(Math.max(1, Number(limit) || 10), 50);
+    const offset = (pageNum - 1) * limitNum;
     const resC = await query(
       `SELECT c.id, c.content, c.created_at, u.display_name as author_name, u.id as user_id
        FROM comments c JOIN users u ON u.id = c.user_id
        WHERE c.document_id = $1
        ORDER BY c.created_at DESC
        LIMIT $2 OFFSET $3`,
-      [req.params.id, Number(limit), offset]
+      [req.params.id, limitNum, offset]
     );
     const countRes = await query("SELECT COUNT(*)::int as total FROM comments WHERE document_id = $1", [req.params.id]);
     res.json({ comments: resC.rows, total: countRes.rows[0].total });

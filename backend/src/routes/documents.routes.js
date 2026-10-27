@@ -77,15 +77,15 @@ router.get("/", globalLimiter, optionalAuth, async (req, res, next) => {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     const { q, category, sort = "recent", page = 1, limit = 12 } = req.query;
-    const pageNum = Math.max(1, Number(page) || 1);
-    const limitNum = Math.max(1, Number(limit) || 12);
+    const pageNum = Math.min(Math.max(1, Number(page) || 1), 10000);
+    const limitNum = Math.min(Math.max(1, Number(limit) || 12), 50);
     const offset = (pageNum - 1) * limitNum;
     let where = ["d.visibility = 'public'"];
     let params = [];
     let idx = 1;
     if (q) {
       where.push(`(d.title ILIKE $${idx} OR d.description ILIKE $${idx} OR u.display_name ILIKE $${idx})`);
-      params.push(`%${q}%`);
+      params.push(`%${String(q).slice(0, 200)}%`);
       idx++;
     }
     if (category) {

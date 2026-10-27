@@ -12,5 +12,10 @@ export function errorHandler(err, req, res, next) {
       }
     });
   }
-  res.status(err.status || 500).json({ error: { code: err.code || "SERVER_ERROR", message: err.message || "Erreur serveur" } });
+  const status = err.status || 500;
+  const isProduction = process.env.NODE_ENV === "production";
+  const message = status >= 500 && isProduction
+    ? "Une erreur interne est survenue"
+    : err.message || "Erreur serveur";
+  res.status(status).json({ error: { code: err.code || "SERVER_ERROR", message } });
 }

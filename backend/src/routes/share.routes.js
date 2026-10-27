@@ -115,7 +115,7 @@ router.get("/:token", async (req, res, next) => {
       if (accept.includes("application/json")) {
         return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lien de partage invalide ou expiré" } });
       }
-      const frontendUrl = config.frontendUrl || "https://kodjo-bib-tg.pages.dev";
+      const frontendUrl = String(config.frontendUrl || "https://kodjo-bib-tg.pages.dev").replace(/\/+$/, "");
       return res.status(404).send(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lien de partage invalide</title><meta http-equiv="refresh" content="0;url=${frontendUrl}/"></head><body></body></html>`);
     }
     const accept = req.headers.accept || "";
@@ -123,7 +123,7 @@ router.get("/:token", async (req, res, next) => {
       return res.json({ document: serializeSharedDocument(doc) });
     }
 
-    const frontendUrl = config.frontendUrl || "https://kodjo-bib-tg.pages.dev";
+    const frontendUrl = String(config.frontendUrl || "https://kodjo-bib-tg.pages.dev").replace(/\/+$/, "");
     const shareUrl = `${frontendUrl}/share/${req.params.token}`;
     const backendOrigin = `${req.protocol}://${req.get("host")}`;
     const ogImageUrl = `${backendOrigin}/share/${req.params.token}/og-image`;
