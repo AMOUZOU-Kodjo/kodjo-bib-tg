@@ -13,12 +13,18 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-5">
-            <div className="mb-5 inline-flex items-center rounded-xl bg-white px-3 py-2 shadow-sm ring-1 ring-black/5">
+            <div className="mb-5 flex min-w-0 items-center gap-3">
               <img
                 src="/logo.png"
                 alt={siteName}
-                className="h-9 w-auto max-w-[200px] object-contain sm:h-10"
+                className="h-11 w-auto shrink-0 rounded-xl object-contain shadow-sm ring-1 ring-white/20 sm:h-12"
               />
+              <span
+                className="truncate text-3xl text-white sm:text-4xl"
+                style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}
+              >
+                {siteName}
+              </span>
             </div>
             <p className="text-white/80 leading-relaxed mb-5 max-w-lg">
               Plateforme collaborative gratuite d'archivage et de partage de documents.
