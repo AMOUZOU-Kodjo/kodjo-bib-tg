@@ -12,7 +12,6 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 const app = express();
 
 app.use("/share", shareRoutes);
-app.use("/api/share", shareRoutes);
 
 app.set("trust proxy", 1);
 
@@ -40,7 +39,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(morgan("dev", { skip: (req) => req.originalUrl.startsWith("/api/share/") }));
+app.use(morgan("dev", { skip: (req) => req.originalUrl.startsWith("/api/share/") || req.originalUrl.startsWith("/share/") }));
 app.use((req, res, next) => {
   touchDatabaseActivity();
   next();
