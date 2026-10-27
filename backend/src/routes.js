@@ -10,12 +10,14 @@ import { globalLimiter } from "./middlewares/rateLimit.js";
 
 export function setupRoutes(app) {
   app.use(globalLimiter);
+  app.use("/api/health", healthRoutes);
   app.use("/api/auth", authRoutes);
   app.use("/api/documents", documentsRoutes);
-  app.use("/api/share", shareRoutes);
-  app.use("/api", commentsRoutes);
   app.use("/api/users", usersRoutes);
-  app.use("/api/contact", contactRoutes);
   app.use("/api/admin", adminRoutes);
+  app.use("/api/comments", commentsRoutes);
+  app.use("/api/contact", contactRoutes);
   app.use("/api/settings", settingsRoutes);
+  app.use("/api/share", shareRoutes);
+  app.use("/share", shareRoutes);
 }
