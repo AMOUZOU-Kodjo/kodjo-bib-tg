@@ -83,8 +83,10 @@ router.get("/:token/og-image", async (req, res, next) => {
     if (!response.ok) return res.status(404).end();
     const contentType = response.headers.get("content-type") || "image/jpeg";
     res.setHeader("Content-Type", contentType);
-    res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600");
+    res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
     res.setHeader("Referrer-Policy", "no-referrer");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("X-Content-Type-Options", "nosniff");
     if (!response.body) return res.end();
     Readable.fromWeb(response.body)
       .on("error", () => {
@@ -139,13 +141,18 @@ router.get("/:token", async (req, res, next) => {
   <meta property="og:description" content="${description}">
   <meta property="og:url" content="${escapeHtml(shareUrl)}">
   <meta property="og:image" content="${escapeHtml(ogImageUrl)}">
+  <meta property="og:image:secure_url" content="${escapeHtml(ogImageUrl)}">
+  <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="600">
   <meta property="og:image:height" content="800">
+  <meta property="og:image:alt" content="${title} - Document partagé par ${author}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${description}">
   <meta name="twitter:image" content="${escapeHtml(ogImageUrl)}">
+  <meta name="twitter:image:alt" content="${title} - Document partagé par ${author}">
   <meta name="author" content="${author}">
+  <link rel="canonical" href="${escapeHtml(shareUrl)}">
   <meta http-equiv="refresh" content="0;url=${escapeHtml(shareUrl)}">
   <script>window.location.replace(${JSON.stringify(shareUrl)});</script>
 </head>
