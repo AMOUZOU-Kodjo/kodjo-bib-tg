@@ -41,7 +41,7 @@ export default function Navbar() {
               <Archive className="h-5 w-5 text-white sm:h-6 sm:w-6" />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-base font-bold leading-tight text-white sm:text-lg">{siteName}</div>
+              <div className="truncate text-lg leading-tight text-white sm:text-xl" style={{ fontFamily: "'Great Vibes', cursive", letterSpacing: "0.01em" }}>{siteName}</div>
               <div className="hidden truncate text-xs leading-tight text-gray-400 sm:block">Plateforme de documents</div>
             </div>
           </Link>

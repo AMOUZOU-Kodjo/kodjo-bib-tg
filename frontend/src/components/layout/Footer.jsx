@@ -17,7 +17,7 @@ export default function Footer() {
               <div className="shrink-0 bg-gradient-to-br from-teal-500 to-teal-600 p-2 rounded-lg">
                 <Archive className="w-6 h-6 text-white" />
               </div>
-              <span className="truncate font-bold text-xl text-white">{siteName}</span>
+              <span className="truncate text-2xl text-white" style={{ fontFamily: "'Great Vibes', cursive", letterSpacing: "0.01em" }}>{siteName}</span>
             </div>
             <p className="text-gray-400 mb-4 max-w-md">
               Plateforme collaborative gratuite d'archivage et de partage de documents.
