@@ -6,9 +6,12 @@ import morgan from "morgan";
 import { config } from "./config/env.js";
 import { query, touchDatabaseActivity } from "./config/db.js";
 import { setupRoutes } from "./routes.js";
+import shareRoutes from "./routes/share.routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
+
+app.use("/share", shareRoutes);
 
 app.set("trust proxy", 1);
 
