@@ -24,6 +24,18 @@ router.post("/support", contactLimiter, async (req, res, next) => {
 
     const safeSubject = String(subject).replace(/[\r\n]+/g, " ").trim();
     const settings = await getSettings();
+    const recipientEmail = settings.contactEmail || process.env.CONTACT_EMAIL || config.brevo.senderEmail;
+
+    if (!recipientEmail) {
+      console.error("Contact support: no recipient email configured");
+      return res.status(500).json({
+        error: {
+          code: "EMAIL_NOT_CONFIGURED",
+          message: "L'envoi du message est temporairement indisponible."
+        }
+      });
+    }
+
     const { html, text } = buildContactEmail({
       intro: `Un nouveau message a été envoyé depuis le formulaire de contact du site ${settings.siteName}.`,
       fromName: name,
@@ -37,7 +49,7 @@ router.post("/support", contactLimiter, async (req, res, next) => {
 
     try {
       await sendEmail({
-        to: settings.contactEmail,
+        to: recipientEmail,
         toName: settings.siteName,
         subject: `[${settings.siteName}] Nouveau message : ${safeSubject}`,
         html,
@@ -49,7 +61,7 @@ router.post("/support", contactLimiter, async (req, res, next) => {
       return res.status(502).json({
         error: {
           code: "EMAIL_SEND_FAILED",
-          message: `L'envoi du message a échoué. Réessayez plus tard ou écrivez à ${settings.contactEmail}.`
+          message: `L'envoi du message a échoué. Réessayez plus tard ou écrivez à ${recipientEmail}.`
         }
       });
     }
