@@ -318,11 +318,27 @@ export default function DocumentDetail() {
             {showPreview ? (
               <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white">
                 {previewSrc ? (
-                  <iframe
-                    src={previewSrc}
-                    className="h-[60vh] min-h-[420px] w-full md:h-[900px]"
-                    title={doc.title}
-                  />
+                  <object
+                    data={previewSrc}
+                    type={doc.mime_type || "application/pdf"}
+                    className="h-[65vh] min-h-[380px] w-full md:h-[900px]"
+                    aria-label={doc.title}
+                  >
+                    <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                      <FileText className="h-10 w-10 text-gray-400" />
+                      <p className="text-sm text-gray-600">
+                        L’aperçu ne s’affiche pas correctement sur ce navigateur.
+                      </p>
+                      <a
+                        href={previewSrc}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
+                      >
+                        Ouvrir dans un nouvel onglet
+                      </a>
+                    </div>
+                  </object>
                 ) : null}
                 {previewLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/80 text-sm text-gray-600" aria-live="polite">
