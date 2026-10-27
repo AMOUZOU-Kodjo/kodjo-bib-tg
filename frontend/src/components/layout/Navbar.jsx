@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 
 const desktopLink =
-  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/5 hover:text-white";
+  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white";
 const mobileLink =
-  "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium text-gray-300 transition-colors hover:bg-white/5 hover:text-white";
+  "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white";
 const mobileAccentLink =
   "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium transition-colors";
 
@@ -33,7 +33,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/95 backdrop-blur supports-[backdrop-filter]:bg-slate-950/80">
+    <nav className="sticky top-0 z-50 border-b border-white/10 bg-teal-700 backdrop-blur supports-[backdrop-filter]:bg-teal-700/95">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3 py-3">
           <Link to="/" onClick={closeMenu} className="flex min-w-0 items-center gap-2.5 group">
@@ -41,8 +41,8 @@ export default function Navbar() {
               <Archive className="h-5 w-5 text-white sm:h-6 sm:w-6" />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-lg leading-tight text-white sm:text-xl" style={{ fontFamily: "'Great Vibes', cursive", letterSpacing: "0.01em" }}>{siteName}</div>
-              <div className="hidden truncate text-xs leading-tight text-gray-400 sm:block">Plateforme de documents</div>
+              <div className="truncate text-lg leading-tight text-white sm:text-xl" style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}>{siteName}</div>
+              <div className="hidden truncate text-xs leading-tight text-white/80 sm:block">Plateforme de documents</div>
             </div>
           </Link>
 
@@ -93,7 +93,7 @@ export default function Navbar() {
                   <LogIn className="h-4 w-4 shrink-0" />
                   <span>Connexion</span>
                 </Link>
-                <Link to="/register" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-500">
+                <Link to="/register" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-white/10 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20">
                   <UserPlus className="h-4 w-4 shrink-0" />
                   <span>Inscription</span>
                 </Link>
@@ -104,7 +104,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 text-gray-300 transition-colors hover:bg-white/5 lg:hidden"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/20 text-white transition-colors hover:bg-white/10 lg:hidden"
             aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
@@ -114,7 +114,7 @@ export default function Navbar() {
         </div>
 
         {menuOpen && (
-          <div id="mobile-menu" className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-white/10 pb-3 lg:hidden">
+          <div id="mobile-menu" className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-white/20 pb-3 lg:hidden">
             <div className="flex flex-col gap-1 pt-3">
               <Link to="/documents" onClick={closeMenu} className={mobileLink}>
                 <BookOpen className="h-4 w-4 shrink-0" />
@@ -168,7 +168,7 @@ export default function Navbar() {
                     <LogIn className="h-4 w-4 shrink-0" />
                     Connexion
                   </Link>
-                  <Link to="/register" onClick={closeMenu} className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-500">
+                  <Link to="/register" onClick={closeMenu}                     className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20">
                     <UserPlus className="h-4 w-4" />
                     Inscription gratuite
                   </Link>
