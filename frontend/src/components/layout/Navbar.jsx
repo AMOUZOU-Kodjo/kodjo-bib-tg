@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
 import {
-  Archive, Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X
+  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X
 } from "lucide-react";
 
 const desktopLink =
@@ -36,14 +36,15 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-teal-700 backdrop-blur supports-[backdrop-filter]:bg-teal-700/95">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3 py-3">
-          <Link to="/" onClick={closeMenu} className="flex min-w-0 items-center gap-2.5 group">
-            <div className="shrink-0 rounded-lg bg-teal-600 p-2 transition-all group-hover:bg-teal-500">
-              <Archive className="h-5 w-5 text-white sm:h-6 sm:w-6" />
-            </div>
-            <div className="min-w-0">
-              <div className="truncate text-lg leading-tight text-white sm:text-xl" style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}>{siteName}</div>
-              <div className="hidden truncate text-xs leading-tight text-white/80 sm:block">Plateforme de documents</div>
-            </div>
+          <Link to="/" onClick={closeMenu} className="group flex min-w-0 items-center">
+            <span className="inline-flex shrink-0 items-center rounded-xl bg-white px-2 py-1.5 shadow-sm ring-1 ring-black/5 transition group-hover:ring-black/10">
+              <img
+                src="/logo.png"
+                alt={siteName}
+                className="h-8 w-auto max-w-[150px] object-contain sm:h-9 sm:max-w-[190px]"
+              />
+            </span>
+            <span className="sr-only">{siteName}</span>
           </Link>
 
           <div className="hidden items-center gap-1 lg:flex xl:gap-2">

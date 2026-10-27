@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Archive, Heart, Mail, Cookie } from "lucide-react";
+import { Heart, Mail, Cookie } from "lucide-react";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 
 export default function Footer() {
@@ -13,16 +13,12 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-5">
-            <div className="flex min-w-0 items-center gap-3 mb-5">
-              <div className="shrink-0 bg-white/10 p-2.5 rounded-xl backdrop-blur-sm">
-                <Archive className="w-6 h-6 text-white" />
-              </div>
-              <span
-                className="truncate text-3xl sm:text-4xl text-white"
-                style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}
-              >
-                {siteName}
-              </span>
+            <div className="mb-5 inline-flex items-center rounded-xl bg-white px-3 py-2 shadow-sm ring-1 ring-black/5">
+              <img
+                src="/logo.png"
+                alt={siteName}
+                className="h-9 w-auto max-w-[200px] object-contain sm:h-10"
+              />
             </div>
             <p className="text-white/80 leading-relaxed mb-5 max-w-lg">
               Plateforme collaborative gratuite d'archivage et de partage de documents.
