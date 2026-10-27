@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   getDocument, viewDocument, downloadDocument, likeDocument, getDocuments,
-  getDocumentViewFile, getDocumentShareLink, createDocumentShareLink
+  getDocumentViewFile, fetchDocumentViewBlob, getDocumentShareLink, createDocumentShareLink
 } from "../api/documents";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -20,7 +20,7 @@ export default function DocumentDetail() {
   const [related, setRelated] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewNonce, setPreviewNonce] = useState(0);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState(null);
   const [contactOpen, setContactOpen] = useState(false);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const { user } = useAuth();
@@ -30,6 +30,10 @@ export default function DocumentDetail() {
     setShowPreview(false);
     setPreviewLoading(false);
     setThumbnailFailed(false);
+    if (previewBlobUrl) {
+      URL.revokeObjectURL(previewBlobUrl);
+      setPreviewBlobUrl(null);
+    }
     getDocument(id)
       .then((res) => {
         setDoc(res.data.document);
@@ -45,15 +49,21 @@ export default function DocumentDetail() {
       .catch(() => toast.error("Document introuvable"))
       .finally(() => setLoading(false));
     viewDocument(id).catch(() => {});
+    return () => {
+      if (previewBlobUrl) {
+        URL.revokeObjectURL(previewBlobUrl);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
     if (!previewLoading) return;
     const timer = setTimeout(() => setPreviewLoading(false), 15000);
     return () => clearTimeout(timer);
-  }, [previewLoading, previewNonce]);
+  }, [previewLoading]);
 
-  const loadPreview = () => {
+  const loadPreview = async () => {
     if (!user) {
       toast.error("Connectez-vous pour consulter en ligne");
       return;
@@ -62,9 +72,21 @@ export default function DocumentDetail() {
       toast.error("Vérifiez votre email pour consulter en ligne");
       return;
     }
+    if (previewBlobUrl) {
+      URL.revokeObjectURL(previewBlobUrl);
+    }
     setPreviewLoading(true);
     setShowPreview(true);
-    setPreviewNonce((value) => value + 1);
+    try {
+      const res = await fetchDocumentViewBlob(id);
+      const blobUrl = URL.createObjectURL(res.data);
+      setPreviewBlobUrl(blobUrl);
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Erreur lors du chargement de l'aperçu");
+      setShowPreview(false);
+    } finally {
+      setPreviewLoading(false);
+    }
   };
 
   const download = async () => {
@@ -127,7 +149,7 @@ export default function DocumentDetail() {
     setContactOpen(true);
   };
 
-  const previewSrc = showPreview ? `${getDocumentViewFile(id)}?v=${previewNonce}` : null;
+  const previewSrc = showPreview ? previewBlobUrl : null;
 
   if (loading) return <div className="text-center py-12">Chargement...</div>;
   if (!doc) return <div className="text-center py-12">Document introuvable</div>;
@@ -287,7 +309,7 @@ export default function DocumentDetail() {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-bold text-gray-900 sm:text-xl">Aperçu du livre</h2>
               {showPreview && (
-                <a href={getDocumentViewFile(id)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-medium text-teal-700 hover:underline">
+                <a href={previewSrc || getDocumentViewFile(id)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-medium text-teal-700 hover:underline">
                   <Maximize2 className="w-4 h-4" />
                   Plein écran
                 </a>
@@ -295,13 +317,13 @@ export default function DocumentDetail() {
             </div>
             {showPreview ? (
               <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white">
-                <iframe
-                  src={previewSrc}
-                  onLoad={() => setPreviewLoading(false)}
-                  onError={() => setPreviewLoading(false)}
-                  className="h-[60vh] min-h-[420px] w-full md:h-[900px]"
-                  title={doc.title}
-                />
+                {previewSrc ? (
+                  <iframe
+                    src={previewSrc}
+                    className="h-[60vh] min-h-[420px] w-full md:h-[900px]"
+                    title={doc.title}
+                  />
+                ) : null}
                 {previewLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/80 text-sm text-gray-600" aria-live="polite">
                     Chargement de l’aperçu…

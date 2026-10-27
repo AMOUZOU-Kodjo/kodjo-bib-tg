@@ -9,6 +9,11 @@ export const getDocumentViewFile = (id) => {
   const base = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
   return `${base}/documents/${id}/view-file`;
 };
+export const fetchDocumentViewBlob = (id) =>
+  client.get(`/documents/${id}/view-file`, {
+    responseType: "blob",
+    withCredentials: true
+  });
 export const uploadDocument = (formData) => client.post("/documents", formData, { headers: { "Content-Type": "multipart/form-data" } });
 export const updateDocument = (id, data) => client.patch(`/documents/${id}`, data);
 export const deleteDocument = (id) => client.delete(`/documents/${id}`);
