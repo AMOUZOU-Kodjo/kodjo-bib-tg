@@ -11,6 +11,7 @@ import { formatSize, formatDate } from "../utils/format";
 import ContactModal from "../components/contact/ContactModal";
 import CommentsSection from "../components/comments/CommentsSection";
 import { DocumentCard } from "../components/documents/DocumentCard";
+import WhatsAppPublishButton from "../components/documents/WhatsAppPublishButton";
 import { getCategoryColor, formatCategoryName } from "../utils/document";
 
 export default function DocumentDetail() {
@@ -226,6 +227,9 @@ export default function DocumentDetail() {
             <Share2 className="w-4 h-4" />
             {user && !user.email_verified ? "Vérifiez votre email pour partager" : "Partager le lien"}
           </button>
+          {(doc.isOwner || user?.role === "admin") && (
+            <WhatsAppPublishButton doc={doc} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-2.5 font-medium text-white transition-colors hover:bg-[#1ebe5b] disabled:cursor-not-allowed disabled:opacity-50" />
+          )}
           {!doc.isOwner && !isAdmin && (
             <button onClick={openContact} className="w-full flex items-center justify-center gap-2 bg-white text-teal-700 px-6 py-2.5 rounded-xl font-medium hover:bg-teal-50 border border-teal-200 transition-colors">
               <Mail className="w-4 h-4" />

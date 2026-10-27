@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { uploadDocument, suggestDocumentCategory } from "../api/documents";
 import toast from "react-hot-toast";
-import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles } from "lucide-react";
+import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles, ArrowRight } from "lucide-react";
 import { Input, Button } from "../components/ui";
 import { useSiteSettings } from "../context/SiteSettingsContext";
+import WhatsAppPublishButton from "../components/documents/WhatsAppPublishButton";
 
 const CATEGORIES = [
   "Éducation",
@@ -47,6 +49,7 @@ export default function Upload() {
   const [dragActive, setDragActive] = useState(false);
   const [suggestedCategory, setSuggestedCategory] = useState(null);
   const [suggestionApplied, setSuggestionApplied] = useState(false);
+  const [createdDoc, setCreatedDoc] = useState(null);
   const inputRef = useRef(null);
 
   const handleFile = async (selectedFile) => {
@@ -112,6 +115,7 @@ export default function Upload() {
           ? `Document déposé, ${formatFileSize(savedBytes)} économisés`
           : "Document déposé avec succès"
       );
+      setCreatedDoc(data.document || null);
       setFile(null);
       setTitle("");
       setDescription("");
@@ -131,6 +135,42 @@ export default function Upload() {
         <h1 className="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">Déposer un document</h1>
         <p className="text-sm text-gray-600 sm:text-base">Partagez vos documents avec la communauté. Tous les formats sont acceptés.</p>
       </div>
+
+      {createdDoc && (
+        <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50 p-4 sm:p-5">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-teal-900">Document déposé</p>
+              <p className="truncate text-sm text-teal-800">{createdDoc.title}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCreatedDoc(null)}
+              aria-label="Fermer"
+              className="rounded-lg p-1 text-teal-700 transition-colors hover:bg-teal-100"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <Link
+              to={`/documents/${createdDoc.id}`}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-800"
+            >
+              Voir le document
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <WhatsAppPublishButton
+              doc={createdDoc}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#25D366] bg-white px-4 py-2.5 text-sm font-semibold text-[#128C4A] transition-colors hover:bg-[#25D366]/10 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
+          <p className="mt-3 text-xs text-teal-700">
+            Le lien collé dans la chaîne affichera automatiquement l'aperçu du document.
+          </p>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <form onSubmit={submit} className="divide-y divide-gray-100">

@@ -1,10 +1,7 @@
 import { Link } from "react-router-dom";
 import { Heart, Mail, Cookie, MessageCircle } from "lucide-react";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
-
-const whatsappChannelUrl =
-  import.meta.env.VITE_WHATSAPP_CHANNEL_URL ||
-  "https://whatsapp.com/channel/0029VbDXjk63QxS6ImkHYk3K";
+import { WHATSAPP_CHANNEL_URL } from "../../config/links";
 
 export default function Footer() {
   const { siteName } = useSiteSettings();
@@ -37,17 +34,15 @@ export default function Footer() {
             <p className="text-sm text-white/70 flex items-center gap-1.5">
               Fait avec <Heart className="w-4 h-4 text-rose-400 fill-rose-400/20" /> pour la communauté
             </p>
-            {whatsappChannelUrl && (
-              <a
-                href={whatsappChannelUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1ebe5b]"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Rejoindre la chaîne WhatsApp
-              </a>
-            )}
+            <a
+              href={WHATSAPP_CHANNEL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1ebe5b]"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Rejoindre la chaîne WhatsApp
+            </a>
           </div>
 
           <div className="lg:col-span-2">
