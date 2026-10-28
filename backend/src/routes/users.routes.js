@@ -60,13 +60,13 @@ router.patch("/me", authRequired, async (req, res, next) => {
     }
 
     const up = await query(
-      "UPDATE users SET display_name = $1 WHERE id = $2 RETURNING id, email, display_name, email_verified, credits, role",
+      "UPDATE users SET display_name = $1 WHERE id = $2 RETURNING id, email, display_name, email_verified, credits, role, token_version",
       [displayName, req.user.id]
     );
     const user = up.rows[0];
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, displayName: user.display_name, emailVerified: user.email_verified, role: user.role },
+      { id: user.id, email: user.email, displayName: user.display_name, emailVerified: user.email_verified, role: user.role, tokenVersion: user.token_version },
       config.jwtSecret,
       { expiresIn: config.jwtExpiresIn }
     );

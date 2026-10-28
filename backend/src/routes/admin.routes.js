@@ -103,6 +103,7 @@ router.patch("/users/:id", async (req, res, next) => {
       }
       updates.push(`role = $${idx++}`);
       params.push(role);
+      updates.push("token_version = token_version + 1");
     }
 
     if (credits !== undefined) {

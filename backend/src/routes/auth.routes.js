@@ -1,7 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { query } from "../config/db.js";
+import { ensureSecuritySchema, query } from "../config/db.js";
 import { config } from "../config/env.js";
 import { authRequired } from "../middlewares/auth.js";
 import { authLimiter } from "../middlewares/rateLimit.js";
@@ -11,6 +11,15 @@ import { ensureInitialCredits } from "../services/credits.service.js";
 import { getSettings } from "../services/settings.service.js";
 
 const router = express.Router();
+
+router.use(async (req, res, next) => {
+  try {
+    await ensureSecuritySchema();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 function publicUser(user) {
   return {
@@ -83,7 +92,7 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
   try {
     const { email, code } = req.body;
     if (!email || !code) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    const userRes = await query("SELECT id, email, display_name, email_verified, role, credits FROM users WHERE email = $1", [email.toLowerCase()]);
+    const userRes = await query("SELECT id, email, display_name, email_verified, role, credits, token_version FROM users WHERE email = $1", [email.toLowerCase()]);
     if (userRes.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     const user = userRes.rows[0];
     const codeRes = await query(
@@ -104,7 +113,7 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
     const creditsRes = await query("SELECT credits FROM users WHERE id = $1", [user.id]);
     user.email_verified = true;
     user.credits = creditsRes.rows[0]?.credits ?? 0;
-    const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+    const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role, tokenVersion: user.token_version }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
     res.cookie("token", token, { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
     return res.json({ ok: true, user: publicUser(user) });
   } catch (err) {
@@ -164,7 +173,7 @@ router.post("/login", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    const userRes = await query("SELECT id, email, display_name, password_hash, email_verified, role, credits FROM users WHERE email = $1", [email.toLowerCase()]);
+    const userRes = await query("SELECT id, email, display_name, password_hash, email_verified, role, credits, token_version FROM users WHERE email = $1", [email.toLowerCase()]);
     if (userRes.rows.length === 0) return res.status(401).json({ error: { code: "INVALID_CREDENTIALS", message: "Identifiants invalides" } });
     const user = userRes.rows[0];
     const okPass = await bcrypt.compare(password, user.password_hash);
@@ -172,7 +181,7 @@ router.post("/login", authLimiter, async (req, res, next) => {
     if (!user.email_verified) {
       return res.status(403).json({ error: { code: "EMAIL_NOT_VERIFIED", message: "Vérification de l'e-mail requise", email: user.email } });
     }
-    const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+    const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role, tokenVersion: user.token_version }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
     res.cookie("token", token, { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
     res.json({ ok: true, user: publicUser(user) });
   } catch (err) {
@@ -231,7 +240,8 @@ router.post("/reset-password", authLimiter, async (req, res, next) => {
     }
     const passwordHash = await bcrypt.hash(password, 10);
     await query("UPDATE email_codes SET used_at = now() WHERE id = $1", [c.id]);
-    await query("UPDATE users SET password_hash = $1 WHERE id = $2", [passwordHash, user.id]);
+    await query("UPDATE users SET password_hash = $1, token_version = token_version + 1 WHERE id = $2", [passwordHash, user.id]);
+    res.clearCookie("token", { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
     res.json({ ok: true });
   } catch (err) {
     next(err);

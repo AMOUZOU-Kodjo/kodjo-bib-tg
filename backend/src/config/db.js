@@ -25,6 +25,18 @@ export async function query(text, params) {
   return res;
 }
 
+let securitySchemaReady;
+
+export function ensureSecuritySchema() {
+  if (!securitySchemaReady) {
+    securitySchemaReady = query("ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0").catch((err) => {
+      securitySchemaReady = null;
+      throw err;
+    });
+  }
+  return securitySchemaReady;
+}
+
 let keepAliveTimer;
 
 export function startDatabaseKeepAlive() {

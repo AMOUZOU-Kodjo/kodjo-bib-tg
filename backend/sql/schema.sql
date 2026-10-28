@@ -8,8 +8,10 @@ CREATE TABLE users (
   email_verified BOOLEAN NOT NULL DEFAULT FALSE,
   credits INTEGER NOT NULL DEFAULT 0 CHECK (credits >= 0),
   role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user','admin')),
+  token_version INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
 
 CREATE TABLE email_codes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
