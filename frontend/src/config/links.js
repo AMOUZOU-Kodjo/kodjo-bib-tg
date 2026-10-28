@@ -5,6 +5,8 @@ export const WHATSAPP_CHANNEL_URL =
 export const FACEBOOK_URL =
   import.meta.env.VITE_FACEBOOK_URL || "https://web.facebook.com/planckkm";
 
-export const LINKEDIN_URL = import.meta.env.VITE_LINKEDIN_URL || "";
+export const LINKEDIN_URL =
+  import.meta.env.VITE_LINKEDIN_URL ||
+  "https://www.linkedin.com/in/kodjo-amouzou-175268375";
 
 export const TIKTOK_URL = import.meta.env.VITE_TIKTOK_URL || "";
