@@ -3,8 +3,9 @@ import { useSearchParams } from "react-router-dom";
 import { getDocuments, getDocumentCategories } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import { Search, FileText } from "lucide-react";
-import { Input, Spinner, EmptyState } from "../components/ui";
+import { Input, Spinner, EmptyState, Pagination } from "../components/ui";
 import { formatCategoryName } from "../utils/document";
+import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 
 export default function Documents() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,7 +22,6 @@ export default function Documents() {
   const [categories, setCategories] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(pageParam);
-  const limit = 12;
 
   useEffect(() => {
     getDocumentCategories()
@@ -49,7 +49,7 @@ export default function Documents() {
 
   useEffect(() => {
     setLoading(true);
-    getDocuments({ q: search, category: categoryParam || undefined, sort, page, limit })
+    getDocuments({ q: search, category: categoryParam || undefined, sort, page, limit: DOCUMENTS_PER_PAGE })
       .then((res) => {
         setDocs(res.data.documents || []);
         if (res.data.total !== undefined) setTotal(res.data.total);
@@ -88,8 +88,7 @@ export default function Documents() {
   const featured = useMemo(() => docs.slice(0, 3), [docs]);
   const list = useMemo(() => (docs.length > 3 ? docs.slice(3) : []), [docs]);
 
-  const totalPages = Math.max(1, Math.ceil(total / limit));
-  const showPagination = totalPages > 1;
+  const totalPages = Math.max(1, Math.ceil(total / DOCUMENTS_PER_PAGE));
 
   return (
     <div>
@@ -162,7 +161,7 @@ export default function Documents() {
         <>
           {featured.length > 0 && (
             <section className="mb-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 gap-4">
                 {featured.map((doc) => (
                   <DocumentCard key={doc.id} doc={doc} />
                 ))}
@@ -172,7 +171,7 @@ export default function Documents() {
 
           {list.length > 0 && (
             <section className="mb-10">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
                 {list.map((doc) => (
                   <DocumentCard key={doc.id} doc={doc} />
                 ))}
@@ -180,48 +179,7 @@ export default function Documents() {
             </section>
           )}
 
-          {showPagination && (
-            <nav className="flex items-center justify-start gap-1 overflow-x-auto px-1 pb-2 sm:flex-wrap sm:justify-center sm:overflow-visible">
-              <button
-                onClick={() => goToPage(Math.max(1, page - 1))}
-                disabled={page <= 1}
-                aria-label="Page précédente"
-                className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
-              >
-                « <span className="hidden sm:inline">Précédent</span><span className="sm:hidden">Préc.</span>
-              </button>
-              {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
-                let p;
-                if (totalPages <= 10) p = i + 1;
-                else if (page <= 5) p = i + 1;
-                else if (page >= totalPages - 4) p = totalPages - 9 + i;
-                else p = page - 4 + i;
-                return (
-                  <button
-                    key={p}
-                    onClick={() => goToPage(p)}
-                    className={`h-8 w-8 shrink-0 rounded-lg text-sm font-medium sm:h-9 sm:w-9 ${p === page ? "bg-teal-700 text-white" : "text-gray-700 hover:bg-gray-100"}`}
-                  >
-                    {p}
-                  </button>
-                );
-              })}
-              {totalPages > 10 && page < totalPages - 4 && (
-                <>
-                  <span className="shrink-0 px-2 text-gray-400">...</span>
-                  <button onClick={() => goToPage(totalPages)} className="h-8 w-8 shrink-0 rounded-lg text-sm text-gray-700 hover:bg-gray-100 sm:h-9 sm:w-9">{totalPages}</button>
-                </>
-              )}
-              <button
-                onClick={() => goToPage(Math.min(totalPages, page + 1))}
-                disabled={page >= totalPages}
-                aria-label="Page suivante"
-                className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
-              >
-                <span className="hidden sm:inline">Suivant</span><span className="sm:hidden">Suiv.</span> »
-              </button>
-            </nav>
-          )}
+          <Pagination page={page} totalPages={totalPages} onPageChange={goToPage} />
         </>
       )}
     </div>

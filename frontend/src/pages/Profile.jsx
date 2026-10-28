@@ -14,8 +14,9 @@ import {
   createDocumentShareLink, disableDocumentShare
 } from "../api/documents";
 import { formatDate } from "../utils/format";
-import { Spinner, EmptyState } from "../components/ui";
+import { Spinner, EmptyState, Pagination } from "../components/ui";
 import { DocumentCard } from "../components/documents/DocumentCard";
+import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 
 const reasonLabels = {
   initial: "Crédits de bienvenue",
@@ -332,6 +333,7 @@ export default function Profile() {
   const { creditsParUpload } = useSiteSettings();
   const [docs, setDocs] = useState([]);
   const [docsLoading, setDocsLoading] = useState(true);
+  const [docsPage, setDocsPage] = useState(1);
   const [credits, setCredits] = useState(user?.credits || 0);
   const [history, setHistory] = useState([]);
   const [creditsLoading, setCreditsLoading] = useState(true);
@@ -399,6 +401,22 @@ export default function Profile() {
     setDocs((list) => list.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)));
   };
 
+  const docsTotalPages = Math.max(1, Math.ceil(docs.length / DOCUMENTS_PER_PAGE));
+  const currentDocsPage = Math.min(docsPage, docsTotalPages);
+  const pagedDocs = docs.slice(
+    (currentDocsPage - 1) * DOCUMENTS_PER_PAGE,
+    currentDocsPage * DOCUMENTS_PER_PAGE
+  );
+
+  useEffect(() => {
+    if (docsPage > docsTotalPages) setDocsPage(docsTotalPages);
+  }, [docsPage, docsTotalPages]);
+
+  const goToDocsPage = (p) => {
+    setDocsPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
       <div className="max-w-5xl mx-auto">
       <header className="mb-6">
@@ -432,8 +450,8 @@ export default function Profile() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {docs.map((doc) => (
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4">
+                {pagedDocs.map((doc) => (
                   <DocumentCard
                     key={doc.id}
                     doc={doc}
@@ -443,6 +461,11 @@ export default function Profile() {
                     deleting={deletingId === doc.id}
                   />
                 ))}
+              </div>
+            )}
+            {docsTotalPages > 1 && (
+              <div className="mt-5">
+                <Pagination page={currentDocsPage} totalPages={docsTotalPages} onPageChange={goToDocsPage} />
               </div>
             )}
           </section>

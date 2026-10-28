@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getStats, getUsers, updateUser, deleteUserAdmin, getAllDocuments, deleteDocumentAdmin, getAdminSettings, updateAdminSettings } from "../api/admin";
 import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2 } from "lucide-react";
-import { Card, Button, Input } from "../components/ui";
+import { Card, Button, Input, Pagination } from "../components/ui";
 import toast from "react-hot-toast";
 import { formatDate, formatSize } from "../utils/format";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useAuth } from "../context/AuthContext";
+import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 
 export default function AdminDashboard() {
   const { refreshSettings } = useSiteSettings();
@@ -15,6 +16,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [docs, setDocs] = useState([]);
+  const [docsPage, setDocsPage] = useState(1);
   const [activeTab, setActiveTab] = useState("overview");
   const [searchUser, setSearchUser] = useState("");
   const [searchDoc, setSearchDoc] = useState("");
@@ -137,6 +139,22 @@ export default function AdminDashboard() {
     d.title.toLowerCase().includes(searchDoc.toLowerCase()) ||
     d.author_name?.toLowerCase().includes(searchDoc.toLowerCase())
   );
+
+  const docsTotalPages = Math.max(1, Math.ceil(filteredDocs.length / DOCUMENTS_PER_PAGE));
+  const currentDocsPage = Math.min(docsPage, docsTotalPages);
+  const pagedDocs = filteredDocs.slice(
+    (currentDocsPage - 1) * DOCUMENTS_PER_PAGE,
+    currentDocsPage * DOCUMENTS_PER_PAGE
+  );
+
+  useEffect(() => {
+    if (docsPage > docsTotalPages) setDocsPage(docsTotalPages);
+  }, [docsPage, docsTotalPages]);
+
+  const goToDocsPage = (p) => {
+    setDocsPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const tabs = [
     { id: "overview", label: "Vue d'ensemble", icon: Shield },
@@ -418,14 +436,14 @@ export default function AdminDashboard() {
             </h2>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input placeholder="Rechercher..." value={searchDoc} onChange={(e) => setSearchDoc(e.target.value)} className="pl-9" />
+              <Input placeholder="Rechercher..." value={searchDoc} onChange={(e) => { setSearchDoc(e.target.value); setDocsPage(1); }} className="pl-9" />
             </div>
           </div>
           {filteredDocs.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-500">Aucun document trouvé.</div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-              {filteredDocs.map(d => (
+              {pagedDocs.map(d => (
                 <article key={d.id} className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
                   <Link
                     to={`/documents/${d.id}`}
@@ -513,6 +531,11 @@ export default function AdminDashboard() {
                   </div>
                 </article>
               ))}
+            </div>
+          )}
+          {docsTotalPages > 1 && (
+            <div className="mt-6">
+              <Pagination page={currentDocsPage} totalPages={docsTotalPages} onPageChange={goToDocsPage} />
             </div>
           )}
         </Card>
