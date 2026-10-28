@@ -88,7 +88,12 @@ router.get("/:token/og-image", async (req, res, next) => {
     if (!response.ok) return res.status(404).end();
     const contentType = response.headers.get("content-type") || "image/jpeg";
     res.setHeader("Content-Type", contentType);
-    res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
+    res.setHeader(
+      "Cache-Control",
+      doc.visibility === "public"
+        ? "public, max-age=86400, s-maxage=86400"
+        : "no-store, max-age=0"
+    );
     res.setHeader("Referrer-Policy", "no-referrer");
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("X-Content-Type-Options", "nosniff");
