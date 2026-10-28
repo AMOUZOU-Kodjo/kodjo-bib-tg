@@ -10,7 +10,6 @@ import { globalLimiter } from "./middlewares/rateLimit.js";
 
 export function setupRoutes(app) {
   app.use(globalLimiter);
-  app.use("/api/health", healthRoutes);
   app.use("/api/auth", authRoutes);
   app.use("/api/documents", documentsRoutes);
   app.use("/api/users", usersRoutes);

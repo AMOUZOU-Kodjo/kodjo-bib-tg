@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { config } from "./config/env.js";
 import { query, touchDatabaseActivity } from "./config/db.js";
 import { setupRoutes } from "./routes.js";
+import { originGuard } from "./middlewares/originGuard.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -33,6 +34,7 @@ app.use(cors({
   origin: frontendOrigin || config.frontendUrl,
   credentials: true
 }));
+app.use(originGuard);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

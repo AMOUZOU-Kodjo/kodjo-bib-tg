@@ -4,8 +4,18 @@ import { query } from '../config/db.js';
 async function seedAdmin() {
   try {
     const email = process.env.ADMIN_EMAIL || 'phipsipy@gmail.com';
-    const password = process.env.ADMIN_PASSWORD || 'Phipsipy2001@';
+    const password = process.env.ADMIN_PASSWORD;
     const displayName = process.env.ADMIN_NAME || 'Administrateur';
+
+    if (!password) {
+      console.error('ADMIN_PASSWORD est requis pour lancer ce script.');
+      process.exit(1);
+    }
+
+    if (password.length < 12) {
+      console.error('ADMIN_PASSWORD doit contenir au moins 12 caractères.');
+      process.exit(1);
+    }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
@@ -24,7 +34,6 @@ async function seedAdmin() {
     }
 
     console.log('Email:', email.toLowerCase());
-    console.log('Mot de passe:', password);
     process.exit(0);
   } catch (err) {
     console.error('Erreur:', err.message);
