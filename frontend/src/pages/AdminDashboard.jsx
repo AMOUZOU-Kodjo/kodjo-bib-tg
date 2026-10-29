@@ -139,6 +139,8 @@ export default function AdminDashboard() {
     d.title.toLowerCase().includes(searchDoc.toLowerCase()) ||
     d.author_name?.toLowerCase().includes(searchDoc.toLowerCase())
   );
+  const canShowViewCount = (doc) =>
+    doc.visibility !== "private" && String(doc.owner_id) !== String(currentUser?.id);
 
   const docsTotalPages = Math.max(1, Math.ceil(filteredDocs.length / DOCUMENTS_PER_PAGE));
   const currentDocsPage = Math.min(docsPage, docsTotalPages);
@@ -488,10 +490,12 @@ export default function AdminDashboard() {
                     <p className="mt-1 truncate text-[11px] text-gray-400" title={d.original_filename}>{d.original_filename || "Fichier"}</p>
 
                     <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]">
-                      <div>
-                        <p className="text-gray-400">Vues</p>
-                        <p className="font-semibold text-gray-700">{d.view_count || 0}</p>
-                      </div>
+                      {canShowViewCount(d) && (
+                        <div>
+                          <p className="text-gray-400">Vues</p>
+                          <p className="font-semibold text-gray-700">{d.view_count || 0}</p>
+                        </div>
+                      )}
                       <div>
                         <p className="text-gray-400">Téléch.</p>
                         <p className="font-semibold text-gray-700">{d.download_count || 0}</p>

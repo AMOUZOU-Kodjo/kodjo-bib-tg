@@ -163,6 +163,7 @@ export default function DocumentDetail() {
   if (!doc) return <div className="text-center py-12">Document introuvable</div>;
 
   const isAdmin = user?.role === "admin" && !doc.isOwner;
+  const showViewCount = doc.visibility !== "private" && !doc.isOwner;
 
   return (
     <div>
@@ -207,10 +208,12 @@ export default function DocumentDetail() {
               </span>
             </div>
           </div>
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
-            <Eye className="w-4 h-4" />
-            <span>{doc.view_count || 0} en lecture</span>
-          </div>
+          {showViewCount && (
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
+              <Eye className="w-4 h-4" />
+              <span>{doc.view_count || 0} en lecture</span>
+            </div>
+          )}
           <button onClick={loadPreview} disabled={previewLoading || !user?.email_verified} className="w-full flex items-center justify-center gap-2 bg-teal-700 text-white px-6 py-3 rounded-xl font-medium hover:bg-teal-800 transition-colors mb-3 disabled:opacity-50">
             <FileText className="w-5 h-5" />
             {previewLoading ? "Chargement..." : showPreview ? "Actualiser l'aperçu" : user?.email_verified ? "Consulter en ligne" : "Vérifiez votre email"}
