@@ -2,10 +2,11 @@ import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { uploadDocument, suggestDocumentCategory } from "../api/documents";
 import toast from "react-hot-toast";
-import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles, ArrowRight } from "lucide-react";
+import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles, ArrowRight, Send } from "lucide-react";
 import { Input, Button } from "../components/ui";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import WhatsAppPublishButton from "../components/documents/WhatsAppPublishButton";
+import { TELEGRAM_CHANNEL_URL } from "../config/links";
 
 const CATEGORIES = [
   "Éducation",
@@ -167,8 +168,19 @@ export default function Upload() {
             />
           </div>
           <p className="mt-3 text-xs text-teal-700">
-            Le lien collé dans la chaîne affichera automatiquement l'aperçu du document.
+            {createdDoc.visibility === "public"
+              ? "Ce document public est publié automatiquement sur la chaîne Telegram."
+              : "Ce document privé n'est pas publié sur la chaîne Telegram."}
           </p>
+          <a
+            href={TELEGRAM_CHANNEL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-teal-700 hover:text-teal-800"
+          >
+            <Send className="h-3.5 w-3.5" />
+            Voir la chaîne Telegram
+          </a>
         </div>
       )}
 

@@ -218,11 +218,9 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     await addCreditsOnUpload(client, req.user.id, doc.id);
     await client.query("COMMIT");
     committed = true;
-    if (visibility === "public") {
-      notifyDocumentUpload({ documentId: doc.id }).catch((err) => {
-        console.error("Échec de l'envoi des notifications d'upload:", err.message);
-      });
-    }
+    notifyDocumentUpload({ documentId: doc.id }).catch((err) => {
+      console.error("Échec de l'envoi des notifications d'upload:", err.message);
+    });
     res.json({
       ok: true,
       document: doc,

@@ -343,7 +343,8 @@ export function buildDocumentNotificationEmail({
   sizeBytes,
   uploadedAt,
   documentUrl,
-  thumbnailUrl
+  thumbnailUrl,
+  isPrivate = false
 }) {
   const brandName = String(siteName || "Archives").trim() || "Archives";
   const safeBrand = escapeHtml(brandName);
@@ -351,7 +352,17 @@ export function buildDocumentNotificationEmail({
   const safeAuthor = escapeHtml(authorName || "Un membre");
   const safeTitle = escapeHtml(title || "Nouveau document");
   const safeCategory = escapeHtml(category || "Document");
-  const safeDescription = escapeHtml(truncate(description || "Un nouveau document vient d'être publié sur la plateforme.", 220));
+  const notificationLabel = isPrivate ? "Document privé" : "Nouvelle publication";
+  const introText = isPrivate
+    ? "Votre document privé a bien été ajouté à votre espace."
+    : "Un nouveau document vient d'être ajouté à la bibliothèque.";
+  const authorLabel = isPrivate ? "Déposé par" : "Publié par";
+  const dateLabel = isPrivate ? "Déposé le" : "Publié le";
+  const actionLabel = isPrivate ? "Ouvrir mon document" : "Consulter le document";
+  const footerText = isPrivate
+    ? "Vous recevez cet e-mail car vous êtes l'auteur de ce document privé."
+    : `Vous recevez cet e-mail car votre compte est inscrit sur <strong style="color:#374151;">${safeBrand}</strong>. Les notifications sont envoyées à chaque nouvelle publication.`;
+  const safeDescription = escapeHtml(truncate(description || (isPrivate ? "Votre document privé a bien été ajouté à votre espace." : "Un nouveau document vient d'être publié sur la plateforme."), 220));
   const safeType = escapeHtml(getFileType(originalFilename, mimeType));
   const safeSize = escapeHtml(formatFileSize(sizeBytes));
   const postedAt = formatDate(uploadedAt || new Date());
@@ -376,11 +387,11 @@ export function buildDocumentNotificationEmail({
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light only" />
-    <title>Nouveau document sur ${safeBrand}</title>
+    <title>${isPrivate ? "Document privé" : "Nouveau document"} sur ${safeBrand}</title>
   </head>
   <body style="margin:0;padding:0;background-color:#eef2f1;font-family:${SANS};">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#eef2f1;font-size:1px;line-height:1px;">
-      ${safeTitle} — publié par ${safeAuthor} sur ${safeBrand}
+      ${safeTitle} — ${isPrivate ? "déposé" : "publié"} par ${safeAuthor} sur ${safeBrand}
     </div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#eef2f1;padding:26px 12px;">
       <tr>
@@ -393,7 +404,7 @@ export function buildDocumentNotificationEmail({
                   <tr>
                     <td style="padding:26px 30px 24px;">
                       <p style="margin:0 0 12px;display:inline-block;padding:5px 10px;border:1px solid #115e59;border-radius:999px;color:#99f6e4;font-family:${SANS};font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;">
-                        Nouvelle publication
+                        ${notificationLabel}
                       </p>
                       <p style="margin:0;color:#ffffff;font-family:${DISPLAY};font-size:31px;font-weight:600;line-height:1.1;">${safeBrand}</p>
                       <p style="margin:6px 0 0;color:#99f6e4;font-family:${SANS};font-size:12px;letter-spacing:0.4px;">
@@ -408,7 +419,7 @@ export function buildDocumentNotificationEmail({
               <td style="padding:30px;">
                 <p style="margin:0 0 20px;color:#374151;font-family:${SANS};font-size:15px;line-height:1.65;">
                   ${safeRecipient ? `Bonjour ${safeRecipient},` : "Bonjour,"}<br />
-                  Un nouveau document vient d'être ajouté à la bibliothèque.
+                  ${introText}
                 </p>
 
                 <p style="margin:0 0 8px;color:#6b7280;font-family:${SANS};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;">Aperçu du document</p>
@@ -418,7 +429,7 @@ export function buildDocumentNotificationEmail({
                     <td style="background-color:#0b1f1c;padding:22px 24px;">
                       <p style="margin:0 0 9px;display:inline-block;padding:4px 9px;border-radius:999px;background-color:#115e59;color:#ccfbf1;font-family:${SANS};font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${safeCategory}</p>
                       <p style="margin:0;color:#ffffff;font-family:${DISPLAY};font-size:25px;font-weight:600;line-height:1.25;">${safeTitle}</p>
-                      <p style="margin:9px 0 0;color:#99f6e4;font-family:${SANS};font-size:12px;line-height:1.5;">Publié par <strong style="color:#ffffff;">${safeAuthor}</strong></p>
+                      <p style="margin:9px 0 0;color:#99f6e4;font-family:${SANS};font-size:12px;line-height:1.5;">${authorLabel} <strong style="color:#ffffff;">${safeAuthor}</strong></p>
                     </td>
                   </tr>
                   <tr>
@@ -434,7 +445,7 @@ export function buildDocumentNotificationEmail({
                           <td style="padding:8px 0;border-bottom:1px solid #e5e7eb;color:#111827;font-family:${SANS};font-size:13px;">${safeType}${safeSize ? ` · ${safeSize}` : ""}</td>
                         </tr>
                         <tr>
-                          <td style="padding:8px 0;color:#6b7280;font-family:${SANS};font-size:12px;">Publié le</td>
+                          <td style="padding:8px 0;color:#6b7280;font-family:${SANS};font-size:12px;">${dateLabel}</td>
                           <td style="padding:8px 0;color:#111827;font-family:${SANS};font-size:13px;">${escapeHtml(postedAt)}</td>
                         </tr>
                       </table>
@@ -442,7 +453,7 @@ export function buildDocumentNotificationEmail({
                         <tr>
                           <td style="border-radius:9px;background-color:#0f766e;">
                             <a href="${documentHref}" style="display:inline-block;padding:13px 24px;color:#ffffff;font-family:${SANS};font-size:14px;font-weight:700;text-decoration:none;border-radius:9px;">
-                              Consulter le document
+                              ${actionLabel}
                             </a>
                           </td>
                         </tr>
@@ -467,7 +478,7 @@ export function buildDocumentNotificationEmail({
             <tr>
               <td style="padding:20px 30px;background-color:#f6f8f7;border-top:1px solid #e5e7eb;">
                 <p style="margin:0;color:#6b7280;font-family:${SANS};font-size:12px;line-height:1.65;">
-                  Vous recevez cet e-mail car votre compte est inscrit sur <strong style="color:#374151;">${safeBrand}</strong>. Les notifications sont envoyées à chaque nouvelle publication.
+                  ${footerText}
                 </p>
               </td>
             </tr>
@@ -482,23 +493,23 @@ export function buildDocumentNotificationEmail({
 </html>`;
 
   const text = [
-    `NOUVEAU DOCUMENT SUR ${brandName.toUpperCase()}`,
+    `${isPrivate ? "DOCUMENT PRIVÉ" : "NOUVEAU DOCUMENT"} SUR ${brandName.toUpperCase()}`,
     `${"=".repeat(48)}`,
     ``,
     `${recipientName ? `Bonjour ${recipientName},` : "Bonjour,"}`,
     ``,
     `Titre : ${title}`,
-    `Auteur : ${authorName || "Un membre"}`,
+    `${isPrivate ? "Déposé" : "Auteur"} : ${authorName || "Un membre"}`,
     `Catégorie : ${category || "Document"}`,
     `Format : ${getFileType(originalFilename, mimeType)}${formatFileSize(sizeBytes) ? ` · ${formatFileSize(sizeBytes)}` : ""}`,
-    `Publié le : ${postedAt}`,
+    `${isPrivate ? "Déposé" : "Publié"} le : ${postedAt}`,
     ``,
-    description || "Un nouveau document vient d'être publié sur la plateforme.",
+    description || (isPrivate ? "Votre document privé a bien été ajouté à votre espace." : "Un nouveau document vient d'être publié sur la plateforme."),
     ``,
-    `Consulter le document : ${documentUrl || `${siteBase}/documents`}`,
+    `${isPrivate ? "Ouvrir mon document" : "Consulter le document"} : ${documentUrl || `${siteBase}/documents`}`,
     ...(thumbnailUrl ? [`Aperçu : ${thumbnailUrl}`] : []),
     ``,
-    `Vous recevez cet e-mail car votre compte est inscrit sur ${brandName}.`
+    isPrivate ? "Vous recevez cet e-mail car vous êtes l'auteur de ce document privé." : `Vous recevez cet e-mail car votre compte est inscrit sur ${brandName}.`
   ].join("\n");
 
   return { html, text };

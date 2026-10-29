@@ -18,6 +18,10 @@ export const config = {
     senderEmail: process.env.BREVO_SENDER_EMAIL,
     senderName: process.env.BREVO_SENDER_NAME || "Archives"
   },
+  telegram: {
+    botToken: process.env.TELEGRAM_BOT_TOKEN,
+    channelId: process.env.TELEGRAM_CHANNEL_ID || "@kodjobibtg"
+  },
   contactEmail: process.env.CONTACT_EMAIL || process.env.BREVO_SENDER_EMAIL || "phipsipy@gmail.com",
   maxFileSizeMb: Number(process.env.MAX_FILE_SIZE_MB || 10),
   creditsInitiaux: Number(process.env.CREDITS_INITIAUX || 0),
