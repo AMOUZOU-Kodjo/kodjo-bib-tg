@@ -13,8 +13,8 @@ export default function Footer() {
   return (
     <footer className="mt-20 border-t border-white/10 bg-gradient-to-b from-teal-700 to-teal-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
-          <div className="sm:col-span-2 lg:col-span-5">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-12 lg:gap-8">
+          <div className="col-span-2 lg:col-span-5">
             <div className="mb-5 flex min-w-0 items-center gap-3">
               <img
                 src="/logo.png"
@@ -44,70 +44,70 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="lg:col-span-2">
-            <h3 className="font-semibold text-white text-base mb-4 tracking-wide">Navigation</h3>
+          <div className="col-span-1 min-w-0 lg:col-span-2">
+            <h3 className="mb-3 text-base font-semibold tracking-wide text-white lg:mb-4">Navigation</h3>
             <ul className="space-y-2.5">
               <li>
-                <Link to="/" className="text-white/75 hover:text-white transition-colors duration-200">
+                <Link to="/" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Accueil
                 </Link>
               </li>
               <li>
-                <Link to="/documents" className="text-white/75 hover:text-white transition-colors duration-200">
+                <Link to="/documents" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Catalogue
                 </Link>
               </li>
               <li>
-                <Link to="/upload" className="text-white/75 hover:text-white transition-colors duration-200">
+                <Link to="/upload" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Déposer un document
                 </Link>
               </li>
             </ul>
           </div>
 
-          <div className="lg:col-span-2">
-            <h3 className="font-semibold text-white text-base mb-4 tracking-wide">Compte</h3>
+          <div className="col-span-1 min-w-0 lg:col-span-2">
+            <h3 className="mb-3 text-base font-semibold tracking-wide text-white lg:mb-4">Compte</h3>
             <ul className="space-y-2.5">
               <li>
-                <Link to="/login" className="text-white/75 hover:text-white transition-colors duration-200">
+                <Link to="/login" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Connexion
                 </Link>
               </li>
               <li>
-                <Link to="/register" className="text-white/75 hover:text-white transition-colors duration-200">
+                <Link to="/register" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Inscription
                 </Link>
               </li>
               <li>
-                <Link to="/profile" className="text-white/75 hover:text-white transition-colors duration-200">
+                <Link to="/profile" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Mon profil
                 </Link>
               </li>
             </ul>
           </div>
 
-          <div className="sm:col-span-2 lg:col-span-3">
-            <h3 className="font-semibold text-white text-base mb-4 tracking-wide">Informations légales</h3>
-            <ul className="space-y-2.5">
+          <div className="col-span-2 lg:col-span-3">
+            <h3 className="mb-3 text-center text-base font-semibold tracking-wide text-white lg:mb-4 lg:text-left">Informations légales</h3>
+            <ul className="flex flex-wrap justify-center gap-2 lg:block lg:space-y-2.5">
               <li>
-                <Link to="/mentions-legales" className="text-white/75 hover:text-white transition-colors duration-200">
+                <Link to="/mentions-legales" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Mentions légales
                 </Link>
               </li>
               <li>
-                <Link to="/confidentialite" className="text-white/75 hover:text-white transition-colors duration-200">
+                <Link to="/confidentialite" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Confidentialité
                 </Link>
               </li>
               <li>
-                <Link to="/cgu" className="text-white/75 hover:text-white transition-colors duration-200">
+                <Link to="/cgu" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Conditions d'utilisation
                 </Link>
               </li>
               <li>
                 <Link
                   to="/contact"
-                  className="text-white/75 hover:text-white transition-colors duration-200 inline-flex items-center gap-1.5"
+                  className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent"
                 >
                   <Mail className="w-3.5 h-3.5" />
                   Nous contacter
@@ -116,7 +116,7 @@ export default function Footer() {
               <li>
                 <button
                   onClick={reopenCookies}
-                  className="text-white/75 hover:text-white transition-colors duration-200 inline-flex items-center gap-1.5"
+                  className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent"
                 >
                   <Cookie className="w-3.5 h-3.5" />
                   Gérer les cookies
