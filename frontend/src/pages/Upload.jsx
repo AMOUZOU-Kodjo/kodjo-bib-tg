@@ -5,8 +5,12 @@ import toast from "react-hot-toast";
 import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles, ArrowRight, Send } from "lucide-react";
 import { Input, Button } from "../components/ui";
 import { useSiteSettings } from "../context/SiteSettingsContext";
+import { useAuth } from "../context/AuthContext";
 import WhatsAppPublishButton from "../components/documents/WhatsAppPublishButton";
 import { TELEGRAM_CHANNEL_URL } from "../config/links";
+
+const ALLOWED_EXTENSIONS = new Set([".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt"]);
+const ALLOWED_ACCEPT = Array.from(ALLOWED_EXTENSIONS).join(",");
 
 const CATEGORIES = [
   "Éducation",
@@ -40,13 +44,16 @@ function formatFileSize(bytes) {
 
 export default function Upload() {
   const { maxUploadSizeMb: configuredMaxSizeMb } = useSiteSettings();
+  const { setUser } = useAuth();
   const maxUploadSizeMb = Number(configuredMaxSizeMb) || 10;
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [tags, setTags] = useState("");
   const [visibility, setVisibility] = useState("public");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [suggestedCategory, setSuggestedCategory] = useState(null);
   const [suggestionApplied, setSuggestionApplied] = useState(false);
@@ -55,6 +62,12 @@ export default function Upload() {
 
   const handleFile = async (selectedFile) => {
     if (!selectedFile) return;
+    const extension = `.${selectedFile.name.split(".").pop()?.toLowerCase() || ""}`;
+    if (!ALLOWED_EXTENSIONS.has(extension)) {
+      toast.error("Format non autorisé. Utilisez PDF, Word, Excel, PowerPoint ou TXT.");
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
     setFile(selectedFile);
     setSuggestedCategory(null);
     setSuggestionApplied(false);
@@ -99,15 +112,24 @@ export default function Upload() {
     if (file.size > maxUploadSizeMb * 1024 * 1024) {
       return toast.error(`Fichier trop volumineux (maximum ${maxUploadSizeMb} Mo)`);
     }
+    if (tags.split(",").map((tag) => tag.trim()).filter(Boolean).length > 5) {
+      return toast.error("Maximum 5 mots-clés");
+    }
     const formData = new FormData();
     formData.append("file", file);
     formData.append("title", title.trim());
     if (description.trim()) formData.append("description", description.trim());
     if (category) formData.append("category", category);
+    if (tags.trim()) formData.append("tags", tags.trim());
     formData.append("visibility", visibility);
     setLoading(true);
+    setProgress(0);
     try {
-      const { data } = await uploadDocument(formData);
+      const { data } = await uploadDocument(formData, setProgress);
+      setProgress(100);
+      if (typeof data.credits === "number") {
+        setUser((current) => (current ? { ...current, credits: data.credits } : current));
+      }
       const savedBytes = (data.compression?.originalSize || 0) - (data.compression?.finalSize || 0);
       toast.success(
         visibility === "private"
@@ -121,12 +143,14 @@ export default function Upload() {
       setTitle("");
       setDescription("");
       setCategory("");
+      setTags("");
       setVisibility("public");
       if (inputRef.current) inputRef.current.value = "";
     } catch (err) {
       toast.error(err.response?.data?.error?.message || "Erreur lors de l'envoi");
     } finally {
       setLoading(false);
+      setProgress(0);
     }
   };
 
@@ -134,7 +158,7 @@ export default function Upload() {
     <div className="max-w-3xl mx-auto py-4 sm:py-8">
       <div className="mb-6 sm:mb-8">
         <h1 className="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">Déposer un document</h1>
-        <p className="text-sm text-gray-600 sm:text-base">Partagez vos documents avec la communauté. Tous les formats sont acceptés.</p>
+        <p className="text-sm text-gray-600 sm:text-base">Partagez vos documents avec la communauté. Formats acceptés : PDF, Word, Excel, PowerPoint et TXT.</p>
       </div>
 
       {createdDoc && (
@@ -204,6 +228,7 @@ export default function Upload() {
               <input
                 ref={inputRef}
                 type="file"
+                accept={ALLOWED_ACCEPT}
                 onChange={(e) => handleFile(e.target.files?.[0])}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
@@ -242,7 +267,7 @@ export default function Upload() {
                     Glissez-déposez votre fichier ici
                   </p>
                   <p className="text-sm text-gray-500 mb-3">ou cliquez pour parcourir</p>
-                  <p className="text-xs text-gray-400">Tous les formats acceptés • {maxUploadSizeMb} Mo maximum</p>
+                  <p className="text-xs text-gray-400">PDF, Word, Excel, PowerPoint, TXT • {maxUploadSizeMb} Mo maximum</p>
                 </>
               )}
             </div>
@@ -311,6 +336,17 @@ export default function Upload() {
             </div>
 
             <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">Mots-clés</label>
+              <Input
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="ex: maths, bac, révision"
+                maxLength={240}
+              />
+              <p className="mt-1 text-xs text-gray-400">Jusqu'à 5 mots-clés séparés par des virgules.</p>
+            </div>
+
+            <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">Visibilité</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
@@ -362,6 +398,17 @@ export default function Upload() {
           </div>
 
           <div className="bg-gray-50/50 p-4 sm:p-6 md:p-8">
+            {loading && (
+              <div className="mb-4">
+                <div className="mb-1 flex items-center justify-between text-xs font-medium text-gray-600">
+                  <span>{progress < 100 ? "Envoi du fichier..." : "Traitement et optimisation..."}</span>
+                  <span>{progress}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-gray-200" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}>
+                  <div className="h-full rounded-full bg-teal-600 transition-all duration-300" style={{ width: `${progress}%` }} />
+                </div>
+              </div>
+            )}
             <Button
               type="submit"
               className="flex w-full items-center justify-center gap-2 sm:w-auto sm:px-8"

@@ -8,21 +8,27 @@ import { config } from "../config/env.js";
 import { getSettings } from "../services/settings.service.js";
 
 const router = express.Router();
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function asString(value) {
+  return typeof value === "string" ? value : "";
+}
 
 router.post("/support", contactLimiter, async (req, res, next) => {
   try {
-    const { name, email, subject, message } = req.body;
-    if (!name || !email || !subject || !message) {
+    const name = asString(req.body.name).replace(/[\r\n]+/g, " ").trim();
+    const email = asString(req.body.email).trim().toLowerCase();
+    const safeSubject = asString(req.body.subject).replace(/[\r\n]+/g, " ").trim();
+    const message = asString(req.body.message).trim();
+    if (!name || !email || !safeSubject || !message) {
       return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Tous les champs sont requis" } });
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: { code: "INVALID_EMAIL", message: "Adresse e-mail invalide" } });
     }
-    if (name.length > 80 || subject.length > 150 || message.length > 3000) {
+    if (name.length > 80 || safeSubject.length > 150 || message.length > 3000) {
       return res.status(400).json({ error: { code: "TOO_LONG", message: "Contenu trop long" } });
     }
-
-    const safeSubject = String(subject).replace(/[\r\n]+/g, " ").trim();
     const settings = await getSettings();
     const recipientEmail = settings.contactEmail || process.env.CONTACT_EMAIL || config.brevo.senderEmail;
 
@@ -61,7 +67,7 @@ router.post("/support", contactLimiter, async (req, res, next) => {
       return res.status(502).json({
         error: {
           code: "EMAIL_SEND_FAILED",
-          message: `L'envoi du message a échoué. Réessayez plus tard ou écrivez à ${recipientEmail}.`
+          message: "L'envoi du message a échoué. Réessayez plus tard."
         }
       });
     }
@@ -74,10 +80,16 @@ router.post("/support", contactLimiter, async (req, res, next) => {
 
 router.post("/", authRequired, requireVerified, contactLimiter, async (req, res, next) => {
   try {
-    const { toUserId, documentId, subject, message } = req.body;
-    if (!toUserId || !subject || !message) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
+    const toUserId = asString(req.body.toUserId).trim();
+    const documentId = req.body.documentId ? asString(req.body.documentId).trim() : null;
+    const safeSubject = asString(req.body.subject).replace(/[\r\n]+/g, " ").trim();
+    const message = asString(req.body.message).trim();
+    if (!toUserId || !safeSubject || !message) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
+    if (!UUID_RE.test(toUserId) || (documentId && !UUID_RE.test(documentId))) {
+      return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant invalide" } });
+    }
     if (toUserId === req.user.id) return res.status(400).json({ error: { code: "FORBIDDEN", message: "Impossible" } });
-    if (String(subject).length > 150 || String(message).length > 3000) {
+    if (safeSubject.length > 150 || message.length > 3000) {
       return res.status(400).json({ error: { code: "TOO_LONG", message: "Contenu trop long" } });
     }
 
@@ -95,7 +107,6 @@ router.post("/", authRequired, requireVerified, contactLimiter, async (req, res,
       }
     }
 
-    const safeSubject = String(subject).replace(/[\r\n]+/g, " ").trim();
     const from = fromRes.rows[0];
     const owner = ownerRes.rows[0];
     const settings = await getSettings();

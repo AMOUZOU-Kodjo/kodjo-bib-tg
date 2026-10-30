@@ -11,7 +11,8 @@ const SEND_CONCURRENCY = 5;
 export async function notifyDocumentUpload({ documentId }) {
   const docRes = await query(
     `SELECT d.id, d.title, d.description, d.category, d.original_filename, d.mime_type, d.size_bytes, d.created_at,
-            d.preview_public_id, d.visibility, d.owner_id, u.display_name AS author_name, u.email AS owner_email
+            d.preview_public_id, d.visibility, d.owner_id, u.display_name AS author_name, u.email AS owner_email,
+            u.notify_email AS owner_notify_email, u.notify_document_updates AS owner_notify_document_updates
      FROM documents d
      JOIN users u ON u.id = d.owner_id
      WHERE d.id = $1`,
@@ -49,12 +50,14 @@ export async function notifyDocumentUpload({ documentId }) {
 
   let recipients;
   if (isPrivate) {
-    recipients = doc.owner_email
+    recipients = doc.owner_email && doc.owner_notify_email && doc.owner_notify_document_updates
       ? [{ email: doc.owner_email, display_name: doc.author_name }]
       : [];
   } else {
     const usersRes = await query(
-      "SELECT email, display_name FROM users WHERE email_verified = true ORDER BY created_at ASC"
+      `SELECT email, display_name FROM users
+       WHERE email_verified = true AND notify_email = true AND notify_new_documents = true
+       ORDER BY created_at ASC`
     );
     recipients = usersRes.rows;
   }

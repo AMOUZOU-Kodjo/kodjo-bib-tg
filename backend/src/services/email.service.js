@@ -3,8 +3,18 @@ import { config } from "../config/env.js";
 
 export async function sendEmail({ to, toName, subject, html, text, replyTo }) {
   if (!config.brevo.apiKey) {
+    if (config.nodeEnv === "production") {
+      const error = new Error("Service e-mail non configuré");
+      error.code = "EMAIL_NOT_CONFIGURED";
+      throw error;
+    }
     console.log("[EMAIL DEV]", { to, toName, subject, html, text, replyTo });
     return { ok: true, dev: true };
+  }
+  if (!config.brevo.senderEmail) {
+    const error = new Error("BREVO_SENDER_EMAIL est requis");
+    error.code = "EMAIL_NOT_CONFIGURED";
+    throw error;
   }
   try {
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -43,5 +53,5 @@ export function generateCode() {
 }
 
 export function hashCode(code) {
-  return crypto.createHash("sha256").update(code).digest("hex");
+  return crypto.createHmac("sha256", config.jwtSecret).update(code).digest("hex");
 }

@@ -11,6 +11,23 @@ import { ensureInitialCredits } from "../services/credits.service.js";
 import { getSettings } from "../services/settings.service.js";
 
 const router = express.Router();
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function normalizeEmail(value) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function normalizeName(value) {
+  return typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
+}
+
+function normalizeCode(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizePassword(value) {
+  return typeof value === "string" ? value : "";
+}
 
 router.use(async (req, res, next) => {
   try {
@@ -28,22 +45,29 @@ function publicUser(user) {
     display_name: user.display_name,
     email_verified: user.email_verified,
     credits: user.credits ?? 0,
-    role: user.role
+    role: user.role,
+    notify_email: user.notify_email ?? true,
+    notify_new_documents: user.notify_new_documents ?? true,
+    notify_document_updates: user.notify_document_updates ?? true
   };
 }
 
 router.post("/register", authLimiter, async (req, res, next) => {
   try {
-    const { email, password, displayName } = req.body;
+    const email = normalizeEmail(req.body.email);
+    const password = normalizePassword(req.body.password);
+    const displayName = normalizeName(req.body.displayName);
     if (!email || !password || !displayName) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    if (password.length < 8) return res.status(400).json({ error: { code: "WEAK_PASSWORD", message: "Mot de passe trop court" } });
-    const exists = await query("SELECT id FROM users WHERE email = $1", [email.toLowerCase()]);
+    if (email.length > 254 || !EMAIL_RE.test(email)) return res.status(400).json({ error: { code: "INVALID_EMAIL", message: "Adresse e-mail invalide" } });
+    if (displayName.length < 2 || displayName.length > 60) return res.status(400).json({ error: { code: "INVALID_NAME", message: "Le nom doit contenir entre 2 et 60 caractères" } });
+    if (password.length < 8 || password.length > 128) return res.status(400).json({ error: { code: "WEAK_PASSWORD", message: "Le mot de passe doit contenir entre 8 et 128 caractères" } });
+    const exists = await query("SELECT id FROM users WHERE email = $1", [email]);
     if (exists.rows.length > 0) return res.status(400).json({ error: { code: "EMAIL_EXISTS", message: "Cet e-mail est déjà utilisé" } });
     const passwordHash = await bcrypt.hash(password, 10);
     const { creditsInitiaux, siteName } = await getSettings();
     const userRes = await query(
       "INSERT INTO users (email, display_name, password_hash, credits) VALUES ($1,$2,$3,$4) RETURNING id, email, display_name, email_verified, role",
-      [email.toLowerCase(), displayName, passwordHash, creditsInitiaux]
+      [email, displayName, passwordHash, creditsInitiaux]
     );
     const user = userRes.rows[0];
     if (creditsInitiaux > 0) {
@@ -90,9 +114,10 @@ router.post("/register", authLimiter, async (req, res, next) => {
 
 router.post("/verify-email", authLimiter, async (req, res, next) => {
   try {
-    const { email, code } = req.body;
-    if (!email || !code) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    const userRes = await query("SELECT id, email, display_name, email_verified, role, credits, token_version FROM users WHERE email = $1", [email.toLowerCase()]);
+    const email = normalizeEmail(req.body.email);
+    const code = normalizeCode(req.body.code);
+    if (!email || !EMAIL_RE.test(email) || !/^\d{6}$/.test(code)) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
+    const userRes = await query("SELECT id, email, display_name, email_verified, role, credits, token_version, notify_email, notify_new_documents, notify_document_updates FROM users WHERE email = $1", [email]);
     if (userRes.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     const user = userRes.rows[0];
     const codeRes = await query(
@@ -107,7 +132,8 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
       await query("UPDATE email_codes SET attempts = attempts + 1 WHERE id = $1", [c.id]);
       return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     }
-    await query("UPDATE email_codes SET used_at = now() WHERE id = $1", [c.id]);
+    const claimed = await query("UPDATE email_codes SET used_at = now() WHERE id = $1 AND used_at IS NULL RETURNING id", [c.id]);
+    if (claimed.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     await query("UPDATE users SET email_verified = true WHERE id = $1", [user.id]);
     await ensureInitialCredits(user.id);
     const creditsRes = await query("SELECT credits FROM users WHERE id = $1", [user.id]);
@@ -123,9 +149,9 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
 
 router.post("/resend-code", authLimiter, async (req, res, next) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    const userRes = await query("SELECT id, email, display_name, email_verified FROM users WHERE email = $1", [email.toLowerCase()]);
+    const email = normalizeEmail(req.body.email);
+    if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: { code: "INVALID_EMAIL", message: "Adresse e-mail invalide" } });
+    const userRes = await query("SELECT id, email, display_name, email_verified FROM users WHERE email = $1", [email]);
     if (userRes.rows.length === 0) return res.json({ ok: true });
     const user = userRes.rows[0];
     if (user.email_verified) return res.json({ ok: true });
@@ -171,9 +197,10 @@ router.post("/resend-code", authLimiter, async (req, res, next) => {
 
 router.post("/login", authLimiter, async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const email = normalizeEmail(req.body.email);
+    const password = normalizePassword(req.body.password);
     if (!email || !password) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    const userRes = await query("SELECT id, email, display_name, password_hash, email_verified, role, credits, token_version FROM users WHERE email = $1", [email.toLowerCase()]);
+    const userRes = await query("SELECT id, email, display_name, password_hash, email_verified, role, credits, token_version, notify_email, notify_new_documents, notify_document_updates FROM users WHERE email = $1", [email]);
     if (userRes.rows.length === 0) return res.status(401).json({ error: { code: "INVALID_CREDENTIALS", message: "Identifiants invalides" } });
     const user = userRes.rows[0];
     const okPass = await bcrypt.compare(password, user.password_hash);
@@ -200,9 +227,9 @@ router.post("/logout", authRequired, (req, res) => {
 
 router.post("/forgot-password", authLimiter, async (req, res, next) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    const userRes = await query("SELECT id, email, display_name FROM users WHERE email = $1", [email.toLowerCase()]);
+    const email = normalizeEmail(req.body.email);
+    if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: { code: "INVALID_EMAIL", message: "Adresse e-mail invalide" } });
+    const userRes = await query("SELECT id, email, display_name FROM users WHERE email = $1", [email]);
     if (userRes.rows.length === 0) return res.json({ ok: true });
     const user = userRes.rows[0];
     const code = generateCode();
@@ -223,10 +250,14 @@ router.post("/forgot-password", authLimiter, async (req, res, next) => {
 
 router.post("/reset-password", authLimiter, async (req, res, next) => {
   try {
-    const { email, code, password } = req.body;
-    if (!email || !code || !password) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    if (password.length < 8) return res.status(400).json({ error: { code: "WEAK_PASSWORD", message: "Mot de passe trop court" } });
-    const userRes = await query("SELECT id FROM users WHERE email = $1", [email.toLowerCase()]);
+    const email = normalizeEmail(req.body.email);
+    const rawCode = normalizeCode(req.body.code);
+    const password = normalizePassword(req.body.password);
+    if (!email || !rawCode || !password) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
+    if (!EMAIL_RE.test(email) || !/^\d{6}$/.test(rawCode)) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
+    if (password.length < 8 || password.length > 128) return res.status(400).json({ error: { code: "WEAK_PASSWORD", message: "Le mot de passe doit contenir entre 8 et 128 caractères" } });
+    const code = rawCode;
+    const userRes = await query("SELECT id FROM users WHERE email = $1", [email]);
     if (userRes.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     const user = userRes.rows[0];
     const codeRes = await query("SELECT id, code_hash, attempts, expires_at, used_at FROM email_codes WHERE user_id = $1 AND purpose = 'reset_password' AND used_at IS NULL ORDER BY created_at DESC LIMIT 1", [user.id]);
@@ -239,7 +270,8 @@ router.post("/reset-password", authLimiter, async (req, res, next) => {
       return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     }
     const passwordHash = await bcrypt.hash(password, 10);
-    await query("UPDATE email_codes SET used_at = now() WHERE id = $1", [c.id]);
+    const claimed = await query("UPDATE email_codes SET used_at = now() WHERE id = $1 AND used_at IS NULL RETURNING id", [c.id]);
+    if (claimed.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     await query("UPDATE users SET password_hash = $1, token_version = token_version + 1 WHERE id = $2", [passwordHash, user.id]);
     res.clearCookie("token", { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
     res.json({ ok: true });
@@ -250,7 +282,7 @@ router.post("/reset-password", authLimiter, async (req, res, next) => {
 
 router.get("/me", authRequired, async (req, res, next) => {
   try {
-    const userRes = await query("SELECT id, email, display_name, email_verified, credits, role FROM users WHERE id = $1", [req.user.id]);
+    const userRes = await query("SELECT id, email, display_name, email_verified, credits, role, notify_email, notify_new_documents, notify_document_updates FROM users WHERE id = $1", [req.user.id]);
     res.json({ user: userRes.rows[0] });
   } catch (err) {
     next(err);

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { config } from "../config/env.js";
-import { ensureSecuritySchema, query } from "../config/db.js";
+import { ensureFeatureSchema, ensureSecuritySchema, query } from "../config/db.js";
 
 function getToken(req) {
   return req.cookies?.token || (req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.slice(7) : null);
@@ -32,6 +32,7 @@ async function loadUserFromToken(token) {
   if (!payload.id) throw authError("Token utilisateur invalide");
 
   await ensureSecuritySchema();
+  await ensureFeatureSchema();
   const result = await query(
     "SELECT id, email, display_name, email_verified, role, token_version FROM users WHERE id = $1",
     [payload.id]

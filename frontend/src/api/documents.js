@@ -14,11 +14,19 @@ export const fetchDocumentViewBlob = (id) =>
     responseType: "blob",
     withCredentials: true
   });
-export const uploadDocument = (formData) => client.post("/documents", formData, { headers: { "Content-Type": "multipart/form-data" } });
+export const uploadDocument = (formData, onProgress) =>
+  client.post("/documents", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: (event) => {
+      if (!onProgress || !event.total) return;
+      onProgress(Math.min(100, Math.round((event.loaded * 100) / event.total)));
+    }
+  });
 export const updateDocument = (id, data) => client.patch(`/documents/${id}`, data);
 export const deleteDocument = (id) => client.delete(`/documents/${id}`);
 export const viewDocument = (id) => client.post(`/documents/${id}/view`);
 export const likeDocument = (id) => client.post(`/documents/${id}/like`);
+export const toggleFavorite = (id) => client.post(`/documents/${id}/favorite`);
 export const downloadDocument = (id) => client.post(`/documents/${id}/download`);
 export const contactAuthor = (id, data) => client.post(`/documents/${id}/contact`, data);
 export const getDocumentShareLink = (id) => client.get(`/documents/${id}/share`);

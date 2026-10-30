@@ -114,17 +114,19 @@ export default function Contact() {
             </p>
 
             <ul className="mt-8 space-y-4 text-sm">
-              <li className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/10">
-                  <Mail className="h-4 w-4 text-teal-300" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-semibold text-white">Par e-mail</p>
-                  <a href={`mailto:${contactEmail}`} className="break-all text-teal-200 hover:text-teal-100 hover:underline">
-                    {contactEmail}
-                  </a>
-                </div>
-              </li>
+              {contactEmail && (
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/10">
+                    <Mail className="h-4 w-4 text-teal-300" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white">Par e-mail</p>
+                    <a href={`mailto:${contactEmail}`} className="break-all text-teal-200 hover:text-teal-100 hover:underline">
+                      {contactEmail}
+                    </a>
+                  </div>
+                </li>
+              )}
               <li className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/10">
                   <Clock className="h-4 w-4 text-teal-300" />

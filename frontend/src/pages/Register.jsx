@@ -8,14 +8,23 @@ import { Button, Input } from "../components/ui";
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const submit = async (e) => {
     e.preventDefault();
+    if (displayName.trim().length < 2) {
+      toast.error("Le nom doit contenir au moins 2 caractères");
+      return;
+    }
     if (password.length < 8) {
       toast.error("Le mot de passe doit contenir au moins 8 caractères");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("Les mots de passe ne correspondent pas");
       return;
     }
     setLoading(true);
@@ -81,6 +90,22 @@ export default function Register() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Confirmer le mot de passe</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  type="password"
+                  placeholder="Retapez votre mot de passe"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pl-10"
+                  autoComplete="new-password"
                   required
                 />
               </div>

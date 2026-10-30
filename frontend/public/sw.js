@@ -1,4 +1,4 @@
-const CACHE_NAME = "archives-pwa-v1";
+const CACHE_NAME = "archives-pwa-v2";
 
 const APP_SHELL = [
   "/",
@@ -79,4 +79,48 @@ self.addEventListener("fetch", (event) => {
       })()
     );
   }
+});
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : "" };
+  }
+
+  const title = payload.title || "Archives de Documents";
+  const options = {
+    body: payload.body || "",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    data: { url: payload.url || "/" },
+    tag: payload.tag || "archives-notification",
+    renotify: true
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || "/", self.location.origin).href;
+
+  event.waitUntil(
+    (async () => {
+      const windowClients = await clients.matchAll({ type: "window", includeUncontrolled: true });
+      const exact = windowClients.find((client) => client.url === target);
+      if (exact) {
+        await exact.focus();
+        return;
+      }
+      const client = windowClients.find((item) => "focus" in item);
+      if (client) {
+        await client.focus();
+        if ("navigate" in client) await client.navigate(target);
+        return;
+      }
+      await clients.openWindow(target);
+    })()
+  );
 });

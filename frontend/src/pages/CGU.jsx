@@ -77,8 +77,12 @@ export default function CGU() {
       <LegalSection title="Modération et signalement">
         <p>
           L'équipe peut examiner, masquer ou supprimer tout document ou message signalé comme
-          non conforme. Pour signaler un contenu, écrivez à{" "}
-          <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>{" "}
+          non conforme. Pour signaler un contenu,{" "}
+          {contactEmail ? (
+            <>écrivez à <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>{" "}</>
+          ) : (
+            "utilisez le formulaire de contact "
+          )}
           en précisant le lien concerné et le motif.
         </p>
       </LegalSection>
@@ -114,8 +118,12 @@ export default function CGU() {
       <LegalSection title="Droit applicable et litiges">
         <p>
           Les présentes CGU sont soumises au droit français. En cas de litige, une solution amiable
-          sera recherchée en priorité via{" "}
-          <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>{" "}
+          sera recherchée en priorité{" "}
+          {contactEmail ? (
+            <>via <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>{" "}</>
+          ) : (
+            "via le formulaire de contact "
+          )}
           avant toute action judiciaire devant les juridictions compétentes.
         </p>
       </LegalSection>

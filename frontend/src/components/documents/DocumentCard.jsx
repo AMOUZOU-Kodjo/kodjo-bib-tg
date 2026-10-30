@@ -47,6 +47,11 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
         <div className="doc-overlay absolute inset-x-0 bottom-0 p-5">
           <p className="mb-1 line-clamp-2 text-sm font-medium text-white">{doc.title}</p>
           <p className="text-xs text-gray-300">{doc.author_name}</p>
+          {doc.tags?.length > 0 && (
+            <p className="mt-1 line-clamp-1 text-[10px] font-medium text-teal-200">
+              #{doc.tags.slice(0, 3).join(" #")}
+            </p>
+          )}
         </div>
       </Link>
 

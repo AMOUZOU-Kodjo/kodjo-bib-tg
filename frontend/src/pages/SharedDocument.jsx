@@ -67,7 +67,13 @@ export default function SharedDocument() {
     setDownloading(true);
     try {
       const res = await downloadSharedDocument(token);
-      window.open(res.data.url, "_blank", "noopener,noreferrer");
+      const link = document.createElement("a");
+      link.href = res.data.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
       toast.success("Téléchargement lancé");
     } catch (err) {
       toast.error(err.response?.data?.error?.message || "Erreur lors du téléchargement");

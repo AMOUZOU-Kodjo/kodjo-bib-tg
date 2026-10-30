@@ -9,7 +9,11 @@ export default function Confidentialite() {
         <p>
           Les données personnelles collectées sur {siteName} sont traitées par l'équipe éditoriale de
           la plateforme, responsable du traitement. Pour toute question :{" "}
-          <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>.
+          {contactEmail ? (
+            <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>
+          ) : (
+            "utilisez le formulaire de contact"
+          )}.
         </p>
       </LegalSection>
 
@@ -71,8 +75,11 @@ export default function Confidentialite() {
         <p>
           Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement,
           de limitation, d'opposition et de portabilité de vos données. Vous pouvez exercer ces droits
-          en écrivant à{" "}
-          <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>.
+          {contactEmail ? (
+            <>en écrivant à <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>.</>
+          ) : (
+            "via le formulaire de contact."
+          )}
           Une réponse vous sera apportée dans un délai d'un mois.
         </p>
         <p>

@@ -20,6 +20,17 @@ try {
   frontendOrigin = null;
 }
 const frameAncestors = frontendOrigin ? ["'self'", frontendOrigin] : ["'self'"];
+const allowedOrigins = new Set(
+  [config.frontendUrl, ...(process.env.FRONTEND_ORIGINS || "").split(",")]
+    .map((value) => {
+      try {
+        return new URL(value.trim()).origin;
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean)
+);
 
 app.use(helmet({
   frameguard: false,
@@ -31,7 +42,10 @@ app.use(helmet({
   }
 }));
 app.use(cors({
-  origin: frontendOrigin || config.frontendUrl,
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    return callback(null, false);
+  },
   credentials: true
 }));
 app.use(originGuard);

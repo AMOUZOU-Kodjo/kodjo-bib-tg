@@ -3,7 +3,7 @@ import client from "../api/client";
 
 const DEFAULTS = {
   siteName: "Archives",
-  contactEmail: "phipsipy@gmail.com",
+  contactEmail: "",
   creditsParUpload: 2,
   maxUploadSizeMb: 10
 };

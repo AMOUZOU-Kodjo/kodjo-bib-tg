@@ -2,8 +2,17 @@ import express from "express";
 import { query, pool } from "../config/db.js";
 import { authRequired, optionalAuth, requireVerified } from "../middlewares/auth.js";
 import { config } from "../config/env.js";
+import { notifyDocumentComment } from "../services/notificationCenter.service.js";
 
 const router = express.Router();
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+router.param("id", (req, res, next, id) => {
+  if (!UUID_RE.test(id)) {
+    return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant invalide" } });
+  }
+  next();
+});
 
 function canAccessDocument(doc, user) {
   if (doc.visibility === "public") return true;
@@ -42,8 +51,8 @@ router.get("/documents/:id/comments", optionalAuth, async (req, res, next) => {
 
 router.post("/documents/:id/comments", authRequired, requireVerified, async (req, res, next) => {
   try {
-    const { content } = req.body;
-    if (!content || content.trim().length === 0) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Contenu requis" } });
+    const content = typeof req.body.content === "string" ? req.body.content.trim() : "";
+    if (!content) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Contenu requis" } });
     if (content.length > 1000) return res.status(400).json({ error: { code: "TOO_LONG", message: "Trop long" } });
     const docRes = await query("SELECT owner_id, visibility FROM documents WHERE id = $1", [req.params.id]);
     if (docRes.rows.length === 0 || !canAccessDocument(docRes.rows[0], req.user)) {
@@ -52,9 +61,12 @@ router.post("/documents/:id/comments", authRequired, requireVerified, async (req
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      const ins = await client.query("INSERT INTO comments (user_id, document_id, content) VALUES ($1,$2,$3) RETURNING id, content, created_at", [req.user.id, req.params.id, content.trim()]);
+      const ins = await client.query("INSERT INTO comments (user_id, document_id, content) VALUES ($1,$2,$3) RETURNING id, content, created_at", [req.user.id, req.params.id, content]);
       await client.query("UPDATE documents SET comment_count = comment_count + 1 WHERE id = $1", [req.params.id]);
       await client.query("COMMIT");
+      notifyDocumentComment({ documentId: req.params.id, actorId: req.user.id }).catch((err) => {
+        console.error("Échec de la notification de commentaire:", err.message);
+      });
       res.json({ comment: { ...ins.rows[0], author_name: req.user.displayName } });
     } catch (e) {
       await client.query("ROLLBACK");

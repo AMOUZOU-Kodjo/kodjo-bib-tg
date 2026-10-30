@@ -1,21 +1,27 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import {
   getDocument, viewDocument, downloadDocument, likeDocument, getDocuments,
-  getDocumentViewFile, fetchDocumentViewBlob, getDocumentShareLink, createDocumentShareLink
+  getDocumentViewFile, fetchDocumentViewBlob, getDocumentShareLink, createDocumentShareLink,
+  toggleFavorite
 } from "../api/documents";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { FileText, Heart, Eye, Download, Calendar, User, ChevronRight, Share2, Maximize2, Mail, Lock, Shield } from "lucide-react";
+import { FileText, Heart, Eye, Download, Calendar, User, ChevronRight, Share2, Maximize2, Mail, Lock, Shield, Bookmark, Flag } from "lucide-react";
 import { formatSize, formatDate } from "../utils/format";
 import ContactModal from "../components/contact/ContactModal";
 import CommentsSection from "../components/comments/CommentsSection";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import WhatsAppPublishButton from "../components/documents/WhatsAppPublishButton";
+import ReportModal from "../components/reports/ReportModal";
+import ShareModal from "../components/documents/ShareModal";
 import { getCategoryColor, formatCategoryName } from "../utils/document";
+import useSeo from "../hooks/useSeo";
 
 export default function DocumentDetail() {
   const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [doc, setDoc] = useState(null);
   const [loading, setLoading] = useState(true);
   const [related, setRelated] = useState([]);
@@ -23,14 +29,29 @@ export default function DocumentDetail() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewBlobUrl, setPreviewBlobUrl] = useState(null);
   const [contactOpen, setContactOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
-  const { user } = useAuth();
+  const [creditsOpen, setCreditsOpen] = useState(false);
+  const { user, setUser } = useAuth();
+
+  useSeo({
+    title: doc ? doc.title : "Document",
+    description: doc?.description || (doc ? `Consultez et téléchargez « ${doc.title} » sur Archives de Documents.` : "Consultez un document de la bibliothèque numérique."),
+    image: doc?.thumbnail,
+    url: doc ? `${window.location.origin}/documents/${doc.id}` : undefined,
+    type: "article",
+    noIndex: doc?.visibility === "private"
+  });
 
   useEffect(() => {
     setLoading(true);
     setShowPreview(false);
     setPreviewLoading(false);
     setThumbnailFailed(false);
+    setShareOpen(false);
+    setReportOpen(false);
+    setCreditsOpen(false);
     if (previewBlobUrl) {
       URL.revokeObjectURL(previewBlobUrl);
       setPreviewBlobUrl(null);
@@ -50,13 +71,13 @@ export default function DocumentDetail() {
       .catch(() => toast.error("Document introuvable"))
       .finally(() => setLoading(false));
     viewDocument(id).catch(() => {});
-    return () => {
-      if (previewBlobUrl) {
-        URL.revokeObjectURL(previewBlobUrl);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    return () => {
+      if (previewBlobUrl) URL.revokeObjectURL(previewBlobUrl);
+    };
+  }, [previewBlobUrl]);
 
   useEffect(() => {
     if (!previewLoading) return;
@@ -64,9 +85,14 @@ export default function DocumentDetail() {
     return () => clearTimeout(timer);
   }, [previewLoading]);
 
+  const promptLogin = (message) => {
+    toast.error(message);
+    navigate("/login", { state: { from: location } });
+  };
+
   const loadPreview = async () => {
     if (!user) {
-      toast.error("Connectez-vous pour consulter en ligne");
+      promptLogin("Connectez-vous pour consulter en ligne");
       return;
     }
     if (!user.email_verified) {
@@ -92,38 +118,77 @@ export default function DocumentDetail() {
 
   const download = async () => {
     if (!user) {
-      toast.error("Connectez-vous pour télécharger");
+      promptLogin("Connectez-vous pour télécharger");
       return;
     }
     try {
       const res = await downloadDocument(id);
-      window.open(res.data.url, "_blank");
-      toast.success("Téléchargement lancé");
+      if (typeof res.data.credits === "number") {
+        setUser((current) => (current ? { ...current, credits: res.data.credits } : current));
+      }
+      const link = document.createElement("a");
+      link.href = res.data.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success(res.data.charged ? "Téléchargement lancé (-1 crédit)" : "Téléchargement lancé");
     } catch (err) {
       if (err.response?.data?.error?.code === "INSUFFICIENT_CREDITS") {
-        toast.error(err.response?.data?.error?.message);
+        setCreditsOpen(true);
       } else {
-        toast.error("Erreur lors du téléchargement");
+        toast.error(err.response?.data?.error?.message || "Erreur lors du téléchargement");
       }
     }
   };
 
   const like = async () => {
     if (!user) {
-      toast.error("Connectez-vous pour aimer");
+      promptLogin("Connectez-vous pour aimer ce document");
+      return;
+    }
+    const previous = { likedByMe: doc.likedByMe, like_count: doc.like_count || 0 };
+    const optimistic = !previous.likedByMe;
+    setDoc((d) => ({ ...d, likedByMe: optimistic, like_count: Math.max(0, (d.like_count || 0) + (optimistic ? 1 : -1)) }));
+    try {
+      const res = await likeDocument(id);
+      setDoc((d) => ({ ...d, likedByMe: res.data.liked, like_count: Math.max(0, previous.like_count + (res.data.liked ? 1 : 0) - (previous.likedByMe ? 1 : 0)) }));
+    } catch (err) {
+      setDoc((d) => ({ ...d, ...previous }));
+      toast.error(err.response?.data?.error?.message || "Impossible de mettre à jour le like");
+    }
+  };
+
+  const favorite = async () => {
+    if (!user) {
+      promptLogin("Connectez-vous pour ajouter ce document aux favoris");
       return;
     }
     try {
-      const res = await likeDocument(id);
-      setDoc((d) => ({ ...d, like_count: d.like_count + (res.data.liked ? 1 : -1), likedByMe: res.data.liked }));
+      const res = await toggleFavorite(id);
+      setDoc((d) => ({ ...d, favoritedByMe: res.data.favorited }));
+      toast.success(res.data.favorited ? "Ajouté à votre liste de lecture" : "Retiré de votre liste de lecture");
     } catch (err) {
-      toast.error("Erreur");
+      toast.error(err.response?.data?.error?.message || "Impossible de mettre à jour les favoris");
     }
+  };
+
+  const openReport = () => {
+    if (!user) {
+      promptLogin("Connectez-vous pour signaler ce contenu");
+      return;
+    }
+    if (!user.email_verified) {
+      toast.error("Vérifiez votre email pour signaler ce contenu");
+      return;
+    }
+    setReportOpen(true);
   };
 
   const share = async () => {
     if (!user) {
-      toast.error("Connectez-vous pour partager ce document");
+      promptLogin("Connectez-vous pour partager ce document");
       return;
     }
     if (!user.email_verified) {
@@ -147,7 +212,7 @@ export default function DocumentDetail() {
 
   const openContact = () => {
     if (!user) {
-      toast.error("Connectez-vous pour contacter l'auteur");
+      promptLogin("Connectez-vous pour contacter l'auteur");
       return;
     }
     if (!user.email_verified) {
@@ -220,7 +285,7 @@ export default function DocumentDetail() {
           </button>
           <button onClick={download} className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 border border-gray-200 transition-colors mb-3">
             <Download className="w-5 h-5" />
-            Télécharger (PDF)
+            Télécharger
           </button>
           <button
             onClick={share}
@@ -229,6 +294,26 @@ export default function DocumentDetail() {
           >
             <Share2 className="w-4 h-4" />
             {user && !user.email_verified ? "Vérifiez votre email pour partager" : "Partager le lien"}
+          </button>
+          {doc.visibility === "public" && (
+            <button
+              onClick={() => setShareOpen(true)}
+              className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-50 border border-gray-200 transition-colors mb-3"
+            >
+              <Share2 className="w-4 h-4" />
+              Partager sur les réseaux
+            </button>
+          )}
+          <button
+            onClick={favorite}
+            className={`w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-colors mb-3 ${
+              doc.favoritedByMe
+                ? "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
+                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            <Bookmark className={`w-4 h-4 ${doc.favoritedByMe ? "fill-current" : ""}`} />
+            {doc.favoritedByMe ? "Dans ma liste de lecture" : "Ajouter à ma liste"}
           </button>
           {(doc.isOwner || user?.role === "admin") && (
             <WhatsAppPublishButton doc={doc} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-2.5 font-medium text-white transition-colors hover:bg-[#1ebe5b] disabled:cursor-not-allowed disabled:opacity-50" />
@@ -239,13 +324,24 @@ export default function DocumentDetail() {
               Contacter l'auteur
             </button>
           )}
+          {!doc.isOwner && (
+            <button onClick={openReport} className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600">
+              <Flag className="w-4 h-4" />
+              Signaler ce document
+            </button>
+          )}
         </aside>
 
         <main>
           <header className="mb-6">
             <h1 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl md:text-3xl lg:text-4xl">{doc.title}</h1>
             <div className="mb-4 flex flex-wrap items-center gap-3">
-              <p className="text-base text-gray-600 sm:text-lg">par {doc.author_name}</p>
+              <p className="text-base text-gray-600 sm:text-lg">
+                par{" "}
+                <Link to={`/authors/${doc.owner_id}`} className="font-medium text-teal-700 hover:underline">
+                  {doc.author_name}
+                </Link>
+              </p>
               {doc.visibility === "private" && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1 text-xs font-medium text-white">
                   <Lock className="w-3 h-3" />
@@ -265,6 +361,15 @@ export default function DocumentDetail() {
                   {formatCategoryName(doc.category)}
                 </Link>
               )}
+              {(doc.tags || []).map((tag) => (
+                <Link
+                  key={tag}
+                  to={`/documents?tag=${encodeURIComponent(tag)}`}
+                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-teal-700"
+                >
+                  #{tag}
+                </Link>
+              ))}
               <button onClick={like} className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border transition-colors ${doc.likedByMe ? "bg-red-50 text-red-600 border-red-200" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}>
                 <Heart className={`w-4 h-4 ${doc.likedByMe ? "fill-current" : ""}`} />
                 {doc.like_count || 0}
@@ -281,7 +386,9 @@ export default function DocumentDetail() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm text-gray-500">Auteur</p>
-                  <p className="font-medium text-gray-900 break-words">{doc.author_name}</p>
+                  <Link to={`/authors/${doc.owner_id}`} className="font-medium text-teal-700 break-words hover:underline">
+                    {doc.author_name}
+                  </Link>
                 </div>
               </div>
               <div className="flex min-w-0 items-center gap-3">
@@ -395,6 +502,52 @@ export default function DocumentDetail() {
         documentTitle={doc.title}
         authorName={doc.author_name}
       />
+
+      {reportOpen && (
+        <ReportModal
+          documentId={doc.id}
+          targetLabel={doc.title}
+          onClose={() => setReportOpen(false)}
+        />
+      )}
+
+      {shareOpen && (
+        <ShareModal
+          url={`${window.location.origin}/documents/${doc.id}`}
+          title={doc.title}
+          description={doc.description}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
+
+      {creditsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="credits-dialog-title">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-700">
+              <Download className="h-5 w-5" />
+            </div>
+            <h2 id="credits-dialog-title" className="text-lg font-semibold text-gray-900">Crédits insuffisants</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              Chaque document déposé vous offre 2 téléchargements gratuits. Déposez un document pour continuer à télécharger.
+            </p>
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row-reverse">
+              <Link
+                to="/upload"
+                className="inline-flex flex-1 items-center justify-center rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-800"
+              >
+                Déposer un document
+              </Link>
+              <button
+                type="button"
+                onClick={() => setCreditsOpen(false)}
+                className="inline-flex flex-1 items-center justify-center rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {related.length > 0 && (
         <section>

@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   User, Mail, Shield, Coins, AlertCircle, FileText,
   Upload, X, Check, History, Copy, Globe2, Link2, Lock,
-  RotateCw, Share2
+  RotateCw, Share2, Bookmark, Bell, Trash2
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
-import { getMyDocuments, getMyCredits, updateMyProfile } from "../api/users";
+import { getMyDocuments, getMyCredits, getMyFavorites, updateMyProfile, updateNotificationPreferences, deleteMyAccount } from "../api/users";
+import { getPushConfig, subscribePush, unsubscribePush } from "../api/notifications";
 import {
   updateDocument, deleteDocument, getDocumentShareLink,
   createDocumentShareLink, disableDocumentShare
@@ -17,17 +18,20 @@ import { formatDate } from "../utils/format";
 import { Spinner, EmptyState, Pagination } from "../components/ui";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
+import useSeo from "../hooks/useSeo";
 
 const reasonLabels = {
   initial: "Crédits de bienvenue",
   upload: "Dépôt d'un document",
-  download: "Téléchargement"
+  download: "Téléchargement",
+  admin: "Ajustement administrateur"
 };
 
 function EditDocumentModal({ doc, onClose, onSaved }) {
   const [title, setTitle] = useState(doc.title || "");
   const [description, setDescription] = useState(doc.description || "");
   const [category, setCategory] = useState(doc.category || "");
+  const [tags, setTags] = useState((doc.tags || []).join(", "));
   const [visibility, setVisibility] = useState(doc.visibility || "public");
   const [saving, setSaving] = useState(false);
   const visibilityChanged = visibility !== (doc.visibility || "public");
@@ -46,12 +50,17 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
       toast.error("Le titre est requis");
       return;
     }
+    if (tags.split(",").map((tag) => tag.trim()).filter(Boolean).length > 5) {
+      toast.error("Maximum 5 mots-clés");
+      return;
+    }
     setSaving(true);
     try {
       const res = await updateDocument(doc.id, {
         title: title.trim(),
         description: description.trim(),
         category: category.trim(),
+        tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
         visibility
       });
       toast.success("Document mis à jour");
@@ -60,6 +69,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
         title: res.data.document.title,
         description: res.data.document.description,
         category: res.data.document.category,
+        tags: res.data.document.tags || [],
         visibility: res.data.document.visibility,
         shareEnabled: res.data.document.share_enabled
       });
@@ -103,6 +113,18 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
               placeholder="Éducation, Science..."
             />
+          </div>
+          <div>
+            <label htmlFor="edit-tags" className="block text-sm font-medium text-gray-700 mb-1">Mots-clés</label>
+            <input
+              id="edit-tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              maxLength={240}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
+              placeholder="maths, bac, révision"
+            />
+            <p className="mt-1 text-xs text-gray-400">Jusqu'à 5 mots-clés séparés par des virgules.</p>
           </div>
           <div>
             <span className="block text-sm font-medium text-gray-700 mb-2">Visibilité</span>
@@ -328,12 +350,49 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
   );
 }
 
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i += 1) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+function PreferenceToggle({ label, description, checked, onChange, disabled = false }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className="flex w-full items-start justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50/60 px-3.5 py-3 text-left transition-colors hover:border-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <span className="min-w-0">
+        <span className="block text-sm font-medium text-gray-900">{label}</span>
+        <span className="mt-0.5 block text-xs leading-relaxed text-gray-500">{description}</span>
+      </span>
+      <span className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${checked ? "bg-teal-600" : "bg-gray-300"}`}>
+        <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`} />
+      </span>
+    </button>
+  );
+}
+
 export default function Profile() {
   const { user, setUser } = useAuth();
   const { creditsParUpload } = useSiteSettings();
+  const navigate = useNavigate();
   const [docs, setDocs] = useState([]);
   const [docsLoading, setDocsLoading] = useState(true);
   const [docsPage, setDocsPage] = useState(1);
+  const [favorites, setFavorites] = useState([]);
+  const [favoritesLoading, setFavoritesLoading] = useState(true);
+  const [favoritesPage, setFavoritesPage] = useState(1);
+  const [favoritesTotal, setFavoritesTotal] = useState(0);
   const [credits, setCredits] = useState(user?.credits || 0);
   const [history, setHistory] = useState([]);
   const [creditsLoading, setCreditsLoading] = useState(true);
@@ -342,10 +401,58 @@ export default function Profile() {
   const [editingDoc, setEditingDoc] = useState(null);
   const [sharingDoc, setSharingDoc] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [prefs, setPrefs] = useState({
+    notify_email: user?.notify_email ?? true,
+    notify_new_documents: user?.notify_new_documents ?? true,
+    notify_document_updates: user?.notify_document_updates ?? true
+  });
+  const [savingPrefs, setSavingPrefs] = useState(false);
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushConfig, setPushConfig] = useState({ enabled: false, publicKey: null });
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  useSeo({
+    title: "Mon profil",
+    description: "Gérez vos informations, vos documents, vos notifications, votre liste de lecture et vos crédits.",
+    noIndex: true
+  });
 
   useEffect(() => {
     setName(user?.display_name || "");
   }, [user?.display_name]);
+
+  useEffect(() => {
+    setPrefs({
+      notify_email: user?.notify_email ?? true,
+      notify_new_documents: user?.notify_new_documents ?? true,
+      notify_document_updates: user?.notify_document_updates ?? true
+    });
+  }, [user?.notify_email, user?.notify_new_documents, user?.notify_document_updates]);
+
+  useEffect(() => {
+    if (!user) return;
+    const supported = import.meta.env.PROD && "serviceWorker" in navigator && "PushManager" in window && "Notification" in navigator;
+    setPushSupported(supported);
+    if (!supported) return;
+    let active = true;
+    getPushConfig()
+      .then((res) => {
+        if (active) setPushConfig(res.data || { enabled: false, publicKey: null });
+      })
+      .catch(() => {});
+    navigator.serviceWorker.ready
+      .then((registration) => registration.pushManager.getSubscription())
+      .then((subscription) => {
+        if (active) setPushEnabled(Boolean(subscription));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     getMyDocuments()
@@ -362,6 +469,26 @@ export default function Profile() {
       .catch(() => toast.error("Impossible de charger l'historique de crédits"))
       .finally(() => setCreditsLoading(false));
   }, [setUser]);
+
+  useEffect(() => {
+    let active = true;
+    setFavoritesLoading(true);
+    getMyFavorites({ page: favoritesPage, limit: DOCUMENTS_PER_PAGE })
+      .then((res) => {
+        if (!active) return;
+        setFavorites(res.data.documents || []);
+        setFavoritesTotal(res.data.total || 0);
+      })
+      .catch(() => {
+        if (active) toast.error("Impossible de charger votre liste de lecture");
+      })
+      .finally(() => {
+        if (active) setFavoritesLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [favoritesPage]);
 
   const saveName = async (e) => {
     e.preventDefault();
@@ -383,6 +510,87 @@ export default function Profile() {
     }
   };
 
+  const currentPrefs = {
+    notify_email: user?.notify_email ?? true,
+    notify_new_documents: user?.notify_new_documents ?? true,
+    notify_document_updates: user?.notify_document_updates ?? true
+  };
+  const prefsChanged = Object.keys(prefs).some((key) => prefs[key] !== currentPrefs[key]);
+
+  const savePreferences = async () => {
+    setSavingPrefs(true);
+    try {
+      const res = await updateNotificationPreferences(prefs);
+      setUser((current) => (current ? { ...current, ...res.data.user } : current));
+      setPrefs({
+        notify_email: res.data.user.notify_email,
+        notify_new_documents: res.data.user.notify_new_documents,
+        notify_document_updates: res.data.user.notify_document_updates
+      });
+      toast.success("Préférences de notifications enregistrées");
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Impossible d'enregistrer vos préférences");
+    } finally {
+      setSavingPrefs(false);
+    }
+  };
+
+  const togglePush = async (next) => {
+    if (pushBusy) return;
+    setPushBusy(true);
+    try {
+      if (!next) {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          await unsubscribePush({ endpoint: subscription.endpoint });
+          await subscription.unsubscribe();
+        }
+        setPushEnabled(false);
+        toast.success("Notifications push désactivées");
+        return;
+      }
+
+      if (Notification.permission === "denied") {
+        toast.error("Les notifications sont bloquées dans les réglages de votre navigateur");
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        toast.error("Autorisation de notifications refusée");
+        return;
+      }
+
+      let currentConfig = pushConfig;
+      if (!currentConfig.enabled) {
+        const res = await getPushConfig();
+        currentConfig = res.data || { enabled: false, publicKey: null };
+        setPushConfig(currentConfig);
+      }
+      if (!currentConfig.enabled || !currentConfig.publicKey) {
+        toast.error("Les notifications push ne sont pas configurées sur ce serveur");
+        return;
+      }
+
+      const registration = await navigator.serviceWorker.ready;
+      let subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(currentConfig.publicKey)
+        });
+      }
+      const raw = subscription.toJSON();
+      await subscribePush({ endpoint: raw.endpoint, keys: raw.keys });
+      setPushEnabled(true);
+      toast.success("Notifications push activées");
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Impossible de modifier les notifications push");
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
   const removeDoc = async (doc) => {
     if (!window.confirm(`Supprimer « ${doc.title} » ? Cette action est irréversible.`)) return;
     setDeletingId(doc.id);
@@ -401,7 +609,28 @@ export default function Profile() {
     setDocs((list) => list.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)));
   };
 
+  const removeAccount = async (e) => {
+    e.preventDefault();
+    if (!deletePassword) {
+      toast.error("Saisissez votre mot de passe");
+      return;
+    }
+    if (!window.confirm("Supprimer définitivement votre compte, vos documents et vos données ? Cette action est irréversible.")) return;
+    setDeletingAccount(true);
+    try {
+      await deleteMyAccount({ password: deletePassword });
+      setUser(null);
+      toast.success("Votre compte a été supprimé");
+      navigate("/");
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Impossible de supprimer le compte");
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
   const docsTotalPages = Math.max(1, Math.ceil(docs.length / DOCUMENTS_PER_PAGE));
+  const favoritesTotalPages = Math.max(1, Math.ceil(favoritesTotal / DOCUMENTS_PER_PAGE));
   const currentDocsPage = Math.min(docsPage, docsTotalPages);
   const pagedDocs = docs.slice(
     (currentDocsPage - 1) * DOCUMENTS_PER_PAGE,
@@ -414,6 +643,11 @@ export default function Profile() {
 
   const goToDocsPage = (p) => {
     setDocsPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const goToFavoritesPage = (p) => {
+    setFavoritesPage(p);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -466,6 +700,44 @@ export default function Profile() {
             {docsTotalPages > 1 && (
               <div className="mt-5">
                 <Pagination page={currentDocsPage} totalPages={docsTotalPages} onPageChange={goToDocsPage} />
+              </div>
+            )}
+          </section>
+
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                  <Bookmark className="h-4 w-4 text-amber-600" />
+                  Ma liste de lecture
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {favoritesTotal} document{favoritesTotal > 1 ? "s" : ""} enregistré{favoritesTotal > 1 ? "s" : ""}
+                </p>
+              </div>
+            </div>
+
+            {favoritesLoading ? (
+              <div className="flex justify-center py-10"><Spinner size="lg" /></div>
+            ) : favorites.length === 0 ? (
+              <div className="py-4">
+                <EmptyState message="Votre liste de lecture est vide" icon={Bookmark} />
+                <div className="text-center">
+                  <Link to="/documents" className="text-sm font-medium text-teal-700 hover:underline">
+                    Parcourir la bibliothèque
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-4">
+                {favorites.map((doc) => (
+                  <DocumentCard key={doc.id} doc={doc} />
+                ))}
+              </div>
+            )}
+            {favoritesTotalPages > 1 && (
+              <div className="mt-5">
+                <Pagination page={favoritesPage} totalPages={favoritesTotalPages} onPageChange={goToFavoritesPage} />
               </div>
             )}
           </section>
@@ -540,6 +812,57 @@ export default function Profile() {
           </section>
 
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+            <div className="mb-4">
+              <h2 className="flex items-center gap-2 font-bold text-gray-900">
+                <Bell className="h-4 w-4 text-teal-700" />
+                Notifications
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed text-gray-500">
+                Choisissez comment vous souhaitez être averti.
+              </p>
+            </div>
+            <div className="space-y-2.5">
+              <PreferenceToggle
+                label="Recevoir des e-mails"
+                description="Active ou désactive toutes les notifications par e-mail."
+                checked={prefs.notify_email}
+                onChange={(value) => setPrefs((current) => ({ ...current, notify_email: value }))}
+              />
+              <PreferenceToggle
+                label="Nouveaux documents publics"
+                description="Être averti lorsqu'un document public est publié."
+                checked={prefs.notify_new_documents}
+                disabled={!prefs.notify_email}
+                onChange={(value) => setPrefs((current) => ({ ...current, notify_new_documents: value }))}
+              />
+              <PreferenceToggle
+                label="Confirmation de mes documents privés"
+                description="Recevoir un e-mail après l'ajout de vos propres documents privés."
+                checked={prefs.notify_document_updates}
+                disabled={!prefs.notify_email}
+                onChange={(value) => setPrefs((current) => ({ ...current, notify_document_updates: value }))}
+              />
+              {pushSupported && pushConfig.enabled && (
+                <PreferenceToggle
+                  label="Notifications push"
+                  description="Recevoir des alertes même lorsque l'application est fermée."
+                  checked={pushEnabled}
+                  disabled={pushBusy}
+                  onChange={togglePush}
+                />
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={savePreferences}
+              disabled={savingPrefs || !prefsChanged}
+              className="mt-4 w-full rounded-lg bg-teal-700 px-3 py-2 text-sm font-medium text-white hover:bg-teal-800 disabled:opacity-40"
+            >
+              {savingPrefs ? "Enregistrement..." : "Enregistrer les préférences"}
+            </button>
+          </section>
+
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-gray-900 flex items-center gap-2">
                 <History className="w-4 h-4 text-teal-700" />
@@ -579,6 +902,40 @@ export default function Profile() {
                 ))}
               </ul>
             )}
+          </section>
+
+          <section className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm sm:p-6">
+            <h2 className="flex items-center gap-2 font-bold text-red-700">
+              <Trash2 className="h-4 w-4" />
+              Zone dangereuse
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600">
+              La suppression du compte efface définitivement votre profil, vos documents, vos crédits et vos données associées.
+            </p>
+            <form onSubmit={removeAccount} className="mt-4 space-y-3">
+              <div>
+                <label htmlFor="delete-account-password" className="mb-1 block text-sm font-medium text-gray-700">
+                  Confirmez avec votre mot de passe
+                </label>
+                <input
+                  id="delete-account-password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  disabled={deletingAccount}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:opacity-60"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={deletingAccount || !deletePassword}
+                className="w-full rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-40"
+              >
+                {deletingAccount ? "Suppression..." : "Supprimer définitivement mon compte"}
+              </button>
+            </form>
           </section>
         </aside>
       </div>

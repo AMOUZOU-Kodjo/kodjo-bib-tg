@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import CommentForm from "./CommentForm";
 import CommentList from "./CommentList";
 import { Spinner } from "../ui";
+import ReportModal from "../reports/ReportModal";
 
 const PAGE_SIZE = 10;
 
@@ -19,6 +20,7 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [reportComment, setReportComment] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -128,6 +130,7 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
             isOwner={isOwner}
             onDelete={remove}
             deletingId={deletingId}
+            onReport={setReportComment}
           />
           {comments.length < total && (
             <div className="text-center mt-5">
@@ -142,6 +145,14 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
             </div>
           )}
         </>
+      )}
+
+      {reportComment && (
+        <ReportModal
+          commentId={reportComment.id}
+          targetLabel={reportComment.content}
+          onClose={() => setReportComment(null)}
+        />
       )}
     </section>
   );

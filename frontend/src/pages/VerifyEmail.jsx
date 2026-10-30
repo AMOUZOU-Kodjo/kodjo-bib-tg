@@ -11,6 +11,7 @@ export default function VerifyEmail() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const queryEmail = searchParams.get("email")?.trim().toLowerCase() || "";
@@ -18,6 +19,12 @@ export default function VerifyEmail() {
   const { user, setUser, loading: authLoading } = useAuth();
   const email = location.state?.email || queryEmail || user?.email || "";
   const emailSent = location.state?.emailSent !== false;
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((value) => value - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -50,8 +57,10 @@ export default function VerifyEmail() {
     setResendLoading(true);
     try {
       await resendCode({ email });
+      setCooldown(60);
       toast.success("Nouveau code envoyé");
     } catch (err) {
+      if (err.response?.data?.error?.code === "RATE_LIMIT") setCooldown(60);
       toast.error(err.response?.data?.error?.message || "Erreur");
     } finally {
       setResendLoading(false);
@@ -99,8 +108,8 @@ export default function VerifyEmail() {
           </Button>
         </form>
         <div className="text-center mt-4">
-          <button onClick={resend} disabled={resendLoading} className="text-sm text-primary-600 hover:text-primary-700 disabled:opacity-50">
-            {resendLoading ? "Envoi..." : "Je n'ai pas reçu de code, le renvoyer"}
+          <button onClick={resend} disabled={resendLoading || cooldown > 0} className="text-sm text-primary-600 hover:text-primary-700 disabled:opacity-50">
+            {resendLoading ? "Envoi..." : cooldown > 0 ? `Renvoyer dans ${cooldown} s` : "Je n'ai pas reçu de code, le renvoyer"}
           </button>
         </div>
       </div>

@@ -1,15 +1,16 @@
 import express from "express";
 import crypto from "crypto";
-import { pool, query } from "../config/db.js";
+import { ensureFeatureSchema, pool, query } from "../config/db.js";
 import { authRequired, optionalAuth, requireVerified } from "../middlewares/auth.js";
 import { uploadSingle } from "../middlewares/upload.js";
-import { uploadLimiter, globalLimiter } from "../middlewares/rateLimit.js";
+import { uploadLimiter, contactLimiter } from "../middlewares/rateLimit.js";
 import { uploadRaw, uploadPreview, deleteRaw, deletePreview, getSignedDownloadUrl, getSignedViewUrl, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
 import { addCreditsOnUpload } from "../services/credits.service.js";
 import { sendEmail } from "../services/email.service.js";
 import { buildContactEmail } from "../services/emailTemplates.js";
 import { optimizeDocumentBuffer } from "../services/optimize.service.js";
 import { notifyDocumentUpload } from "../services/notifications.service.js";
+import { notifyFollowersNewDocument } from "../services/notificationCenter.service.js";
 import { streamDocumentFile } from "../services/documentStream.service.js";
 import { createDocumentShareToken, getDocumentShareUrl } from "../services/share.service.js";
 import { config } from "../config/env.js";
@@ -17,6 +18,47 @@ import { getSettings } from "../services/settings.service.js";
 import { suggestCategory } from "../services/categoryClassifier.js";
 
 const router = express.Router();
+
+function asString(value) {
+  return typeof value === "string" ? value : "";
+}
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+router.param("id", (req, res, next, id) => {
+  if (!UUID_RE.test(id)) {
+    return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant invalide" } });
+  }
+  next();
+});
+
+function parseTags(value) {
+  if (value === undefined) return null;
+  let list = value;
+  if (typeof list === "string") {
+    const trimmed = list.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith("[")) {
+      try {
+        list = JSON.parse(trimmed);
+      } catch {
+        list = trimmed.split(",");
+      }
+    } else {
+      list = trimmed.split(",");
+    }
+  }
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  const tags = [];
+  for (const item of list) {
+    const tag = String(item ?? "").trim().toLowerCase().replace(/^#+/, "");
+    if (!tag || tag.length > 30 || seen.has(tag)) continue;
+    seen.add(tag);
+    tags.push(tag);
+    if (tags.length >= 5) break;
+  }
+  return tags;
+}
 
 function getViewerKey(req) {
   const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress || "unknown";
@@ -40,9 +82,13 @@ function isDocumentOwner(doc, user) {
   return Boolean(user && String(user.id) === String(doc.owner_id));
 }
 
-router.get("/meta/categories", globalLimiter, async (req, res, next) => {
+router.get("/meta/categories", optionalAuth, async (req, res, next) => {
   try {
-    const [categoriesRes, totalRes] = await Promise.all([
+    if (!config.publicBrowsing && !req.user) {
+      return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
+    }
+    await ensureFeatureSchema();
+    const [categoriesRes, tagsRes, totalRes] = await Promise.all([
       query(
         `SELECT category, COUNT(*)::int as count
          FROM documents
@@ -50,18 +96,28 @@ router.get("/meta/categories", globalLimiter, async (req, res, next) => {
          GROUP BY category
          ORDER BY count DESC, category ASC`
       ),
+      query(
+        `SELECT t.tag, COUNT(*)::int AS count
+         FROM documents d
+         CROSS JOIN LATERAL unnest(d.tags) AS t(tag)
+         WHERE d.visibility = 'public'
+         GROUP BY t.tag
+         ORDER BY count DESC, t.tag ASC
+         LIMIT 50`
+      ),
       query("SELECT COUNT(*)::int as total FROM documents WHERE visibility = 'public'")
     ]);
-    res.json({ categories: categoriesRes.rows, total: totalRes.rows[0].total });
+    res.json({ categories: categoriesRes.rows, tags: tagsRes.rows, total: totalRes.rows[0].total });
   } catch (err) {
     next(err);
   }
 });
 
-router.post("/suggest-category", authRequired, requireVerified, globalLimiter, async (req, res, next) => {
+router.post("/suggest-category", authRequired, requireVerified, async (req, res, next) => {
   try {
-    const filename = req.body?.filename || req.body?.originalFilename || "";
-    if (!filename) {
+    const rawFilename = req.body?.filename ?? req.body?.originalFilename;
+    const filename = typeof rawFilename === "string" ? rawFilename.slice(0, 300) : "";
+    if (!filename.trim()) {
       return res.json({ suggestedCategory: null });
     }
     const suggestedCategory = suggestCategory(filename);
@@ -71,29 +127,44 @@ router.post("/suggest-category", authRequired, requireVerified, globalLimiter, a
   }
 });
 
-router.get("/", globalLimiter, optionalAuth, async (req, res, next) => {
+router.get("/", optionalAuth, async (req, res, next) => {
   try {
     if (!config.publicBrowsing && !req.user) {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
-    const { q, category, sort = "recent", page = 1, limit = 12 } = req.query;
+    await ensureFeatureSchema();
+    const { q, category, tag, sort = "recent", page = 1, limit = 12 } = req.query;
     const pageNum = Math.min(Math.max(1, Number(page) || 1), 10000);
     const limitNum = Math.min(Math.max(1, Number(limit) || 12), 50);
     const offset = (pageNum - 1) * limitNum;
     let where = ["d.visibility = 'public'"];
     let params = [];
     let idx = 1;
+    let rankParamIndex = null;
     if (q) {
-      where.push(`(d.title ILIKE $${idx} OR d.description ILIKE $${idx} OR u.display_name ILIKE $${idx})`);
-      params.push(`%${String(q).slice(0, 200)}%`);
-      idx++;
+      const term = String(q).slice(0, 200);
+      rankParamIndex = idx;
+      where.push(`(
+        d.search_vector @@ websearch_to_tsquery('french', $${idx})
+        OR d.title ILIKE $${idx + 1}
+        OR d.description ILIKE $${idx + 1}
+        OR u.display_name ILIKE $${idx + 1}
+        OR EXISTS (SELECT 1 FROM unnest(d.tags) AS t(tag) WHERE t.tag ILIKE $${idx + 1})
+      )`);
+      params.push(term, `%${term}%`);
+      idx += 2;
     }
     if (category) {
       where.push(`d.category = $${idx++}`);
       params.push(category);
     }
+    if (tag) {
+      where.push(`d.tags @> ARRAY[$${idx++}]::text[]`);
+      params.push(String(tag).trim().toLowerCase().slice(0, 30));
+    }
     const whereSql = where.length ? "WHERE " + where.join(" AND ") : "";
     let order = "d.created_at DESC";
+    if (rankParamIndex) order = `ts_rank(d.search_vector, websearch_to_tsquery('french', $${rankParamIndex})) DESC, d.created_at DESC`;
     if (sort === "likes") order = "d.like_count DESC, d.created_at DESC";
     if (sort === "views") order = "d.view_count DESC, d.created_at DESC";
     if (sort === "downloads") order = "d.download_count DESC, d.created_at DESC";
@@ -109,7 +180,7 @@ router.get("/", globalLimiter, optionalAuth, async (req, res, next) => {
     const offsetIndex = listIndex;
     listParams.push(limitNum, offset);
 
-    const sql = `SELECT d.id, d.title, d.description, d.category, d.visibility, d.original_filename, d.mime_type, d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.view_count, d.download_count, d.like_count, d.comment_count, d.created_at, u.display_name as author_name, u.id as owner_id${likedSelect}
+    const sql = `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type, d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.view_count, d.download_count, d.like_count, d.comment_count, d.created_at, u.display_name as author_name, u.id as owner_id${likedSelect}
       FROM documents d JOIN users u ON u.id = d.owner_id
       ${whereSql}
       ORDER BY ${order}
@@ -143,18 +214,22 @@ router.get("/", globalLimiter, optionalAuth, async (req, res, next) => {
   }
 });
 
-router.get("/:id", globalLimiter, optionalAuth, async (req, res, next) => {
+router.get("/:id", optionalAuth, async (req, res, next) => {
   try {
     if (!config.publicBrowsing && !req.user) {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
-    const [docRes, likedRes] = await Promise.all([
+    await ensureFeatureSchema();
+    const [docRes, likedRes, favoriteRes] = await Promise.all([
       query(
         `SELECT d.*, u.display_name as author_name, u.id as owner_id FROM documents d JOIN users u ON u.id = d.owner_id WHERE d.id = $1`,
         [req.params.id]
       ),
       req.user
         ? query("SELECT 1 FROM likes WHERE user_id = $1 AND document_id = $2", [req.user.id, req.params.id])
+        : Promise.resolve({ rows: [] }),
+      req.user
+        ? query("SELECT 1 FROM favorites WHERE user_id = $1 AND document_id = $2", [req.user.id, req.params.id])
         : Promise.resolve({ rows: [] })
     ]);
     if (docRes.rows.length === 0) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
@@ -163,6 +238,7 @@ router.get("/:id", globalLimiter, optionalAuth, async (req, res, next) => {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     }
     const likedByMe = likedRes.rows.length > 0;
+    const favoritedByMe = favoriteRes.rows.length > 0;
     const isOwner = isDocumentOwner(d, req.user);
     let thumbnail = null;
     try {
@@ -175,6 +251,7 @@ router.get("/:id", globalLimiter, optionalAuth, async (req, res, next) => {
       document: {
         ...docClean,
         likedByMe,
+        favoritedByMe,
         isOwner,
         thumbnail,
         shareEnabled: share_enabled
@@ -187,8 +264,15 @@ router.get("/:id", globalLimiter, optionalAuth, async (req, res, next) => {
 
 router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("file"), async (req, res, next) => {
   if (!req.file) return res.status(400).json({ error: { code: "NO_FILE", message: "Fichier requis" } });
-  const { title, description, category, visibility = "public" } = req.body;
+  const { visibility = "public" } = req.body;
+  const title = asString(req.body.title).trim();
+  const description = asString(req.body.description).trim();
+  const category = asString(req.body.category).trim();
+  const tags = parseTags(req.body.tags) || [];
   if (!title) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Titre requis" } });
+  if (title.length > 200) return res.status(400).json({ error: { code: "TITLE_TOO_LONG", message: "Le titre ne doit pas dépasser 200 caractères" } });
+  if (description.length > 5000) return res.status(400).json({ error: { code: "DESCRIPTION_TOO_LONG", message: "La description ne doit pas dépasser 5000 caractères" } });
+  if (category.length > 80) return res.status(400).json({ error: { code: "CATEGORY_TOO_LONG", message: "La catégorie ne doit pas dépasser 80 caractères" } });
   if (!["public", "private"].includes(visibility)) {
     return res.status(400).json({ error: { code: "INVALID_VISIBILITY", message: "Visibilité invalide" } });
   }
@@ -210,20 +294,24 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     client = await pool.connect();
     await client.query("BEGIN");
     const docRes = await client.query(
-      `INSERT INTO documents (owner_id, title, description, category, original_filename, mime_type, size_bytes, cloudinary_public_id, cloudinary_resource_type, preview_public_id, visibility)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'raw',$9,$10) RETURNING *`,
-      [req.user.id, title, description || null, category || null, req.file.originalname, req.file.mimetype, optimizedFile.finalSize, uploaded.public_id, preview?.public_id || null, visibility]
+      `INSERT INTO documents (owner_id, title, description, category, original_filename, mime_type, size_bytes, cloudinary_public_id, cloudinary_resource_type, preview_public_id, tags, visibility)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'raw',$9,$10,$11) RETURNING *`,
+      [req.user.id, title, description || null, category || null, req.file.originalname, req.file.mimetype, optimizedFile.finalSize, uploaded.public_id, preview?.public_id || null, tags, visibility]
     );
     const doc = docRes.rows[0];
-    await addCreditsOnUpload(client, req.user.id, doc.id);
+    const credits = await addCreditsOnUpload(client, req.user.id, doc.id);
     await client.query("COMMIT");
     committed = true;
     notifyDocumentUpload({ documentId: doc.id }).catch((err) => {
       console.error("Échec de l'envoi des notifications d'upload:", err.message);
     });
+    notifyFollowersNewDocument({ documentId: doc.id }).catch((err) => {
+      console.error("Échec des notifications aux abonnés:", err.message);
+    });
     res.json({
       ok: true,
       document: doc,
+      credits,
       compression: {
         optimized: optimizedFile.optimized,
         originalSize: optimizedFile.originalSize,
@@ -251,8 +339,21 @@ router.patch("/:id", authRequired, requireVerified, async (req, res, next) => {
     const docRes = await query("SELECT owner_id FROM documents WHERE id = $1", [req.params.id]);
     if (docRes.rows.length === 0) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     if (docRes.rows[0].owner_id !== req.user.id) return res.status(403).json({ error: { code: "FORBIDDEN", message: "Interdit" } });
-    const { title, description, category, visibility } = req.body;
+    const { visibility } = req.body;
+    const title = req.body.title === undefined ? null : asString(req.body.title).trim();
+    const description = req.body.description === undefined ? null : asString(req.body.description).trim();
+    const category = req.body.category === undefined ? null : asString(req.body.category).trim();
+    const tags = parseTags(req.body.tags);
     const nextVisibility = visibility ?? null;
+    if (title !== null && (!title || title.length > 200)) {
+      return res.status(400).json({ error: { code: "INVALID_TITLE", message: "Le titre doit contenir entre 1 et 200 caractères" } });
+    }
+    if (description !== null && description.length > 5000) {
+      return res.status(400).json({ error: { code: "DESCRIPTION_TOO_LONG", message: "La description ne doit pas dépasser 5000 caractères" } });
+    }
+    if (category !== null && category.length > 80) {
+      return res.status(400).json({ error: { code: "CATEGORY_TOO_LONG", message: "La catégorie ne doit pas dépasser 80 caractères" } });
+    }
     if (nextVisibility !== null && !["public", "private"].includes(nextVisibility)) {
       return res.status(400).json({ error: { code: "INVALID_VISIBILITY", message: "Visibilité invalide" } });
     }
@@ -261,12 +362,13 @@ router.patch("/:id", authRequired, requireVerified, async (req, res, next) => {
        SET title = COALESCE($1,title),
            description = COALESCE($2,description),
            category = COALESCE($3,category),
-           visibility = COALESCE($4,visibility),
-           share_enabled = CASE WHEN $4 IS NOT NULL AND $4 <> visibility THEN false ELSE share_enabled END,
-           share_version = CASE WHEN $4 IS NOT NULL AND $4 <> visibility THEN share_version + 1 ELSE share_version END
-       WHERE id = $5
-       RETURNING id, title, description, category, visibility, share_enabled, original_filename, mime_type, size_bytes, created_at`,
-      [title, description, category, nextVisibility, req.params.id]
+           tags = COALESCE($4,tags),
+           visibility = COALESCE($5,visibility),
+           share_enabled = CASE WHEN $5 IS NOT NULL AND $5 <> visibility THEN false ELSE share_enabled END,
+           share_version = CASE WHEN $5 IS NOT NULL AND $5 <> visibility THEN share_version + 1 ELSE share_version END
+       WHERE id = $6
+       RETURNING id, title, description, category, tags, visibility, share_enabled, original_filename, mime_type, size_bytes, created_at`,
+      [title, description, category, tags, nextVisibility, req.params.id]
     );
     res.json({ document: up.rows[0] });
   } catch (err) {
@@ -395,6 +497,28 @@ router.post("/:id/view", optionalAuth, async (req, res, next) => {
   }
 });
 
+router.post("/:id/favorite", authRequired, requireVerified, async (req, res, next) => {
+  try {
+    await ensureFeatureSchema();
+    const docRes = await query("SELECT id, owner_id, visibility FROM documents WHERE id = $1", [req.params.id]);
+    if (docRes.rows.length === 0 || !canAccessDocument(docRes.rows[0], req.user)) {
+      return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
+    }
+    const existing = await query(
+      "SELECT 1 FROM favorites WHERE user_id = $1 AND document_id = $2",
+      [req.user.id, req.params.id]
+    );
+    if (existing.rows.length > 0) {
+      await query("DELETE FROM favorites WHERE user_id = $1 AND document_id = $2", [req.user.id, req.params.id]);
+      return res.json({ favorited: false });
+    }
+    await query("INSERT INTO favorites (user_id, document_id) VALUES ($1,$2)", [req.user.id, req.params.id]);
+    res.json({ favorited: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post("/:id/like", authRequired, requireVerified, async (req, res, next) => {
   const client = await pool.connect();
   try {
@@ -429,7 +553,10 @@ router.post("/:id/download", authRequired, requireVerified, async (req, res, nex
     await client.query("BEGIN");
     const userRes = await client.query("SELECT id, credits FROM users WHERE id = $1 FOR UPDATE", [req.user.id]);
     const docRes = await client.query("SELECT id, owner_id, visibility, cloudinary_public_id, cloudinary_resource_type, original_filename FROM documents WHERE id = $1", [req.params.id]);
-    if (docRes.rows.length === 0) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
+    if (docRes.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
+    }
     const doc = docRes.rows[0];
     if (!canAccessDocument(doc, req.user)) {
       await client.query("ROLLBACK");
@@ -438,25 +565,25 @@ router.post("/:id/download", authRequired, requireVerified, async (req, res, nex
     if (doc.owner_id === req.user.id || req.user.role === "admin") {
       const url = getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
       await client.query("COMMIT");
-      return res.json({ url });
+      return res.json({ url, credits: userRes.rows[0].credits, charged: false });
     }
     const already = await client.query("SELECT 1 FROM downloads WHERE user_id = $1 AND document_id = $2", [req.user.id, req.params.id]);
     if (already.rows.length > 0) {
       const url = getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
       await client.query("COMMIT");
-      return res.json({ url });
+      return res.json({ url, credits: userRes.rows[0].credits, charged: false });
     }
     if (userRes.rows[0].credits < 1) {
       await client.query("ROLLBACK");
       return res.status(403).json({ error: { code: "INSUFFICIENT_CREDITS", message: "Crédits insuffisants. Déposez un document pour en obtenir." } });
     }
-    await client.query("UPDATE users SET credits = credits - 1 WHERE id = $1", [req.user.id]);
+    const creditRes = await client.query("UPDATE users SET credits = credits - 1 WHERE id = $1 RETURNING credits", [req.user.id]);
     await client.query("INSERT INTO credit_transactions (user_id, delta, reason, document_id) VALUES ($1,-1,'download',$2)", [req.user.id, req.params.id]);
     await client.query("INSERT INTO downloads (user_id, document_id) VALUES ($1,$2)", [req.user.id, req.params.id]);
     await client.query("UPDATE documents SET download_count = download_count + 1 WHERE id = $1", [req.params.id]);
-    await client.query("COMMIT");
     const url = getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
-    res.json({ url });
+    await client.query("COMMIT");
+    res.json({ url, credits: creditRes.rows[0].credits, charged: true });
   } catch (err) {
     await client.query("ROLLBACK");
     next(err);
@@ -498,11 +625,12 @@ router.get("/:id/view-file", authRequired, requireVerified, async (req, res, nex
   }
 });
 
-router.post("/:id/contact", authRequired, requireVerified, async (req, res, next) => {
+router.post("/:id/contact", authRequired, requireVerified, contactLimiter, async (req, res, next) => {
   try {
-    const { subject, message } = req.body;
-    if (!subject || !message) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    if (String(subject).length > 150 || String(message).length > 3000) {
+    const safeSubject = asString(req.body.subject).replace(/[\r\n]+/g, " ").trim();
+    const message = asString(req.body.message).trim();
+    if (!safeSubject || !message) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
+    if (safeSubject.length > 150 || message.length > 3000) {
       return res.status(400).json({ error: { code: "TOO_LONG", message: "Contenu trop long" } });
     }
     const docRes = await query("SELECT id, owner_id, visibility, title FROM documents WHERE id = $1", [req.params.id]);
@@ -515,7 +643,6 @@ router.post("/:id/contact", authRequired, requireVerified, async (req, res, next
 
     const from = fromRes.rows[0];
     const owner = ownerRes.rows[0];
-    const safeSubject = String(subject).replace(/[\r\n]+/g, " ").trim();
     const settings = await getSettings();
     const { html, text } = buildContactEmail({
       intro: `Vous avez reçu un nouveau message concernant votre document « ${doc.title} ».`,

@@ -11,7 +11,11 @@ export default function MentionsLegales() {
           éditée à but non lucratif. Le responsable de la publication est l'équipe {siteName}.
         </p>
         <p>
-          Contact : <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>
+          Contact : {contactEmail ? (
+            <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>
+          ) : (
+            "via le formulaire de contact"
+          )}
         </p>
       </LegalSection>
 
@@ -36,8 +40,12 @@ export default function MentionsLegales() {
         </p>
         <p>
           Toute reproduction ou réutilisation non autorisée d'un document est interdite. Pour signaler
-          un contenu portant atteinte à vos droits, écrivez à{" "}
-          <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>.
+          un contenu portant atteinte à vos droits,{" "}
+          {contactEmail ? (
+            <>écrivez à <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>.</>
+          ) : (
+            "utilisez le formulaire de contact."
+          )}
         </p>
       </LegalSection>
 

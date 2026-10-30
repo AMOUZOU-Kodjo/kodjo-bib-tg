@@ -4,6 +4,7 @@ import { Upload, Search, ArrowRight, CheckCircle } from "lucide-react";
 import heroImg from "../assets/hero.jpg";
 import { getDocuments } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
+import useSeo from "../hooks/useSeo";
 
 function DocumentSection({ title, subtitle, docs, to = "/documents" }) {
   if (!docs.length) return null;
@@ -32,6 +33,12 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState([]);
   const [popular, setPopular] = useState([]);
+
+  useSeo({
+    title: "Bibliothèque numérique collaborative",
+    description: "Déposez, archivez et partagez gratuitement vos documents. Découvrez des ressources utiles et contribuez à une bibliothèque numérique collaborative.",
+    url: `${window.location.origin}/`
+  });
 
   useEffect(() => {
     let active = true;

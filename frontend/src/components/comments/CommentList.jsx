@@ -1,7 +1,7 @@
-import { Trash2, MessageSquare } from "lucide-react";
+import { Trash2, MessageSquare, Flag } from "lucide-react";
 import { formatDate } from "../../utils/format";
 
-export default function CommentList({ comments, currentUserId, isOwner, onDelete, deletingId }) {
+export default function CommentList({ comments, currentUserId, isOwner, onDelete, deletingId, onReport }) {
   if (comments.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8 flex flex-col items-center gap-2">
@@ -26,17 +26,29 @@ export default function CommentList({ comments, currentUserId, isOwner, onDelete
                   <span className="text-sm font-semibold text-gray-900 truncate">{comment.author_name}</span>
                   <span className="text-xs text-gray-400 shrink-0">{formatDate(comment.created_at)}</span>
                 </div>
-                {canDelete && (
-                  <button
-                    onClick={() => onDelete(comment.id)}
-                    disabled={deletingId === comment.id}
-                    className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 shrink-0"
-                    aria-label="Supprimer le commentaire"
-                    title="Supprimer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
+                <div className="flex shrink-0 items-center gap-0.5">
+                  {onReport && currentUserId && comment.user_id !== currentUserId && (
+                    <button
+                      onClick={() => onReport(comment)}
+                      className="p-1.5 rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                      aria-label="Signaler le commentaire"
+                      title="Signaler"
+                    >
+                      <Flag className="w-4 h-4" />
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => onDelete(comment.id)}
+                      disabled={deletingId === comment.id}
+                      className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                      aria-label="Supprimer le commentaire"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
               <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words mt-1">
                 {comment.content}

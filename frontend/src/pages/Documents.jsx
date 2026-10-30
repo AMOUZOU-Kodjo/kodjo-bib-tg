@@ -2,14 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getDocuments, getDocumentCategories } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
-import { Search, FileText } from "lucide-react";
+import { Search, FileText, Tag } from "lucide-react";
 import { Input, Spinner, EmptyState, Pagination } from "../components/ui";
 import { formatCategoryName } from "../utils/document";
 import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
+import useSeo from "../hooks/useSeo";
 
 export default function Documents() {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") || "";
+  const tagParam = searchParams.get("tag") || "";
   const pageParam = Number(searchParams.get("page")) || 1;
   const qParam = searchParams.get("q") || "";
   const sortParam = searchParams.get("sort");
@@ -20,17 +22,26 @@ export default function Documents() {
   const [search, setSearch] = useState(qParam);
   const [sort, setSort] = useState(validSorts.includes(sortParam) ? sortParam : "recent");
   const [categories, setCategories] = useState([]);
+  const [tagOptions, setTagOptions] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(pageParam);
+
+  useSeo({
+    title: "Bibliothèque numérique",
+    description: `${total} documents disponibles à consulter et télécharger gratuitement. Explorez les catégories et les nouveautés de la bibliothèque.`,
+    url: `${window.location.origin}/documents`
+  });
 
   useEffect(() => {
     getDocumentCategories()
       .then((res) => {
         setCategories(res.data.categories || []);
+        setTagOptions(res.data.tags || []);
         setTotal(res.data.total || 0);
       })
       .catch(() => {
         setCategories([]);
+        setTagOptions([]);
         setTotal(0);
       });
   }, []);
@@ -49,14 +60,14 @@ export default function Documents() {
 
   useEffect(() => {
     setLoading(true);
-    getDocuments({ q: search, category: categoryParam || undefined, sort, page, limit: DOCUMENTS_PER_PAGE })
+    getDocuments({ q: search, category: categoryParam || undefined, tag: tagParam || undefined, sort, page, limit: DOCUMENTS_PER_PAGE })
       .then((res) => {
         setDocs(res.data.documents || []);
         if (res.data.total !== undefined) setTotal(res.data.total);
       })
       .catch(() => setDocs([]))
       .finally(() => setLoading(false));
-  }, [search, categoryParam, sort, page]);
+  }, [search, categoryParam, tagParam, sort, page]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -72,6 +83,15 @@ export default function Documents() {
     const next = new URLSearchParams(searchParams);
     if (cat) next.set("category", cat);
     else next.delete("category");
+    next.set("page", "1");
+    setSearchParams(next);
+    setPage(1);
+  };
+
+  const setTag = (tag) => {
+    const next = new URLSearchParams(searchParams);
+    if (tag) next.set("tag", tag);
+    else next.delete("tag");
     next.set("page", "1");
     setSearchParams(next);
     setPage(1);
@@ -99,7 +119,7 @@ export default function Documents() {
           <div className="relative max-w-xl">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
-              placeholder="Chercher"
+              placeholder="Rechercher un titre, un auteur, un mot-clé..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -128,6 +148,34 @@ export default function Documents() {
           </button>
         ))}
       </nav>
+
+      {tagOptions.length > 0 && (
+        <nav className="-mx-4 mb-8 flex items-center gap-2 overflow-x-auto px-4 pb-2 sm:-mx-1 sm:px-1">
+          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-gray-500">
+            <Tag className="h-3.5 w-3.5" />
+            Mots-clés
+          </span>
+          {tagParam && (
+            <button
+              onClick={() => setTag("")}
+              className="whitespace-nowrap rounded-full bg-teal-700 px-3 py-1.5 text-xs font-medium text-white"
+            >
+              #{tagParam} ×
+            </button>
+          )}
+          {tagOptions
+            .filter((item) => item.tag !== tagParam)
+            .map((item) => (
+              <button
+                key={item.tag}
+                onClick={() => setTag(item.tag)}
+                className="whitespace-nowrap rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200"
+              >
+                #{item.tag} {item.count}
+              </button>
+            ))}
+        </nav>
+      )}
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold text-gray-900">À la une</h2>
