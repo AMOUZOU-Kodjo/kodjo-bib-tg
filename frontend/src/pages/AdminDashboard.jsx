@@ -568,13 +568,18 @@ export default function AdminDashboard() {
                 )}
                 {users.slice(0, 5).map(u => (
                   <div key={u.id} className="flex items-center justify-between gap-3 py-2 border-b border-gray-50 last:border-0">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="truncate font-medium text-gray-900">{u.display_name}</p>
                       <p className="truncate text-sm text-gray-500">{u.email}</p>
+                      <p className="truncate text-sm text-gray-500">{u.role}</p>
+                      <p className="truncate text-sm text-gray-500">{u.credits}</p>
+                      <p className="truncate text-sm text-gray-500">{u.email_verified ? "Oui" : "Non"}</p>
+                      <p className="truncate text-sm text-gray-500">{u.created_at ? u.created_at.slice(0,10) : ""}</p>
                     </div>
-                    <span className={`shrink-0 px-2 py-1 rounded-full text-xs ${u.role === 'admin' ? 'bg-red-50 text-red-700' : 'bg-gray-50 text-gray-700'}`}>
-                      {u.role}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <button className="text-xs text-gray-500 underline edit-user" data-id={u.id}>Modifier</button>
+                      <button className="text-xs text-gray-500 delete-user" data-id={u.id}>Supprimer</button>
+                    </div>
                   </div>
                 ))}
               </div>
