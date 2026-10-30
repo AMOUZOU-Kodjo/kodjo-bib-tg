@@ -5,17 +5,20 @@ import App from "./App.jsx";
 import "./index.css";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { Toaster } from "react-hot-toast";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <SiteSettingsProvider>
-        <AuthProvider>
-          <App />
-          <Toaster />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </ThemeProvider>
       </SiteSettingsProvider>
+      <Toaster />
     </BrowserRouter>
   </React.StrictMode>
 );
