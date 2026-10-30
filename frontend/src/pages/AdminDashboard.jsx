@@ -602,184 +602,95 @@ export default function AdminDashboard() {
 
       {activeTab === "users" && (
         <Card className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-            <h2 className="text-lg font-semibold flex items-center gap-2 sm:text-xl">
-              <Users className="w-5 h-5" />
-              Gestion des utilisateurs ({filteredUsers.length})
-            </h2>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-              <button
-                onClick={() => handleExport("users")}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                <Download className="h-4 w-4" />
-                Exporter CSV
-              </button>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input placeholder="Rechercher..." value={searchUser} onChange={(e) => setSearchUser(e.target.value)} className="pl-9" />
-              </div>
-            </div>
-          </div>
-          <div className="hidden overflow-x-auto lg:block">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Utilisateur</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Email</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Rôle</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Crédits</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Vérifié</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Inscrit le</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-600">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map(u => (
-                  <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium">{u.display_name}</td>
-                    <td className="py-3 px-4 text-gray-600">{u.email}</td>
-                    <td className="py-3 px-4">
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleUpdateUser(u.id, { role: e.target.value })}
-                        disabled={u.id === currentUser?.id}
-                        title={u.id === currentUser?.id ? "Vous ne pouvez pas modifier votre propre rôle" : "Modifier le rôle"}
-                        className="px-2 py-1 border border-gray-200 rounded text-sm disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
-                      >
-                        <option value="user">user</option>
-                        <option value="admin">admin</option>
-                      </select>
-                    </td>
-                    <td className="py-3 px-4">
-                      <input
-                        key={`${u.id}-${u.credits}`}
-                        type="number"
-                        min="0"
-                        max="1000000"
-                        defaultValue={u.credits}
-                        onBlur={(e) => handleUpdateCredits(u, e.target.value)}
-                        title="Modifier les crédits"
-                        className="w-24 px-2 py-1 border border-gray-200 rounded text-sm"
-                      />
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-1 rounded-full text-xs ${u.email_verified ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
-                        {u.email_verified ? 'Oui' : 'Non'}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-500">{formatDate(u.created_at)}</td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => handleToggleVerified(u)}
-                          disabled={u.id === currentUser?.id}
-                          title={u.email_verified ? "Retirer la vérification" : "Marquer comme vérifié"}
-                          aria-label={u.email_verified ? "Retirer la vérification" : "Marquer comme vérifié"}
-                          className={`p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                            u.email_verified ? "text-amber-600 hover:bg-amber-50" : "text-green-600 hover:bg-green-50"
-                          }`}
-                        >
-                          {u.email_verified ? <MailX className="w-4 h-4" /> : <MailCheck className="w-4 h-4" />}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteUser(u)}
-                          disabled={u.id === currentUser?.id}
-                          title={u.id === currentUser?.id ? "Vous ne pouvez pas supprimer votre propre compte" : "Supprimer cet utilisateur"}
-                          aria-label="Supprimer cet utilisateur"
-                          className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {!loading && filteredUsers.length === 0 && (
-                  <tr>
-                    <td colSpan="7" className="py-8 text-center text-sm text-gray-500">
-                      Aucun utilisateur trouvé.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:hidden">
-            {filteredUsers.map(u => (
-              <article key={u.id} className="rounded-xl border border-gray-100 bg-white p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-gray-900">{u.display_name}</p>
-                    <p className="break-all text-xs text-gray-500">{u.email}</p>
-                  </div>
-                  <span className={`shrink-0 rounded-full px-2 py-1 text-xs ${u.email_verified ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
-                    {u.email_verified ? 'Vérifié' : 'Non vérifié'}
-                  </span>
-                </div>
-
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <label className="text-xs font-medium text-gray-500">
-                    Rôle
-                    <select
-                      value={u.role}
-                      onChange={(e) => handleUpdateUser(u.id, { role: e.target.value })}
-                      disabled={u.id === currentUser?.id}
-                      title={u.id === currentUser?.id ? "Vous ne pouvez pas modifier votre propre rôle" : "Modifier le rôle"}
-                      className="mt-1 w-full rounded-lg border border-gray-200 px-2 py-2 text-sm text-gray-700 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
-                    >
-                      <option value="user">user</option>
-                      <option value="admin">admin</option>
-                    </select>
-                  </label>
-                  <label className="text-xs font-medium text-gray-500">
-                    Crédits
-                    <input
-                      key={`mobile-${u.id}-${u.credits}`}
-                      type="number"
-                      min="0"
-                      max="1000000"
-                      defaultValue={u.credits}
-                      onBlur={(e) => handleUpdateCredits(u, e.target.value)}
-                      title="Modifier les crédits"
-                      className="mt-1 w-full rounded-lg border border-gray-200 px-2 py-2 text-sm text-gray-700"
-                    />
-                  </label>
-                </div>
-
-                <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-3">
-                  <span className="text-xs text-gray-500">Inscrit le {formatDate(u.created_at)}</span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => handleToggleVerified(u)}
-                      disabled={u.id === currentUser?.id}
-                      title={u.email_verified ? "Retirer la vérification" : "Marquer comme vérifié"}
-                      aria-label={u.email_verified ? "Retirer la vérification" : "Marquer comme vérifié"}
-                      className={`rounded-lg p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
-                        u.email_verified ? "text-amber-600 hover:bg-amber-50" : "text-green-600 hover:bg-green-50"
-                      }`}
-                    >
-                      {u.email_verified ? <MailX className="w-4 h-4" /> : <MailCheck className="w-4 h-4" />}
-                    </button>
-                    <button
-                      onClick={() => handleDeleteUser(u)}
-                      disabled={u.id === currentUser?.id}
-                      title={u.id === currentUser?.id ? "Vous ne pouvez pas supprimer votre propre compte" : "Supprimer cet utilisateur"}
-                      aria-label="Supprimer cet utilisateur"
-                      className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-30"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-            {!loading && filteredUsers.length === 0 && (
-              <p className="col-span-full py-8 text-center text-sm text-gray-500">Aucun utilisateur trouvé.</p>
-            )}
-          </div>
-        </Card>
+  <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 sm:text-xl">
+    <Settings className="w-5 h-5" />
+    Paramètres du site
+  </h2>
+  <p className="text-sm text-gray-600 mb-6">
+    Ces réglages sont enregistrés en base et appliqués immédiatement à la plateforme et aux e-mails.
+  </p>
+  <form onSubmit={handleSaveSettings} className="space-y-6">
+    <div>
+      <h3 className="font-medium mb-2">Informations générales</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Nom du site</label>
+          <Input
+            value={settings.siteName}
+            onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+            maxLength={60}
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1">Nom affiché sur la plateforme et les e‑mails.</p>
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Email de contact</label>
+          <Input
+            type="email"
+            value={settings.contactEmail || ""}
+            onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
+            required
+            aria-describedby="contact-help"
+          />
+          <p id="contact-help" className="text-xs text-gray-500 mt-1">
+            Doit être une adresse email valide. Laisser vide pour utiliser l’expéditeur par défaut de Brevo.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3 className="font-medium mb-2">Fichiers</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Taille maximale par fichier (Mo)</label>
+          <Input
+            type="number"
+            min="1"
+            max="100"
+            value={settings.maxUploadSizeMb}
+            onChange={(e) => setSettings({ ...settings, maxUploadSizeMb: e.target.value })}
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Limite appliquée lors du dépôt, entre 1 et 100 Mo. Avec l’offre Cloudinary gratuite, les fichiers non‑image sont limités à 10 Mo.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3 className="font-medium mb-2">Crédits</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Crédits initiaux</label>
+          <Input
+            type="number"
+            min="0"
+            max="1000"
+            value={settings.creditsInitiaux}
+            onChange={(e) => setSettings({ ...settings, creditsInitiaux: e.target.value })}
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1">Attribués à chaque nouveau compte.</p>
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Crédits par upload</label>
+          <Input
+            type="number"
+            min="0"
+            max="1000"
+            value={settings.creditsParUpload}
+            onChange={(e) => setSettings({ ...settings, creditsParUpload: e.target.value })}
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1">Gagnés à chaque document déposé.</p>
+        </div>
+      </div>
+    </div>
+    <Button type="submit" disabled={savingSettings}>
+      {savingSettings ? "Enregistrement..." : "Enregistrer les paramètres"}
+    </Button>
+  </form>
+</Card>
       )}
 
       {activeTab === "documents" && (
