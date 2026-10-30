@@ -605,98 +605,88 @@ export default function AdminDashboard() {
         </>
       )}
 
-      {activeTab === "users" && (
+{activeTab === "users" && (
         <Card className="p-4 sm:p-6">
   <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 sm:text-xl">
-    <Settings className="w-5 h-5" />
-    Paramètres du site
+    <Users className="w-5 h-5" />
+    Gestion des utilisateurs
   </h2>
-  <p className="text-sm text-gray-600 mb-6">
-    Ces réglages sont enregistrés en base et appliqués immédiatement à la plateforme et aux e-mails.
+  <p className="text-sm text-gray-600 mb-4">
+    Gérer les utilisateurs du site.
   </p>
-  <form onSubmit={handleSaveSettings} className="space-y-6">
-    <div>
-      <h3 className="font-medium mb-2">Informations générales</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Nom du site</label>
-          <Input
-            value={settings.siteName}
-            onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
-            maxLength={60}
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">Nom affiché sur la plateforme et les e‑mails.</p>
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Email de contact</label>
-          <Input
-            type="email"
-            value={settings.contactEmail || ""}
-            onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
-            required
-            aria-describedby="contact-help"
-          />
-          <p id="contact-help" className="text-xs text-gray-500 mt-1">
-            Doit être une adresse email valide. Laisser vide pour utiliser l’expéditeur par défaut de Brevo.
-          </p>
-        </div>
-      </div>
-    </div>
-    <div>
-      <h3 className="font-medium mb-2">Fichiers</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Taille maximale par fichier (Mo)</label>
-          <Input
-            type="number"
-            min="1"
-            max="100"
-            value={settings.maxUploadSizeMb}
-            onChange={(e) => setSettings({ ...settings, maxUploadSizeMb: e.target.value })}
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Limite appliquée lors du dépôt, entre 1 et 100 Mo. Avec l’offre Cloudinary gratuite, les fichiers non‑image sont limités à 10 Mo.
-          </p>
-        </div>
-      </div>
-    </div>
-    <div>
-      <h3 className="font-medium mb-2">Crédits</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Crédits initiaux</label>
-          <Input
-            type="number"
-            min="0"
-            max="1000"
-            value={settings.creditsInitiaux}
-            onChange={(e) => setSettings({ ...settings, creditsInitiaux: e.target.value })}
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">Attribués à chaque nouveau compte.</p>
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Crédits par upload</label>
-          <Input
-            type="number"
-            min="0"
-            max="1000"
-            value={settings.creditsParUpload}
-            onChange={(e) => setSettings({ ...settings, creditsParUpload: e.target.value })}
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">Gagnés à chaque document déposé.</p>
-        </div>
-      </div>
-    </div>
-    <Button type="submit" disabled={savingSettings}>
-      {savingSettings ? "Enregistrement..." : "Enregistrer les paramètres"}
+  <div className="mb-4 flex items-center gap-2">
+    <Input
+      placeholder="Rechercher un utilisateur..."
+      value={searchUser}
+      onChange={(e) => setSearchUser(e.target.value)}
+      className="flex-1 rounded-l border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:outline-none"
+    />
+    <Button variant="secondary" onClick={() => setSearchUser("")}>
+      <RefreshCw className="w-4 h-4" />
+      Reset
     </Button>
-  </form>
+  </div>
+  <div className="overflow-x-auto">
+    <table className="w-full min-w-max rounded-lg border border-gray-200">
+      <thead>
+        <tr className="border-b border-gray-200 bg-gray-50 text-sm text-gray-600 uppercase">
+          <th className="p-3 text-left">Nom</th>
+          <th className="p-3 text-left">Email</th>
+          <th className="p-3 text-left">Rôle</th>
+          <th className="p-3 text-left">Crédits</th>
+          <th className="p-3 text-left">Vérifié</th>
+          <th className="p-3 text-left">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredUsers.map((u) => (
+          <tr key={u.id} className="border-b border-gray-100 hover:bg-gray-50">
+            <td className="p-3 font-medium text-gray-900">{u.display_name}</td>
+            <td className="p-3 text-gray-600 truncate">{u.email}</td>
+            <td className="p-3 text-gray-500">{u.role}</td>
+            <td className="p-3 text-gray-600">{u.credits}</td>
+            <td className="p-3">
+              <Button
+                size="sm"
+                variant={u.email_verified ? "default" : "secondary"}
+                onClick={() => handleToggleVerified(u)}
+              >
+                {u.email_verified ? "Non vérifié" : "Vérifié"}
+              </Button>
+            </td>
+            <td className="p-3">
+              <div className="flex gap-1.5">
+                <Button
+                  size="sm"
+                  variant="link"
+                  className="text-blue-600 hover:text-blue-900"
+                  onClick={() => alert("Modifier l'utilisateur " + u.display_name)}
+                >
+                  Modifier
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDeleteUser(u)}
+                >
+                  Supprimer
+                </Button>
+              </div>
+            </td>
+          </tr>
+        ))}
+        {filteredUsers.length === 0 && (
+          <tr>
+            <td colSpan={6} className="p-6 text-center text-gray-500">
+              Aucun utilisateur trouvé.
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
 </Card>
-      )}
+)}
 
       {activeTab === "documents" && (
         <Card className="p-4 sm:p-6">
