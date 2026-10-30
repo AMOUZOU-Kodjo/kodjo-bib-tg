@@ -105,8 +105,8 @@ export default function Documents() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const featured = useMemo(() => docs.slice(0, 3), [docs]);
-  const list = useMemo(() => (docs.length > 3 ? docs.slice(3) : []), [docs]);
+  const featured = useMemo(() => docs.slice(0, 5), [docs]);
+  const list = useMemo(() => (docs.length > 5 ? docs.slice(5) : []), [docs]);
 
   const totalPages = Math.max(1, Math.ceil(total / DOCUMENTS_PER_PAGE));
 
@@ -209,7 +209,7 @@ export default function Documents() {
         <>
           {featured.length > 0 && (
             <section className="mb-10">
-              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
                 {featured.map((doc) => (
                   <DocumentCard key={doc.id} doc={doc} />
                 ))}

@@ -19,7 +19,7 @@ function DocumentSection({ title, subtitle, docs, to = "/documents" }) {
           Tout voir <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
-      <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
         {docs.map((doc) => (
           <DocumentCard key={doc.id} doc={doc} />
         ))}
@@ -43,8 +43,8 @@ export default function Home() {
   useEffect(() => {
     let active = true;
     Promise.all([
-      getDocuments({ sort: "recent", limit: 6 }),
-      getDocuments({ sort: "views", limit: 6 })
+      getDocuments({ sort: "recent", limit: 5 }),
+      getDocuments({ sort: "views", limit: 5 })
     ])
       .then(([recentRes, popularRes]) => {
         if (!active) return;
