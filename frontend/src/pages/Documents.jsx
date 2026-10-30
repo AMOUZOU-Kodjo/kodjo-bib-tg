@@ -5,8 +5,9 @@ import { DocumentCard } from "../components/documents/DocumentCard";
 import { Search, FileText, Tag } from "lucide-react";
 import { Input, Spinner, EmptyState, Pagination } from "../components/ui";
 import { formatCategoryName } from "../utils/document";
-import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 import useSeo from "../hooks/useSeo";
+
+const CATALOG_DOCUMENTS_PER_PAGE = 15;
 
 export default function Documents() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -60,7 +61,7 @@ export default function Documents() {
 
   useEffect(() => {
     setLoading(true);
-    getDocuments({ q: search, category: categoryParam || undefined, tag: tagParam || undefined, sort, page, limit: DOCUMENTS_PER_PAGE })
+    getDocuments({ q: search, category: categoryParam || undefined, tag: tagParam || undefined, sort, page, limit: CATALOG_DOCUMENTS_PER_PAGE })
       .then((res) => {
         setDocs(res.data.documents || []);
         if (res.data.total !== undefined) setTotal(res.data.total);
@@ -108,7 +109,7 @@ export default function Documents() {
   const featured = useMemo(() => docs.slice(0, 5), [docs]);
   const list = useMemo(() => (docs.length > 5 ? docs.slice(5) : []), [docs]);
 
-  const totalPages = Math.max(1, Math.ceil(total / DOCUMENTS_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(total / CATALOG_DOCUMENTS_PER_PAGE));
 
   return (
     <div>
