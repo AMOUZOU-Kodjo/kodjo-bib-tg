@@ -36,6 +36,12 @@ export default function AdminDashboard() {
   const [auditRefresh, setAuditRefresh] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
   const [searchUser, setSearchUser] = useState("");
+  const [editUserId, setEditUserId] = useState(null);
+  const [editDisplayName, setEditDisplayName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editRole, setEditRole] = useState("membre");
+  const [editEmailVerified, setEditEmailVerified] = useState("non");
+  const [editCredits, setEditCredits] = useState(0);
   const [searchDoc, setSearchDoc] = useState("");
   const [settings, setSettings] = useState({
     siteName: "Archives",
@@ -660,7 +666,7 @@ export default function AdminDashboard() {
                   size="sm"
                   variant="link"
                   className="text-blue-600 hover:text-blue-900"
-                  onClick={() => alert("Modifier l'utilisateur " + u.display_name)}
+                  onClick={() => setEditUserId(u.id)}
                 >
                   Modifier
                 </Button>
@@ -686,6 +692,97 @@ export default function AdminDashboard() {
     </table>
   </div>
 </Card>
+)}
+
+useEffect(() => {
+    if (!editUserId) return;
+    const user = users.find((u) => u.id === editUserId);
+    if (user) {
+      setEditDisplayName(user.display_name);
+      setEditEmail(user.email);
+      setEditRole(user.role || "membre");
+      setEditCredits(user.credits || 0);
+      setEditEmailVerified(user.email_verified ? "oui" : "non");
+    }
+  }, [editUserId]),
+  {editUserId && (
+  <Card className="p-4 sm:p-6">
+    <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 sm:text-xl">
+      <Users className="w-5 h-5" />
+      Modifier l'utilisateur
+    </h2>
+    <p className="text-sm text-gray-600 mb-4">
+      Modifiez les informations de l'utilisateur.
+    </p>
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      if (!editUserId) return;
+      const user = filteredUsers.find((u) => u.id === editUserId);
+      if (!user) return;
+      handleUpdateUser(editUserId, {
+        display_name: editDisplayName,
+        email: editEmail,
+        role: editRole,
+        credits: Number(editCredits) || 0,
+        email_verified: editEmailVerified === "oui",
+      });
+      setEditUserId(null);
+    }}>
+      <Input
+        placeholder="Nom complet"
+        value={editDisplayName || ""}
+        onChange={(e) => setEditDisplayName(e.target.value)}
+        required
+      />
+      <Input
+        type="email"
+        placeholder="Email"
+        value={editEmail || ""}
+        onChange={(e) => setEditEmail(e.target.value)}
+        required
+      />
+      <Select
+        value={editRole || "membre"}
+        onChange={(e) => setEditRole(e.target.value)}
+      >
+        <option value="membre">Membre</option>
+        <option value="admin">Admin</option>
+      </Select>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">
+            <input
+              type="radio"
+              name="email_verified"
+              checked={editEmailVerified === "oui"}
+              onChange={() => setEditEmailVerified("oui")}
+              className="rounded border-gray-300 px-2 py-1"
+            />
+            Oui
+          </label>
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">
+            <input
+              type="radio"
+              name="email_verified"
+              checked={editEmailVerified === "non"}
+              onChange={() => setEditEmailVerified("non")}
+              className="rounded border-gray-300 px-2 py-1"
+            />
+            Non
+          </label>
+        </div>
+      </div>
+      <Button type="submit">Enregistrer</Button>
+      <Button
+        variant="link"
+        onClick={() => setEditUserId(null)}
+      >
+        Annuler
+      </Button>
+    </form>
+  </Card>
 )}
 
       {activeTab === "documents" && (
