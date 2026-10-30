@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { ThemeContext, useTheme } from "../../context/ThemeContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
 import NotificationBell from "../notifications/NotificationBell";
 import {
   Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X
 } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 
 const desktopLink =
   "inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white";
@@ -106,6 +108,18 @@ export default function Navbar() {
 
           <div className="flex items-center gap-1">
             <NotificationBell />
+<button
+  type="button"
+  onClick={() => {
+    const newTheme = localStorage.theme === "dark" ? "light" : "dark";
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.dataset.theme = newTheme;
+  }}
+  className="flex items-center gap-1 px-2 py-1 rounded-md text-sm text-gray-300 hover:bg-gray-200 transition-colors"
+  aria-label="Basculer le thème">
+  <Moon className="h-4 w-4" />
+  {localStorage.theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+</button>
             <button
               type="button"
               onClick={() => setMenuOpen((open) => !open)}
