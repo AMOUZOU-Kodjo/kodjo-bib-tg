@@ -5,7 +5,7 @@ import InstallPWA from "./InstallPWA";
 import SocialLinks from "./SocialLinks";
 
 export default function Footer() {
-  const { siteName } = useSiteSettings();
+  const { siteName, allowRegistrations } = useSiteSettings();
   const reopenCookies = () => {
     window.dispatchEvent(new Event("open-cookie-consent"));
   };
@@ -73,11 +73,13 @@ export default function Footer() {
                   Connexion
                 </Link>
               </li>
-              <li>
-                <Link to="/register" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  Inscription
-                </Link>
-              </li>
+              {allowRegistrations && (
+                <li>
+                  <Link to="/register" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
+                    Inscription
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link to="/profile" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Mon profil

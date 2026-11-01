@@ -6,6 +6,7 @@ import { authRequired, optionalAuth, requireVerified } from "../middlewares/auth
 import { authLimiter } from "../middlewares/rateLimit.js";
 import { deletePreview, deleteRaw, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
 import { config } from "../config/env.js";
+import { getSettings } from "../services/settings.service.js";
 import { notifyNewFollower } from "../services/notificationCenter.service.js";
 
 const router = express.Router();
@@ -202,7 +203,7 @@ router.patch("/me/preferences", authRequired, async (req, res, next) => {
 
 router.get("/:id/public", optionalAuth, async (req, res, next) => {
   try {
-    if (!config.publicBrowsing && !req.user) {
+    if (!(await getSettings()).publicBrowsing && !req.user) {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     if (!UUID_RE.test(req.params.id)) {
@@ -239,7 +240,7 @@ router.get("/:id/public", optionalAuth, async (req, res, next) => {
 
 router.get("/:id/documents", optionalAuth, async (req, res, next) => {
   try {
-    if (!config.publicBrowsing && !req.user) {
+    if (!(await getSettings()).publicBrowsing && !req.user) {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     if (!UUID_RE.test(req.params.id)) {

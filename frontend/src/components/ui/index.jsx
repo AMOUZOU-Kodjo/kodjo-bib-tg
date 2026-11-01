@@ -32,6 +32,22 @@ export function Select({ className = "", children, ...props }) {
   );
 }
 
+export function Toggle({ checked, onChange, label, description, disabled = false }) {
+  return (
+    <label className={`flex items-start justify-between gap-4 ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
+      <span className="min-w-0">
+        <span className="block text-sm font-medium text-gray-900 dark:text-slate-100">{label}</span>
+        {description && <span className="mt-0.5 block text-xs leading-relaxed text-gray-500 dark:text-slate-400">{description}</span>}
+      </span>
+      <span className="relative mt-0.5 inline-flex shrink-0 items-center">
+        <input type="checkbox" className="peer sr-only" checked={checked} onChange={onChange} disabled={disabled} />
+        <span className="h-6 w-11 rounded-full bg-gray-300 transition-colors duration-200 peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 peer-focus-visible:ring-offset-2 dark:bg-slate-600 dark:peer-focus-visible:ring-offset-slate-800 peer-checked:bg-teal-600" />
+        <span className="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5" />
+      </span>
+    </label>
+  );
+}
+
 export function Spinner({ size = "md" }) {
   const sizes = { sm: "h-4 w-4", md: "h-6 w-6", lg: "h-8 w-8" };
   return <div className={`animate-spin ${sizes[size]} border-2 border-primary-600 border-t-transparent rounded-full`}></div>;

@@ -5,6 +5,7 @@ import heroImg from "../assets/hero.jpg";
 import { getDocuments } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import useSeo from "../hooks/useSeo";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 
 function DocumentSection({ title, subtitle, docs, to = "/documents" }) {
   if (!docs.length) return null;
@@ -30,6 +31,7 @@ function DocumentSection({ title, subtitle, docs, to = "/documents" }) {
 
 export default function Home() {
   const navigate = useNavigate();
+  const { allowRegistrations } = useSiteSettings();
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState([]);
   const [popular, setPopular] = useState([]);
@@ -109,10 +111,12 @@ export default function Home() {
                   Explorer la bibliothèque
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-                <Link to="/register" className="flex w-full items-center justify-center gap-1.5 rounded-md border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-white/20 sm:w-auto sm:text-sm">
-                  <Upload className="w-3.5 h-3.5" />
-                  Créer un compte
-                </Link>
+                {allowRegistrations && (
+                  <Link to="/register" className="flex w-full items-center justify-center gap-1.5 rounded-md border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-white/20 sm:w-auto sm:text-sm">
+                    <Upload className="w-3.5 h-3.5" />
+                    Créer un compte
+                  </Link>
+                )}
               </div>
 
               <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-gray-300 text-[11px] sm:text-xs">

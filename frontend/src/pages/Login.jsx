@@ -12,7 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuth();
-  const { siteName } = useSiteSettings();
+  const { siteName, allowRegistrations } = useSiteSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from
@@ -88,12 +88,18 @@ export default function Login() {
             <Link to="/forgot-password" className="text-sm text-primary-600 dark:text-primary-100 hover:text-primary-700 dark:hover:text-primary-100 font-medium">
               Mot de passe oublié ?
             </Link>
-            <div className="text-sm text-gray-600 dark:text-slate-400">
-              Pas de compte ?{" "}
-              <Link to="/register" className="text-primary-600 dark:text-primary-100 hover:text-primary-700 dark:hover:text-primary-100 font-medium">
-                S'inscrire
-              </Link>
-            </div>
+            {allowRegistrations ? (
+              <div className="text-sm text-gray-600 dark:text-slate-400">
+                Pas de compte ?{" "}
+                <Link to="/register" className="text-primary-600 dark:text-primary-100 hover:text-primary-700 dark:hover:text-primary-100 font-medium">
+                  S'inscrire
+                </Link>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 dark:text-slate-400">
+                Les inscriptions sont temporairement fermées.
+              </p>
+            )}
           </div>
         </div>
       </div>

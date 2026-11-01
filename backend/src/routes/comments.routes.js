@@ -1,7 +1,7 @@
 import express from "express";
 import { query, pool } from "../config/db.js";
 import { authRequired, optionalAuth, requireVerified } from "../middlewares/auth.js";
-import { config } from "../config/env.js";
+import { getSettings } from "../services/settings.service.js";
 import { notifyDocumentComment } from "../services/notificationCenter.service.js";
 
 const router = express.Router();
@@ -23,7 +23,7 @@ function canAccessDocument(doc, user) {
 
 router.get("/documents/:id/comments", optionalAuth, async (req, res, next) => {
   try {
-    if (!config.publicBrowsing && !req.user) {
+    if (!(await getSettings()).publicBrowsing && !req.user) {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     const docRes = await query("SELECT owner_id, visibility FROM documents WHERE id = $1", [req.params.id]);

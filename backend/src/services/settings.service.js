@@ -3,10 +3,13 @@ import { config } from "../config/env.js";
 
 const DEFAULTS = {
   siteName: "Archives",
+  siteTagline: "Plateforme de documents",
   contactEmail: config.contactEmail,
   creditsInitiaux: config.creditsInitiaux,
   creditsParUpload: config.creditsParUpload,
-  maxUploadSizeMb: config.maxFileSizeMb
+  maxUploadSizeMb: config.maxFileSizeMb,
+  allowRegistrations: true,
+  publicBrowsing: config.publicBrowsing
 };
 
 let ensurePromise;
@@ -42,6 +45,9 @@ export async function getSettings({ fresh = false } = {}) {
       if (row.key === "siteName" || row.key === "contactEmail") {
         if (row.value) settings[row.key] = row.value;
       }
+      if (row.key === "siteTagline") {
+        settings.siteTagline = String(row.value).slice(0, 120);
+      }
       if (row.key === "creditsInitiaux" || row.key === "creditsParUpload") {
         const value = Number(row.value);
         if (Number.isFinite(value)) settings[row.key] = value;
@@ -49,6 +55,9 @@ export async function getSettings({ fresh = false } = {}) {
       if (row.key === "maxUploadSizeMb") {
         const value = Number(row.value);
         if (Number.isInteger(value) && value >= 1 && value <= 100) settings[row.key] = value;
+      }
+      if (row.key === "allowRegistrations" || row.key === "publicBrowsing") {
+        settings[row.key] = row.value !== "false";
       }
     }
     cachedSettings = settings;
@@ -64,10 +73,13 @@ export async function saveSettings(values) {
   await ensureTable();
   const entries = [
     ["siteName", values.siteName],
+    ["siteTagline", values.siteTagline],
     ["contactEmail", values.contactEmail],
     ["creditsInitiaux", values.creditsInitiaux],
     ["creditsParUpload", values.creditsParUpload],
-    ["maxUploadSizeMb", values.maxUploadSizeMb]
+    ["maxUploadSizeMb", values.maxUploadSizeMb],
+    ["allowRegistrations", values.allowRegistrations],
+    ["publicBrowsing", values.publicBrowsing]
   ];
   for (const [key, value] of entries) {
     if (value === undefined) continue;

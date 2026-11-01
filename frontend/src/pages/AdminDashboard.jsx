@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getStats, getAdminAnalytics, getUsers, updateUser, deleteUserAdmin, getAllDocuments, deleteDocumentAdmin, bulkDeleteDocuments, bulkUpdateDocumentsVisibility, getAdminSettings, updateAdminSettings, getAdminReports, updateAdminReportStatus, getAdminAudit, exportAdminData } from "../api/admin";
-import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil } from "lucide-react";
-import { Card, Button, Input, Select, Pagination } from "../components/ui";
+import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil, Coins, Save, RotateCcw } from "lucide-react";
+import { Card, Button, Input, Select, Pagination, Toggle } from "../components/ui";
 import toast from "react-hot-toast";
 import { formatDate, formatSize } from "../utils/format";
 import { useSiteSettings } from "../context/SiteSettingsContext";
@@ -14,6 +14,17 @@ const AUDIT_PER_PAGE = 30;
 const USERS_PER_PAGE = 10;
 
 const userRoleLabel = (role) => (role === "admin" ? "Administrateur" : "Membre");
+
+const settingsKey = (value) => JSON.stringify({
+  siteName: String(value?.siteName ?? "").trim(),
+  siteTagline: String(value?.siteTagline ?? "").trim(),
+  contactEmail: String(value?.contactEmail ?? "").trim().toLowerCase(),
+  creditsInitiaux: Number(value?.creditsInitiaux) || 0,
+  creditsParUpload: Number(value?.creditsParUpload) || 0,
+  maxUploadSizeMb: Number(value?.maxUploadSizeMb) || 0,
+  allowRegistrations: Boolean(value?.allowRegistrations),
+  publicBrowsing: Boolean(value?.publicBrowsing)
+});
 
 export default function AdminDashboard() {
   const { refreshSettings } = useSiteSettings();
@@ -50,12 +61,17 @@ export default function AdminDashboard() {
   const [searchDoc, setSearchDoc] = useState("");
   const [settings, setSettings] = useState({
     siteName: "Archives",
+    siteTagline: "Plateforme de documents",
     contactEmail: "",
     creditsInitiaux: 0,
     creditsParUpload: 2,
-    maxUploadSizeMb: 10
+    maxUploadSizeMb: 10,
+    allowRegistrations: true,
+    publicBrowsing: true
   });
+  const [savedSettings, setSavedSettings] = useState(null);
   const [savingSettings, setSavingSettings] = useState(false);
+  const settingsDirty = savedSettings !== null && settingsKey(settings) !== settingsKey(savedSettings);
 
   useSeo({
     title: "Administration",
@@ -97,7 +113,10 @@ export default function AdminDashboard() {
       setUsers(usersRes.data.users || []);
       setDocs(docsRes.data.documents || []);
       setReports(reportsRes?.data?.reports || []);
-      if (settingsRes?.data?.settings) setSettings(settingsRes.data.settings);
+      if (settingsRes?.data?.settings) {
+        setSettings(settingsRes.data.settings);
+        setSavedSettings(settingsRes.data.settings);
+      }
     } catch (err) {
       toast.error("Erreur de chargement");
     } finally {
@@ -180,18 +199,38 @@ export default function AdminDashboard() {
     try {
       const res = await updateAdminSettings({
         siteName: settings.siteName,
+        siteTagline: settings.siteTagline,
         contactEmail: settings.contactEmail,
         creditsInitiaux: Number(settings.creditsInitiaux),
         creditsParUpload: Number(settings.creditsParUpload),
-        maxUploadSizeMb: Number(settings.maxUploadSizeMb)
+        maxUploadSizeMb: Number(settings.maxUploadSizeMb),
+        allowRegistrations: Boolean(settings.allowRegistrations),
+        publicBrowsing: Boolean(settings.publicBrowsing)
       });
       setSettings(res.data.settings);
+      setSavedSettings(res.data.settings);
       await refreshSettings();
       toast.success("Paramètres enregistrés");
     } catch (err) {
       toast.error(err.response?.data?.error?.message || "Erreur lors de l'enregistrement");
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  const handleResetSettings = () => {
+    if (savedSettings) setSettings(savedSettings);
+    else {
+      setSettings({
+        siteName: "Archives",
+        siteTagline: "Plateforme de documents",
+        contactEmail: "",
+        creditsInitiaux: 0,
+        creditsParUpload: 2,
+        maxUploadSizeMb: 10,
+        allowRegistrations: true,
+        publicBrowsing: true
+      });
     }
   };
 
@@ -1252,43 +1291,90 @@ export default function AdminDashboard() {
       )}
 
       {activeTab === "settings" && (
-        <Card className="p-4 sm:p-6">
-          <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 sm:text-xl">
-            <Settings className="w-5 h-5" />
-            Paramètres du site
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">
-            Ces réglages sont enregistrés en base et appliqués immédiatement à la plateforme et aux e-mails.
-          </p>
-          <form onSubmit={handleSaveSettings} className="space-y-6">
-            <div>
-              <h3 className="font-medium mb-2">Informations générales</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Nom du site</label>
-                  <Input
-                    value={settings.siteName}
-                    onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
-                    maxLength={60}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Email de contact</label>
-                  <Input
-                    type="email"
-                    value={settings.contactEmail || ""}
-                    onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
-                    required
-                  />
-                </div>
+        <div className="space-y-5 sm:space-y-6">
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
+                  <Settings className="h-5 w-5 shrink-0" />
+                  Paramètres du site
+                </h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
+                  Ces réglages sont enregistrés en base et appliqués immédiatement à la plateforme et aux e-mails.
+                </p>
               </div>
+              {settingsDirty && (
+                <span className="inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  Modifications non enregistrées
+                </span>
+              )}
             </div>
-            <div>
-              <h3 className="font-medium mb-2">Fichiers</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          </Card>
+
+          <form onSubmit={handleSaveSettings} className="space-y-5 sm:space-y-6">
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+              <Card className="p-4 sm:p-6">
+                <div className="mb-5 flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">
+                    <Globe2 className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900 dark:text-slate-100">Identité du site</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Nom, description et adresse de contact affichés aux visiteurs.</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Nom du site</label>
+                    <Input
+                      value={settings.siteName}
+                      onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+                      maxLength={60}
+                      required
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{String(settings.siteName || "").length}/60 caractères</p>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Description courte</label>
+                    <Input
+                      value={settings.siteTagline || ""}
+                      onChange={(e) => setSettings({ ...settings, siteTagline: e.target.value })}
+                      maxLength={120}
+                      placeholder="Ex. : Bibliothèque numérique collaborative"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{String(settings.siteTagline || "").length}/120 caractères</p>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Email de contact</label>
+                    <Input
+                      type="email"
+                      value={settings.contactEmail || ""}
+                      onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
+                      required
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Utilisé pour les notifications et le support.</p>
+                  </div>
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/40">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">Aperçu</p>
+                    <p className="mt-1 truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{settings.siteName || "Nom du site"}</p>
+                    <p className="truncate text-xs text-gray-500 dark:text-slate-400">{settings.siteTagline || "Description courte"}</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4 sm:p-6">
+                <div className="mb-5 flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+                    <HardDrive className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900 dark:text-slate-100">Fichiers et dépôt</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Contrôlez la taille des documents acceptés sur la plateforme.</p>
+                  </div>
+                </div>
                 <div>
-                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Taille maximale par fichier (Mo)</label>
+                  <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Taille maximale par fichier (Mo)</label>
                   <Input
                     type="number"
                     min="1"
@@ -1297,46 +1383,113 @@ export default function AdminDashboard() {
                     onChange={(e) => setSettings({ ...settings, maxUploadSizeMb: e.target.value })}
                     required
                   />
-                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                     Limite appliquée lors du dépôt, entre 1 et 100 Mo.
                   </p>
+                  <div className="mt-4 flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-3 py-2 text-xs text-gray-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400">
+                    <span>1 Mo</span>
+                    <span className="font-semibold text-gray-900 dark:text-slate-100">{settings.maxUploadSizeMb || 0} Mo</span>
+                    <span>100 Mo</span>
+                  </div>
                 </div>
-              </div>
+              </Card>
+
+              <Card className="p-4 sm:p-6">
+                <div className="mb-5 flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                    <Coins className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900 dark:text-slate-100">Crédits</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Récompensez la contribution et limitez les dépôts abusifs.</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Crédits initiaux</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="1000"
+                      value={settings.creditsInitiaux}
+                      onChange={(e) => setSettings({ ...settings, creditsInitiaux: e.target.value })}
+                      required
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Attribués à chaque nouveau compte.</p>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Crédits par upload</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="1000"
+                      value={settings.creditsParUpload}
+                      onChange={(e) => setSettings({ ...settings, creditsParUpload: e.target.value })}
+                      required
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Gagnés à chaque document déposé.</p>
+                  </div>
+                </div>
+                <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/60 p-3 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+                  Un nouvel inscrit reçoit <strong>{Number(settings.creditsInitiaux) || 0}</strong> crédit(s) et chaque dépôt lui en rapporte <strong>{Number(settings.creditsParUpload) || 0}</strong>.
+                </div>
+              </Card>
+
+              <Card className="p-4 sm:p-6">
+                <div className="mb-5 flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+                    <Lock className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900 dark:text-slate-100">Accès et inscriptions</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Choisissez qui peut créer un compte et consulter les documents.</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-100 p-3 dark:border-slate-700">
+                    <Toggle
+                      checked={Boolean(settings.allowRegistrations)}
+                      onChange={(e) => setSettings({ ...settings, allowRegistrations: e.target.checked })}
+                      label="Autoriser les inscriptions"
+                      description="Si désactivé, la création de compte est bloquée et les liens d'inscription sont masqués."
+                    />
+                  </div>
+                  <div className="rounded-xl border border-gray-100 p-3 dark:border-slate-700">
+                    <Toggle
+                      checked={Boolean(settings.publicBrowsing)}
+                      onChange={(e) => setSettings({ ...settings, publicBrowsing: e.target.checked })}
+                      label="Navigation publique"
+                      description="Si désactivé, les visiteurs non connectés doivent se connecter pour consulter la bibliothèque."
+                    />
+                  </div>
+                </div>
+              </Card>
             </div>
-            <div>
-              <h3 className="font-medium mb-2">Crédits</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Crédits initiaux</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="1000"
-                    value={settings.creditsInitiaux}
-                    onChange={(e) => setSettings({ ...settings, creditsInitiaux: e.target.value })}
-                    required
-                  />
-                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Attribués à chaque nouveau compte.</p>
+
+            <div className="sticky bottom-3 z-10">
+              <Card className="flex flex-col gap-3 p-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:p-4">
+                <p className="text-xs text-gray-500 dark:text-slate-400">
+                  {settingsDirty ? "Des modifications sont en attente d'enregistrement." : "Tous les paramètres sont à jour."}
+                </p>
+                <div className="flex flex-col gap-2 min-[420px]:flex-row">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleResetSettings}
+                    disabled={!settingsDirty || savingSettings}
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Réinitialiser
+                  </Button>
+                  <Button type="submit" disabled={!settingsDirty || savingSettings}>
+                    <Save className="h-4 w-4" />
+                    {savingSettings ? "Enregistrement..." : "Enregistrer"}
+                  </Button>
                 </div>
-                <div>
-                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Crédits par upload</label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="1000"
-                    value={settings.creditsParUpload}
-                    onChange={(e) => setSettings({ ...settings, creditsParUpload: e.target.value })}
-                    required
-                  />
-                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Gagnés à chaque document déposé.</p>
-                </div>
-              </div>
+              </Card>
             </div>
-            <Button type="submit" disabled={savingSettings}>
-              {savingSettings ? "Enregistrement..." : "Enregistrer les paramètres"}
-            </Button>
           </form>
-        </Card>
+        </div>
       )}
     </div>
   );

@@ -63,8 +63,11 @@ router.post("/register", authLimiter, async (req, res, next) => {
     if (password.length < 8 || password.length > 128) return res.status(400).json({ error: { code: "WEAK_PASSWORD", message: "Le mot de passe doit contenir entre 8 et 128 caractères" } });
     const exists = await query("SELECT id FROM users WHERE email = $1", [email]);
     if (exists.rows.length > 0) return res.status(400).json({ error: { code: "EMAIL_EXISTS", message: "Cet e-mail est déjà utilisé" } });
+    const { allowRegistrations, creditsInitiaux, siteName } = await getSettings();
+    if (!allowRegistrations) {
+      return res.status(403).json({ error: { code: "REGISTRATIONS_CLOSED", message: "Les inscriptions sont temporairement fermées" } });
+    }
     const passwordHash = await bcrypt.hash(password, 10);
-    const { creditsInitiaux, siteName } = await getSettings();
     const userRes = await query(
       "INSERT INTO users (email, display_name, password_hash, credits) VALUES ($1,$2,$3,$4) RETURNING id, email, display_name, email_verified, role",
       [email, displayName, passwordHash, creditsInitiaux]

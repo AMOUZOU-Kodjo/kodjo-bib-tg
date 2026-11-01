@@ -40,15 +40,20 @@ router.get("/settings", async (req, res, next) => {
 router.put("/settings", async (req, res, next) => {
   try {
     const siteName = String(req.body.siteName ?? "").replace(/[\r\n\t]+/g, " ").trim();
+    const siteTagline = String(req.body.siteTagline ?? "").replace(/[\r\n\t]+/g, " ").trim();
     const contactEmail = String(req.body.contactEmail ?? "").trim();
     const creditsInitiaux = Number(req.body.creditsInitiaux);
     const creditsParUpload = Number(req.body.creditsParUpload);
     const maxUploadSizeMb = Number(req.body.maxUploadSizeMb);
+    const { allowRegistrations, publicBrowsing } = req.body;
 
     if (siteName.length < 1 || siteName.length > 60) {
       return res.status(400).json({ error: { code: "INVALID_SITE_NAME", message: "Le nom du site doit contenir entre 1 et 60 caractères" } });
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+    if (siteTagline.length > 120) {
+      return res.status(400).json({ error: { code: "INVALID_TAGLINE", message: "La description courte ne doit pas dépasser 120 caractères" } });
+    }
+    if (!EMAIL_RE.test(contactEmail)) {
       return res.status(400).json({ error: { code: "INVALID_EMAIL", message: "Adresse e-mail de contact invalide" } });
     }
     if (!Number.isInteger(creditsInitiaux) || creditsInitiaux < 0 || creditsInitiaux > 1000) {
@@ -60,9 +65,15 @@ router.put("/settings", async (req, res, next) => {
     if (!Number.isInteger(maxUploadSizeMb) || maxUploadSizeMb < 1 || maxUploadSizeMb > 100) {
       return res.status(400).json({ error: { code: "INVALID_MAX_FILE_SIZE", message: "La taille maximale doit être un entier entre 1 et 100 Mo" } });
     }
+    if (allowRegistrations !== undefined && typeof allowRegistrations !== "boolean") {
+      return res.status(400).json({ error: { code: "INVALID_REGISTRATIONS", message: "Valeur invalide pour les inscriptions" } });
+    }
+    if (publicBrowsing !== undefined && typeof publicBrowsing !== "boolean") {
+      return res.status(400).json({ error: { code: "INVALID_PUBLIC_BROWSING", message: "Valeur invalide pour la navigation publique" } });
+    }
 
-    const settings = await saveSettings({ siteName, contactEmail, creditsInitiaux, creditsParUpload, maxUploadSizeMb });
-    await audit(req, "settings.update", "settings", null, { siteName, contactEmail, creditsInitiaux, creditsParUpload, maxUploadSizeMb });
+    const settings = await saveSettings({ siteName, siteTagline, contactEmail, creditsInitiaux, creditsParUpload, maxUploadSizeMb, allowRegistrations, publicBrowsing });
+    await audit(req, "settings.update", "settings", null, { siteName, siteTagline, contactEmail, creditsInitiaux, creditsParUpload, maxUploadSizeMb, allowRegistrations, publicBrowsing });
     res.json({ settings });
   } catch (err) {
     next(err);

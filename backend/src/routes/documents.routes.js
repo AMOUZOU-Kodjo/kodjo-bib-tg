@@ -84,7 +84,7 @@ function isDocumentOwner(doc, user) {
 
 router.get("/meta/categories", optionalAuth, async (req, res, next) => {
   try {
-    if (!config.publicBrowsing && !req.user) {
+    if (!(await getSettings()).publicBrowsing && !req.user) {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     await ensureFeatureSchema();
@@ -129,7 +129,7 @@ router.post("/suggest-category", authRequired, requireVerified, async (req, res,
 
 router.get("/", optionalAuth, async (req, res, next) => {
   try {
-    if (!config.publicBrowsing && !req.user) {
+    if (!(await getSettings()).publicBrowsing && !req.user) {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     await ensureFeatureSchema();
@@ -216,7 +216,7 @@ router.get("/", optionalAuth, async (req, res, next) => {
 
 router.get("/:id", optionalAuth, async (req, res, next) => {
   try {
-    if (!config.publicBrowsing && !req.user) {
+    if (!(await getSettings()).publicBrowsing && !req.user) {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     await ensureFeatureSchema();
@@ -466,7 +466,7 @@ router.delete("/:id", authRequired, requireVerified, async (req, res, next) => {
 
 router.post("/:id/view", optionalAuth, async (req, res, next) => {
   try {
-    if (!config.publicBrowsing && !req.user) {
+    if (!(await getSettings()).publicBrowsing && !req.user) {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     const docRes = await query("SELECT owner_id, visibility FROM documents WHERE id = $1", [req.params.id]);

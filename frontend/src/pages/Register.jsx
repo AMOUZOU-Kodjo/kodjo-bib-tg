@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { User, Mail, Lock, UserPlus } from "lucide-react";
 import { Button, Input } from "../components/ui";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ export default function Register() {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { allowRegistrations } = useSiteSettings();
 
   const submit = async (e) => {
     e.preventDefault();
@@ -43,6 +45,25 @@ export default function Register() {
       setLoading(false);
     }
   };
+
+  if (!allowRegistrations) {
+    return (
+      <div className="flex min-h-[calc(100dvh-200px)] items-center justify-center">
+        <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-8">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
+            <Lock className="h-6 w-6" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Inscriptions fermées</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
+            La création de compte est temporairement désactivée. Contactez l'administrateur si vous avez besoin d'un accès.
+          </p>
+          <Link to="/login" className="mt-6 inline-flex items-center justify-center rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700">
+            Retour à la connexion
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[calc(100dvh-200px)] items-center justify-center">

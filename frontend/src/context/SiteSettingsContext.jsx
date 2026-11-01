@@ -3,9 +3,12 @@ import client from "../api/client";
 
 const DEFAULTS = {
   siteName: "Archives",
+  siteTagline: "Plateforme de documents",
   contactEmail: "",
   creditsParUpload: 2,
-  maxUploadSizeMb: 10
+  maxUploadSizeMb: 10,
+  allowRegistrations: true,
+  publicBrowsing: true
 };
 
 const SiteSettingsContext = createContext({ ...DEFAULTS, refreshSettings: async () => {} });

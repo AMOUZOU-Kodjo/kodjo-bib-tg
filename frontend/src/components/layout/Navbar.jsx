@@ -19,7 +19,7 @@ const mobileAccentLink =
 
 export default function Navbar() {
   const { user, setUser } = useAuth();
-  const { siteName } = useSiteSettings();
+  const { siteName, siteTagline, allowRegistrations } = useSiteSettings();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -48,7 +48,7 @@ export default function Navbar() {
             />
             <div className="min-w-0">
               <div className="truncate text-lg leading-tight text-white sm:text-xl" style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}>{siteName}</div>
-              <div className="hidden truncate text-xs leading-tight text-white/80 sm:block">Plateforme de documents</div>
+              <div className="hidden truncate text-xs leading-tight text-white/80 sm:block">{siteTagline}</div>
             </div>
           </Link>
 
@@ -99,10 +99,12 @@ export default function Navbar() {
                   <LogIn className="h-4 w-4 shrink-0" />
                   <span>Connexion</span>
                 </Link>
-                <Link to="/register" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-white/10 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20">
-                  <UserPlus className="h-4 w-4 shrink-0" />
-                  <span>Inscription</span>
-                </Link>
+                {allowRegistrations && (
+                  <Link to="/register" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-white/10 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20">
+                    <UserPlus className="h-4 w-4 shrink-0" />
+                    <span>Inscription</span>
+                  </Link>
+                )}
               </>
             )}
           </div>
@@ -186,10 +188,12 @@ export default function Navbar() {
                     <LogIn className="h-4 w-4 shrink-0" />
                     Connexion
                   </Link>
-                  <Link to="/register" onClick={closeMenu}                     className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20">
-                    <UserPlus className="h-4 w-4" />
-                    Inscription gratuite
-                  </Link>
+                  {allowRegistrations && (
+                    <Link to="/register" onClick={closeMenu} className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20">
+                      <UserPlus className="h-4 w-4" />
+                      Inscription gratuite
+                    </Link>
+                  )}
                 </>
               )}
             </div>

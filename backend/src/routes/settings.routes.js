@@ -8,9 +8,12 @@ router.get("/", async (req, res, next) => {
     const settings = await getSettings();
     res.json({
       siteName: settings.siteName,
+      siteTagline: settings.siteTagline,
       contactEmail: settings.contactEmail,
       creditsParUpload: settings.creditsParUpload,
-      maxUploadSizeMb: settings.maxUploadSizeMb
+      maxUploadSizeMb: settings.maxUploadSizeMb,
+      allowRegistrations: settings.allowRegistrations,
+      publicBrowsing: settings.publicBrowsing
     });
   } catch (err) {
     next(err);
