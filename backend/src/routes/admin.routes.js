@@ -8,6 +8,10 @@ import { deleteRaw, deletePreview, getDocumentThumbnailUrl } from "../services/c
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const normalizeEmail = (value) => (typeof value === "string" ? value.trim().toLowerCase() : "");
+const normalizeName = (value) => (typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "");
 
 async function audit(req, action, targetType, targetId = null, details = null) {
   try {
@@ -262,21 +266,55 @@ router.patch("/users/:id", async (req, res, next) => {
     if (!UUID_RE.test(req.params.id)) {
       return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant utilisateur invalide" } });
     }
+    const existing = await query("SELECT email, role FROM users WHERE id = $1", [req.params.id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ error: { code: "NOT_FOUND", message: "Utilisateur introuvable" } });
+    }
+
     const { role, credits, email_verified } = req.body;
+    const displayName = req.body.display_name !== undefined ? normalizeName(req.body.display_name) : undefined;
+    const email = req.body.email !== undefined ? normalizeEmail(req.body.email) : undefined;
+    const isSelf = req.params.id.toLowerCase() === String(req.user.id).toLowerCase();
     const updates = [];
     const params = [];
     let idx = 1;
+    let bumpTokenVersion = false;
+
+    if (displayName !== undefined) {
+      if (displayName.length < 2 || displayName.length > 60) {
+        return res.status(400).json({ error: { code: "INVALID_NAME", message: "Le nom doit contenir entre 2 et 60 caractères" } });
+      }
+      updates.push(`display_name = $${idx++}`);
+      params.push(displayName);
+    }
+
+    if (email !== undefined) {
+      if (!email || email.length > 254 || !EMAIL_RE.test(email)) {
+        return res.status(400).json({ error: { code: "INVALID_EMAIL", message: "Adresse e-mail invalide" } });
+      }
+      if (email !== existing.rows[0].email) {
+        const exists = await query("SELECT id FROM users WHERE email = $1 AND id <> $2", [email, req.params.id]);
+        if (exists.rows.length > 0) {
+          return res.status(400).json({ error: { code: "EMAIL_EXISTS", message: "Cet e-mail est déjà utilisé" } });
+        }
+        updates.push(`email = $${idx++}`);
+        params.push(email);
+        bumpTokenVersion = true;
+      }
+    }
 
     if (role !== undefined) {
       if (!["user", "admin"].includes(role)) {
         return res.status(400).json({ error: { code: "INVALID_ROLE", message: "Rôle invalide" } });
       }
-      if (req.params.id.toLowerCase() === String(req.user.id).toLowerCase() && role !== "admin") {
+      if (isSelf && role !== "admin") {
         return res.status(400).json({ error: { code: "SELF_DEMOTE", message: "Vous ne pouvez pas retirer votre propre rôle administrateur" } });
       }
-      updates.push(`role = $${idx++}`);
-      params.push(role);
-      updates.push("token_version = token_version + 1");
+      if (role !== existing.rows[0].role) {
+        updates.push(`role = $${idx++}`);
+        params.push(role);
+        bumpTokenVersion = true;
+      }
     }
 
     if (credits !== undefined) {
@@ -293,6 +331,10 @@ router.patch("/users/:id", async (req, res, next) => {
       }
       updates.push(`email_verified = $${idx++}`);
       params.push(email_verified);
+    }
+
+    if (bumpTokenVersion) {
+      updates.push("token_version = token_version + 1");
     }
 
     if (updates.length === 0) {
@@ -328,7 +370,7 @@ router.patch("/users/:id", async (req, res, next) => {
         );
       }
       await client.query("COMMIT");
-      await audit(req, "user.update", "user", result.rows[0].id, { role, credits, email_verified });
+      await audit(req, "user.update", "user", result.rows[0].id, { display_name: displayName, email, role, credits, email_verified });
       res.json({ user: result.rows[0] });
     } catch (err) {
       await client.query("ROLLBACK");
@@ -337,6 +379,9 @@ router.patch("/users/:id", async (req, res, next) => {
       client.release();
     }
   } catch (err) {
+    if (err.code === "23505") {
+      return res.status(400).json({ error: { code: "EMAIL_EXISTS", message: "Cet e-mail est déjà utilisé" } });
+    }
     next(err);
   }
 });

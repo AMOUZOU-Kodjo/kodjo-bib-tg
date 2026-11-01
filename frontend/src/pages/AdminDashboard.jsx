@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getStats, getAdminAnalytics, getUsers, updateUser, deleteUserAdmin, getAllDocuments, deleteDocumentAdmin, bulkDeleteDocuments, bulkUpdateDocumentsVisibility, getAdminSettings, updateAdminSettings, getAdminReports, updateAdminReportStatus, getAdminAudit, exportAdminData } from "../api/admin";
-import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive } from "lucide-react";
-import { Card, Button, Input, Pagination } from "../components/ui";
+import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil } from "lucide-react";
+import { Card, Button, Input, Select, Pagination } from "../components/ui";
 import toast from "react-hot-toast";
 import { formatDate, formatSize } from "../utils/format";
 import { useSiteSettings } from "../context/SiteSettingsContext";
@@ -11,6 +11,9 @@ import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 import useSeo from "../hooks/useSeo";
 
 const AUDIT_PER_PAGE = 30;
+const USERS_PER_PAGE = 10;
+
+const userRoleLabel = (role) => (role === "admin" ? "Administrateur" : "Membre");
 
 export default function AdminDashboard() {
   const { refreshSettings } = useSiteSettings();
@@ -36,12 +39,14 @@ export default function AdminDashboard() {
   const [auditRefresh, setAuditRefresh] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
   const [searchUser, setSearchUser] = useState("");
+  const [usersPage, setUsersPage] = useState(1);
   const [editUserId, setEditUserId] = useState(null);
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editEmail, setEditEmail] = useState("");
-  const [editRole, setEditRole] = useState("membre");
+  const [editRole, setEditRole] = useState("user");
   const [editEmailVerified, setEditEmailVerified] = useState("non");
   const [editCredits, setEditCredits] = useState(0);
+  const [editSaving, setEditSaving] = useState(false);
   const [searchDoc, setSearchDoc] = useState("");
   const [settings, setSettings] = useState({
     siteName: "Archives",
@@ -106,9 +111,10 @@ export default function AdminDashboard() {
       await updateUser(id, data);
       toast.success("Utilisateur mis à jour");
       await loadData();
+      return true;
     } catch (err) {
       toast.error(err.response?.data?.error?.message || "Erreur lors de la mise à jour");
-      await loadData();
+      return false;
     }
   };
 
@@ -116,22 +122,41 @@ export default function AdminDashboard() {
     handleUpdateUser(target.id, { email_verified: !target.email_verified });
   };
 
-  const handleUpdateCredits = (target, value) => {
-    const credits = Number(value);
-    if (!Number.isInteger(credits) || credits < 0 || credits > 1000000) {
-      toast.error("Les crédits doivent être un entier positif");
-      loadData();
+  const closeEditUser = () => {
+    if (editSaving) return;
+    setEditUserId(null);
+  };
+
+  const handleSubmitEditUser = async (e) => {
+    e.preventDefault();
+    if (!editUserId) return;
+    const target = users.find((u) => u.id === editUserId);
+    if (!target) {
+      toast.error("Utilisateur introuvable");
+      setEditUserId(null);
       return;
     }
-    if (credits === target.credits) return;
-    handleUpdateUser(target.id, { credits });
+    setEditSaving(true);
+    const updated = await handleUpdateUser(editUserId, {
+      display_name: editDisplayName,
+      email: editEmail,
+      role: editRole,
+      credits: Number(editCredits),
+      email_verified: editEmailVerified === "oui",
+    });
+    setEditSaving(false);
+    if (updated) setEditUserId(null);
   };
 
   const handleDeleteUser = async (target) => {
-    if (target.id === currentUser?.id) return;
+    if (target.id === currentUser?.id) {
+      toast.error("Vous ne pouvez pas supprimer votre propre compte depuis l'administration");
+      return;
+    }
     if (!confirm(`Supprimer ${target.display_name} ? Ses documents, commentaires et données seront supprimés définitivement.`)) return;
     try {
       await deleteUserAdmin(target.id);
+      if (editUserId === target.id) setEditUserId(null);
       toast.success("Utilisateur supprimé");
       await loadData();
     } catch (err) {
@@ -269,9 +294,18 @@ export default function AdminDashboard() {
   const activityMax = Math.max(1, ...(analytics?.series || []).map((point) => Number(point[activeMetric.id]) || 0));
   const activityTotal = analytics?.totals || { users: 0, documents: 0, downloads: 0, comments: 0 };
 
-  const filteredUsers = users.filter(u => 
-    u.email.toLowerCase().includes(searchUser.toLowerCase()) ||
-    u.display_name.toLowerCase().includes(searchUser.toLowerCase())
+  const userSearchTerm = searchUser.trim().toLowerCase();
+  const filteredUsers = users.filter((u) => {
+    if (!userSearchTerm) return true;
+    return [u.display_name, u.email, userRoleLabel(u.role)]
+      .some((value) => String(value ?? "").toLowerCase().includes(userSearchTerm));
+  });
+
+  const usersTotalPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
+  const currentUsersPage = Math.min(usersPage, usersTotalPages);
+  const pagedUsers = filteredUsers.slice(
+    (currentUsersPage - 1) * USERS_PER_PAGE,
+    currentUsersPage * USERS_PER_PAGE
   );
 
   const filteredDocs = docs.filter(d => 
@@ -296,6 +330,15 @@ export default function AdminDashboard() {
 
   const goToDocsPage = (p) => {
     setDocsPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (usersPage > usersTotalPages) setUsersPage(usersTotalPages);
+  }, [usersPage, usersTotalPages]);
+
+  const goToUsersPage = (p) => {
+    setUsersPage(p);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -350,11 +393,12 @@ export default function AdminDashboard() {
     if (user) {
       setEditDisplayName(user.display_name);
       setEditEmail(user.email);
-      setEditRole(user.role || "membre");
+      setEditRole(user.role || "user");
       setEditCredits(user.credits || 0);
       setEditEmailVerified(user.email_verified ? "oui" : "non");
+      setEditSaving(false);
     }
-  }, [editUserId, users]);
+  }, [editUserId]);
 
   const tabs = [
     { id: "overview", label: "Vue d'ensemble", icon: Shield },
@@ -579,24 +623,37 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card className="p-5 sm:p-6">
-              <h2 className="text-lg font-semibold mb-4">Derniers utilisateurs</h2>
-              <div className="space-y-3">
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">Derniers utilisateurs</h2>
+                <button type="button" onClick={() => setActiveTab("users")} className="text-xs font-medium text-teal-700 hover:underline dark:text-teal-300">
+                  Tout voir
+                </button>
+              </div>
+              <div className="divide-y divide-gray-50 dark:divide-slate-800">
                 {!loading && users.length === 0 && (
-                  <p className="text-sm text-gray-500 dark:text-slate-400 py-4">Aucun utilisateur pour le moment.</p>
+                  <p className="py-4 text-sm text-gray-500 dark:text-slate-400">Aucun utilisateur pour le moment.</p>
                 )}
                 {users.slice(0, 5).map(u => (
-                  <div key={u.id} className="flex items-center justify-between gap-3 py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-gray-900 dark:text-slate-100">{u.display_name}</p>
-                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.email}</p>
-                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.role}</p>
-                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.credits}</p>
-                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.email_verified ? "Oui" : "Non"}</p>
-                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.created_at ? u.created_at.slice(0,10) : ""}</p>
+                  <div key={u.id} className="flex items-center justify-between gap-3 py-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-50 text-xs font-semibold text-teal-700 dark:bg-teal-950/40 dark:text-teal-300">
+                        {(u.display_name || "?").charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">{u.display_name}</p>
+                        <p className="truncate text-xs text-gray-500 dark:text-slate-400">{u.email}</p>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <button className="text-xs text-gray-500 dark:text-slate-400 underline edit-user" data-id={u.id}>Modifier</button>
-                      <button className="text-xs text-gray-500 dark:text-slate-400 delete-user" data-id={u.id}>Supprimer</button>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${u.role === "admin" ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-100" : "bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300"}`}>
+                        {userRoleLabel(u.role)}
+                      </span>
+                      <button type="button" onClick={() => { setActiveTab("users"); setEditUserId(u.id); }} className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700" aria-label={`Modifier ${u.display_name}`}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button type="button" onClick={() => handleDeleteUser(u)} disabled={u.id === currentUser?.id} className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-300 dark:hover:bg-red-950/40" aria-label={`Supprimer ${u.display_name}`}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -623,168 +680,216 @@ export default function AdminDashboard() {
         </>
       )}
 
-{activeTab === "users" && (
+      {activeTab === "users" && (
         <>
-        <Card className="p-4 sm:p-6">
-  <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 sm:text-xl">
-    <Users className="w-5 h-5" />
-    Gestion des utilisateurs
-  </h2>
-  <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
-    Gérer les utilisateurs du site.
-  </p>
-  <div className="mb-4 flex items-center gap-2">
-    <Input
-      placeholder="Rechercher un utilisateur..."
-      value={searchUser}
-      onChange={(e) => setSearchUser(e.target.value)}
-      className="flex-1 rounded-l border border-gray-300 dark:border-slate-600 px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:outline-none"
-    />
-    <Button variant="secondary" onClick={() => setSearchUser("")}>
-      <RefreshCw className="w-4 h-4" />
-      Reset
-    </Button>
-  </div>
-  <div className="overflow-x-auto">
-    <table className="w-full min-w-max rounded-lg border border-gray-200 dark:border-slate-700">
-      <thead>
-        <tr className="border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-600 dark:text-slate-400 uppercase">
-          <th className="p-3 text-left">Nom</th>
-          <th className="p-3 text-left">Email</th>
-          <th className="p-3 text-left">Rôle</th>
-          <th className="p-3 text-left">Crédits</th>
-          <th className="p-3 text-left">Vérifié</th>
-          <th className="p-3 text-left">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {filteredUsers.map((u) => (
-          <tr key={u.id} className="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-900">
-            <td className="p-3 font-medium text-gray-900 dark:text-slate-100">{u.display_name}</td>
-            <td className="p-3 text-gray-600 dark:text-slate-400 truncate">{u.email}</td>
-            <td className="p-3 text-gray-500 dark:text-slate-400">{u.role}</td>
-            <td className="p-3 text-gray-600 dark:text-slate-400">{u.credits}</td>
-            <td className="p-3">
-              <Button
-                size="sm"
-                variant={u.email_verified ? "default" : "secondary"}
-                onClick={() => handleToggleVerified(u)}
-              >
-                {u.email_verified ? "Non vérifié" : "Vérifié"}
-              </Button>
-            </td>
-            <td className="p-3">
-              <div className="flex gap-1.5">
-                <Button
-                  size="sm"
-                  variant="link"
-                  className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-100"
-                  onClick={() => setEditUserId(u.id)}
-                >
-                  Modifier
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleDeleteUser(u)}
-                >
-                  Supprimer
-                </Button>
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
+                  <Users className="h-5 w-5" />
+                  Gestion des utilisateurs
+                </h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
+                  {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? "s" : ""} affiché{filteredUsers.length > 1 ? "s" : ""} sur {users.length}
+                </p>
               </div>
-            </td>
-          </tr>
-        ))}
-        {filteredUsers.length === 0 && (
-          <tr>
-            <td colSpan={6} className="p-6 text-center text-gray-500 dark:text-slate-400">
-              Aucun utilisateur trouvé.
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  </div>
-</Card>
+              <Button variant="secondary" onClick={loadData} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                Actualiser
+              </Button>
+            </div>
 
-{editUserId && (
-  <Card className="mt-4 p-4 sm:p-6">
-    <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 sm:text-xl">
-      <Users className="w-5 h-5" />
-      Modifier l'utilisateur
-    </h2>
-    <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
-      Modifiez les informations de l'utilisateur.
-    </p>
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      if (!editUserId) return;
-      const user = filteredUsers.find((u) => u.id === editUserId);
-      if (!user) return;
-      handleUpdateUser(editUserId, {
-        display_name: editDisplayName,
-        email: editEmail,
-        role: editRole,
-        credits: Number(editCredits) || 0,
-        email_verified: editEmailVerified === "oui",
-      });
-      setEditUserId(null);
-    }}>
-      <Input
-        placeholder="Nom complet"
-        value={editDisplayName || ""}
-        onChange={(e) => setEditDisplayName(e.target.value)}
-        required
-      />
-      <Input
-        type="email"
-        placeholder="Email"
-        value={editEmail || ""}
-        onChange={(e) => setEditEmail(e.target.value)}
-        required
-      />
-      <Select
-        value={editRole || "membre"}
-        onChange={(e) => setEditRole(e.target.value)}
-      >
-        <option value="membre">Membre</option>
-        <option value="admin">Admin</option>
-      </Select>
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">
-            <input
-              type="radio"
-              name="email_verified"
-              checked={editEmailVerified === "oui"}
-              onChange={() => setEditEmailVerified("oui")}
-              className="rounded border-gray-300 dark:border-slate-600 px-2 py-1"
-            />
-            Oui
-          </label>
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">
-            <input
-              type="radio"
-              name="email_verified"
-              checked={editEmailVerified === "non"}
-              onChange={() => setEditEmailVerified("non")}
-              className="rounded border-gray-300 dark:border-slate-600 px-2 py-1"
-            />
-            Non
-          </label>
-        </div>
-      </div>
-      <Button type="submit">Enregistrer</Button>
-      <Button
-        variant="link"
-        onClick={() => setEditUserId(null)}
-      >
-        Annuler
-      </Button>
-    </form>
-  </Card>
-)}
+            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  type="search"
+                  placeholder="Rechercher par nom, e-mail ou rôle..."
+                  value={searchUser}
+                  onChange={(e) => { setSearchUser(e.target.value); setUsersPage(1); }}
+                  className="pl-9"
+                  aria-label="Rechercher un utilisateur"
+                />
+              </div>
+              <Button variant="secondary" onClick={() => { setSearchUser(""); setUsersPage(1); }}>
+                Réinitialiser
+              </Button>
+            </div>
+
+            <div className="mt-5 hidden overflow-x-auto md:block">
+              <table className="w-full min-w-[860px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                    <th className="px-3 py-3 font-semibold">Utilisateur</th>
+                    <th className="px-3 py-3 font-semibold">Rôle</th>
+                    <th className="px-3 py-3 font-semibold">Crédits</th>
+                    <th className="px-3 py-3 font-semibold">Statut</th>
+                    <th className="px-3 py-3 font-semibold">Inscrit le</th>
+                    <th className="px-3 py-3 text-right font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                  {pagedUsers.map((u) => (
+                    <tr key={u.id} className="transition-colors hover:bg-gray-50 dark:hover:bg-slate-900/60">
+                      <td className="px-3 py-3">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-50 text-sm font-semibold text-teal-700 dark:bg-teal-950/40 dark:text-teal-300">
+                            {(u.display_name || "?").charAt(0).toUpperCase()}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-gray-900 dark:text-slate-100">{u.display_name}</p>
+                            <p className="truncate text-xs text-gray-500 dark:text-slate-400">{u.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${u.role === "admin" ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-100" : "bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-200"}`}>
+                          {u.role === "admin" && <Shield className="h-3 w-3" />}
+                          {userRoleLabel(u.role)}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-gray-700 dark:text-slate-300">{u.credits}</td>
+                      <td className="px-3 py-3">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleVerified(u)}
+                          title={u.email_verified ? "Marquer comme non vérifié" : "Marquer comme vérifié"}
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${u.email_verified ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40" : "bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/40"}`}
+                        >
+                          {u.email_verified ? <MailCheck className="h-3 w-3" /> : <MailX className="h-3 w-3" />}
+                          {u.email_verified ? "Vérifié" : "Non vérifié"}
+                        </button>
+                      </td>
+                      <td className="px-3 py-3 text-gray-600 dark:text-slate-400">{formatDate(u.created_at)}</td>
+                      <td className="px-3 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <button type="button" onClick={() => setEditUserId(u.id)} className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700">
+                            <Pencil className="h-3.5 w-3.5" /> Modifier
+                          </button>
+                          <button type="button" onClick={() => handleDeleteUser(u)} disabled={u.id === currentUser?.id} title={u.id === currentUser?.id ? "Impossible de supprimer votre propre compte" : "Supprimer"} className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/40">
+                            <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {pagedUsers.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-3 py-10 text-center text-sm text-gray-500 dark:text-slate-400">
+                        {users.length === 0 ? "Aucun utilisateur pour le moment." : "Aucun utilisateur ne correspond à votre recherche."}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-4 space-y-3 md:hidden">
+              {pagedUsers.map((u) => (
+                <article key={u.id} className="rounded-xl border border-gray-200 p-4 dark:border-slate-700">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-gray-900 dark:text-slate-100">{u.display_name}</p>
+                      <p className="truncate text-xs text-gray-500 dark:text-slate-400">{u.email}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${u.role === "admin" ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-100" : "bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-200"}`}>
+                      {userRoleLabel(u.role)}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-slate-400">
+                    <button type="button" onClick={() => handleToggleVerified(u)} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${u.email_verified ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"}`}>
+                      {u.email_verified ? <MailCheck className="h-3 w-3" /> : <MailX className="h-3 w-3" />}
+                      {u.email_verified ? "Vérifié" : "Non vérifié"}
+                    </button>
+                    <span>{u.credits} crédit{u.credits > 1 ? "s" : ""}</span>
+                    <span>Inscrit le {formatDate(u.created_at)}</span>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button type="button" onClick={() => setEditUserId(u.id)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 dark:border-slate-700 dark:text-slate-200">
+                      <Pencil className="h-3.5 w-3.5" /> Modifier
+                    </button>
+                    <button type="button" onClick={() => handleDeleteUser(u)} disabled={u.id === currentUser?.id} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 disabled:opacity-40 dark:border-red-900 dark:text-red-300">
+                      <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                    </button>
+                  </div>
+                </article>
+              ))}
+              {pagedUsers.length === 0 && (
+                <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500 dark:border-slate-700 dark:text-slate-400">
+                  {users.length === 0 ? "Aucun utilisateur pour le moment." : "Aucun utilisateur ne correspond à votre recherche."}
+                </p>
+              )}
+            </div>
+
+            {usersTotalPages > 1 && (
+              <div className="mt-4 flex flex-col gap-2 border-t border-gray-100 pt-4 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs text-gray-500 dark:text-slate-400">
+                  Page {currentUsersPage} sur {usersTotalPages}
+                </p>
+                <Pagination page={currentUsersPage} totalPages={usersTotalPages} onPageChange={goToUsersPage} />
+              </div>
+            )}
+          </Card>
+
+          {editUserId && (
+            <div
+              className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edit-user-title"
+              onMouseDown={(e) => { if (e.target === e.currentTarget) closeEditUser(); }}
+            >
+              <div className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl dark:bg-slate-800 sm:rounded-2xl sm:p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 id="edit-user-title" className="text-lg font-semibold text-gray-900 dark:text-slate-100">Modifier l'utilisateur</h3>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">Mettez à jour les informations du compte.</p>
+                  </div>
+                  <button type="button" onClick={closeEditUser} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700" aria-label="Fermer">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <form className="mt-5 space-y-4" onSubmit={handleSubmitEditUser}>
+                  <div>
+                    <label htmlFor="edit-user-name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Nom complet</label>
+                    <Input id="edit-user-name" value={editDisplayName || ""} onChange={(e) => setEditDisplayName(e.target.value)} minLength={2} maxLength={60} required />
+                  </div>
+                  <div>
+                    <label htmlFor="edit-user-email" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Adresse e-mail</label>
+                    <Input id="edit-user-email" type="email" value={editEmail || ""} onChange={(e) => setEditEmail(e.target.value)} maxLength={254} required />
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="edit-user-role" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Rôle</label>
+                      <Select id="edit-user-role" value={editRole || "user"} onChange={(e) => setEditRole(e.target.value)}>
+                        <option value="user">Membre</option>
+                        <option value="admin">Administrateur</option>
+                      </Select>
+                    </div>
+                    <div>
+                      <label htmlFor="edit-user-credits" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Crédits</label>
+                      <Input id="edit-user-credits" type="number" min={0} max={1000000} step={1} value={editCredits} onChange={(e) => setEditCredits(e.target.value)} required />
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+                    <input type="checkbox" checked={editEmailVerified === "oui"} onChange={(e) => setEditEmailVerified(e.target.checked ? "oui" : "non")} className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 dark:border-slate-600" />
+                    E-mail vérifié
+                  </label>
+                  {editUserId === currentUser?.id && editRole !== "admin" && (
+                    <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                      Vous ne pouvez pas retirer votre propre rôle administrateur.
+                    </p>
+                  )}
+                  <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+                    <Button type="button" variant="secondary" onClick={closeEditUser} disabled={editSaving}>Annuler</Button>
+                    <Button type="submit" disabled={editSaving || (editUserId === currentUser?.id && editRole !== "admin")}>
+                      {editSaving ? "Enregistrement..." : "Enregistrer"}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </>
       )}
 
