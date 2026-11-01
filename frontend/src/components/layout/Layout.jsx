@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import { BackToTop } from "../ui";
 import CookieConsent from "../ui/CookieConsent";
 
 export default function Layout({ children }) {
@@ -17,6 +18,7 @@ export default function Layout({ children }) {
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">{children}</main>
       <Footer />
       <CookieConsent />
+      <BackToTop />
     </div>
   );
 }

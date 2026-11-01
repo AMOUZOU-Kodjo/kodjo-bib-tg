@@ -53,6 +53,28 @@ export function Spinner({ size = "md" }) {
   return <div className={`animate-spin ${sizes[size]} border-2 border-primary-600 border-t-transparent rounded-full`}></div>;
 }
 
+export function BackToTop() {
+  const [show, setShow] = React.useState(false);
+  useEffect(() => {
+    const handler = () => {
+      if (window.pageYOffset > 300) setShow(true);
+      else setShow(false);
+    };
+    handler();
+    window.addEventListener("scroll", handler);
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+  return (
+    <Button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      className="fixed bottom-6 right-6 z-10 bg-teal-600 text-white rounded-full p-2 shadow-lg hover:bg-teal-700 transition-colors"
+      disabled={!show}
+    >
+      ↑
+    </Button>
+  );
+}
+
 export function EmptyState({ message, icon: Icon }) {
   return (
     <div className="flex flex-col items-center gap-3 px-4 py-10 text-center text-gray-500 dark:text-slate-400 sm:py-12">
