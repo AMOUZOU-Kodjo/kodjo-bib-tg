@@ -91,6 +91,11 @@ export default function Footer() {
             <h3 className="mb-3 text-center text-base font-semibold tracking-wide text-white lg:mb-4 lg:text-left">Informations légales</h3>
             <ul className="flex flex-wrap justify-center gap-2 lg:block lg:space-y-2.5">
               <li>
+                <Link to="/a-propos" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
+                  À propos
+                </Link>
+              </li>
+              <li>
                 <Link to="/mentions-legales" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
                   Mentions légales
                 </Link>
