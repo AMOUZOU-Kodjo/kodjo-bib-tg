@@ -5,7 +5,7 @@ import InstallPWA from "./InstallPWA";
 import SocialLinks from "./SocialLinks";
 
 export default function Footer() {
-  const { siteName, allowRegistrations } = useSiteSettings();
+  const { siteName, siteTagline, allowRegistrations } = useSiteSettings();
   const reopenCookies = () => {
     window.dispatchEvent(new Event("open-cookie-consent"));
   };
@@ -29,8 +29,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-white/80 leading-relaxed mb-5 max-w-lg">
-              Plateforme collaborative gratuite d'archivage et de partage de documents.
-              Partagez vos connaissances, accédez à des ressources utiles.
+              {siteTagline || "Plateforme collaborative gratuite d'archivage et de partage de documents."}
             </p>
             <p className="text-sm text-white/70 flex items-center gap-1.5">
               Fait avec <Heart className="w-4 h-4 text-rose-400 fill-rose-400/20" /> pour la communauté
@@ -130,7 +129,7 @@ export default function Footer() {
 
         <div className="border-t border-white/15 mt-10 pt-6">
           <p className="text-center text-sm text-white/60">
-            © 2026 {siteName}. Tous droits réservés.
+            © {new Date().getFullYear()} {siteName}. Tous droits réservés.
           </p>
         </div>
       </div>
