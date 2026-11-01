@@ -10,7 +10,7 @@ export function Pagination({ page, totalPages, onPageChange }) {
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage <= 1}
         aria-label="Page précédente"
-        className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
+        className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
       >
         « <span className="hidden sm:inline">Précédent</span><span className="sm:hidden">Préc.</span>
       </button>
@@ -26,7 +26,7 @@ export function Pagination({ page, totalPages, onPageChange }) {
             key={p}
             onClick={() => onPageChange(p)}
             aria-current={p === currentPage ? "page" : undefined}
-            className={`h-8 w-8 shrink-0 rounded-lg text-sm font-medium sm:h-9 sm:w-9 ${p === currentPage ? "bg-teal-700 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+            className={`h-8 w-8 shrink-0 rounded-lg text-sm font-medium sm:h-9 sm:w-9 ${p === currentPage ? "bg-teal-700 text-white" : "text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
           >
             {p}
           </button>
@@ -35,7 +35,7 @@ export function Pagination({ page, totalPages, onPageChange }) {
       {totalPages > 10 && currentPage < totalPages - 4 && (
         <>
           <span className="shrink-0 px-2 text-gray-400">...</span>
-          <button type="button" onClick={() => onPageChange(totalPages)} className="h-8 w-8 shrink-0 rounded-lg text-sm text-gray-700 hover:bg-gray-100 sm:h-9 sm:w-9">{totalPages}</button>
+          <button type="button" onClick={() => onPageChange(totalPages)} className="h-8 w-8 shrink-0 rounded-lg text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 sm:h-9 sm:w-9">{totalPages}</button>
         </>
       )}
       <button
@@ -43,7 +43,7 @@ export function Pagination({ page, totalPages, onPageChange }) {
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage >= totalPages}
         aria-label="Page suivante"
-        className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
+        className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
       >
         <span className="hidden sm:inline">Suivant</span><span className="sm:hidden">Suiv.</span> »
       </button>

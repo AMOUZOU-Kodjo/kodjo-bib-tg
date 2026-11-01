@@ -12,10 +12,10 @@ function DocumentSection({ title, subtitle, docs, to = "/documents" }) {
     <section className="py-10 sm:py-12">
       <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div className="min-w-0">
-          <h2 className="text-xl font-bold text-gray-900 sm:text-2xl md:text-3xl">{title}</h2>
-          <p className="mt-1 text-sm text-gray-600 sm:text-base">{subtitle}</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl md:text-3xl">{title}</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-slate-400 sm:text-base">{subtitle}</p>
         </div>
-        <Link to={to} className="inline-flex shrink-0 items-center gap-1 self-start text-sm font-medium text-teal-700 hover:underline sm:self-auto">
+        <Link to={to} className="inline-flex shrink-0 items-center gap-1 self-start text-sm font-medium text-teal-700 dark:text-teal-300 hover:underline sm:self-auto">
           Tout voir <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
@@ -84,7 +84,7 @@ export default function Home() {
               </p>
 
               <form onSubmit={submitSearch} className="w-full mb-3 sm:mb-4 max-w-full sm:max-w-md lg:max-w-lg">
-                <div className="flex items-center gap-1 bg-white/95 rounded-lg p-0.5 min-[360px]:p-1 shadow-lg w-full max-w-full">
+                <div className="flex items-center gap-1 bg-white/95 dark:bg-slate-800/95 rounded-lg p-0.5 min-[360px]:p-1 shadow-lg w-full max-w-full">
                   <Search className="w-3.5 h-3.5 min-[360px]:w-4 min-[360px]:h-4 text-gray-400 ml-1 min-[360px]:ml-2 shrink-0" />
                   <input
                     type="search"
@@ -92,7 +92,7 @@ export default function Home() {
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Rechercher..."
                     aria-label="Rechercher un document"
-                    className="flex-1 min-w-0 w-0 bg-transparent px-0.5 py-1 min-[360px]:px-1 min-[360px]:py-1.5 text-[11px] min-[360px]:text-xs sm:text-sm text-gray-900 placeholder-gray-500 focus:outline-none"
+                    className="flex-1 min-w-0 w-0 bg-transparent px-0.5 py-1 min-[360px]:px-1 min-[360px]:py-1.5 text-[11px] min-[360px]:text-xs sm:text-sm text-gray-900 dark:text-slate-100 placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none"
                   />
                   <button
                     type="submit"

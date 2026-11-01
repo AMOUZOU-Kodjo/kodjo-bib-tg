@@ -344,6 +344,18 @@ export default function AdminDashboard() {
       .join(" · ");
   };
 
+  useEffect(() => {
+    if (!editUserId) return;
+    const user = users.find((u) => u.id === editUserId);
+    if (user) {
+      setEditDisplayName(user.display_name);
+      setEditEmail(user.email);
+      setEditRole(user.role || "membre");
+      setEditCredits(user.credits || 0);
+      setEditEmailVerified(user.email_verified ? "oui" : "non");
+    }
+  }, [editUserId, users]);
+
   const tabs = [
     { id: "overview", label: "Vue d'ensemble", icon: Shield },
     { id: "users", label: "Utilisateurs", icon: Users },
@@ -358,10 +370,10 @@ export default function AdminDashboard() {
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="mb-2 flex items-center gap-2.5 sm:gap-3">
-            <Shield className="h-7 w-7 shrink-0 text-primary-600 sm:h-8 sm:w-8" />
-            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Administration</h1>
+            <Shield className="h-7 w-7 shrink-0 text-primary-600 dark:text-primary-100 sm:h-8 sm:w-8" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">Administration</h1>
           </div>
-          <p className="text-sm text-gray-600 sm:text-base">Tableau de bord et gestion de la plateforme</p>
+          <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">Tableau de bord et gestion de la plateforme</p>
         </div>
         <Button variant="secondary" onClick={() => { loadData(); setAnalyticsRefresh((value) => value + 1); }} disabled={loading || analyticsLoading}>
           <RefreshCw className={`w-4 h-4 ${loading || analyticsLoading ? "animate-spin" : ""}`} />
@@ -377,7 +389,7 @@ export default function AdminDashboard() {
             className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all whitespace-nowrap sm:px-4 ${
               activeTab === tab.id 
                 ? "bg-primary-600 text-white" 
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                : "bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700"
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -398,8 +410,8 @@ export default function AdminDashboard() {
               <Card key={card.title} className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">{card.title}</p>
-                    <p className="text-2xl font-bold text-gray-900">{loading ? "..." : card.value}</p>
+                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-1">{card.title}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">{loading ? "..." : card.value}</p>
                   </div>
                   <div className={`p-3 rounded-lg ${card.color}`}>
                     <card.icon className="w-6 h-6" />
@@ -412,18 +424,18 @@ export default function AdminDashboard() {
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="flex items-center gap-2 text-lg font-semibold">
-                  <BarChart3 className="h-5 w-5 text-primary-600" />
+                  <BarChart3 className="h-5 w-5 text-primary-600 dark:text-primary-100" />
                   Activité récente
                 </h2>
-                <p className="mt-1 text-sm text-gray-600">Nouveaux contenus et usages sur la période sélectionnée.</p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">Nouveaux contenus et usages sur la période sélectionnée.</p>
               </div>
-              <div className="flex flex-wrap items-center gap-1 rounded-lg bg-gray-100 p-1">
+              <div className="flex flex-wrap items-center gap-1 rounded-lg bg-gray-100 dark:bg-slate-800 p-1">
                 {[7, 30, 90].map((days) => (
                   <button
                     key={days}
                     onClick={() => setAnalyticsDays(days)}
                     className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                      analyticsDays === days ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                      analyticsDays === days ? "bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 shadow-sm" : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100"
                     }`}
                   >
                     {days} j
@@ -438,7 +450,7 @@ export default function AdminDashboard() {
                   key={metric.id}
                   onClick={() => setActivityMetric(metric.id)}
                   className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                    activityMetric === metric.id ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    activityMetric === metric.id ? "bg-gray-900 text-white" : "bg-gray-50 dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800"
                   }`}
                 >
                   <span className={`h-2 w-2 rounded-full ${metric.color}`} />
@@ -448,7 +460,7 @@ export default function AdminDashboard() {
             </div>
 
             {analyticsLoading ? (
-              <div className="flex h-40 items-center justify-center text-sm text-gray-500">Chargement…</div>
+              <div className="flex h-40 items-center justify-center text-sm text-gray-500 dark:text-slate-400">Chargement…</div>
             ) : (
               <>
                 <div className="flex h-40 items-end gap-[2px] sm:gap-1">
@@ -476,7 +488,7 @@ export default function AdminDashboard() {
               </>
             )}
 
-            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-gray-100 pt-4 sm:grid-cols-4">
+            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-gray-100 dark:border-slate-700 pt-4 sm:grid-cols-4">
               {[
                 { label: "Nouveaux utilisateurs", value: activityTotal.users, color: "text-blue-600" },
                 { label: "Nouveaux documents", value: activityTotal.documents, color: "text-emerald-600" },
@@ -484,7 +496,7 @@ export default function AdminDashboard() {
                 { label: "Commentaires", value: activityTotal.comments, color: "text-orange-600" }
               ].map((item) => (
                 <div key={item.label}>
-                  <p className="text-[11px] text-gray-500">{item.label}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-slate-400">{item.label}</p>
                   <p className={`text-xl font-bold ${item.color}`}>{analyticsLoading ? "…" : item.value}</p>
                 </div>
               ))}
@@ -494,13 +506,13 @@ export default function AdminDashboard() {
           <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card className="p-5 sm:p-6">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                <BarChart3 className="h-5 w-5 text-primary-600" />
+                <BarChart3 className="h-5 w-5 text-primary-600 dark:text-primary-100" />
                 Documents les plus actifs
               </h2>
               {analyticsLoading ? (
-                <p className="py-4 text-sm text-gray-500">Chargement…</p>
+                <p className="py-4 text-sm text-gray-500 dark:text-slate-400">Chargement…</p>
               ) : (analytics?.topDocuments || []).length === 0 ? (
-                <p className="py-4 text-sm text-gray-500">Aucun document pour le moment.</p>
+                <p className="py-4 text-sm text-gray-500 dark:text-slate-400">Aucun document pour le moment.</p>
               ) : (
                 <div className="space-y-2">
                   {analytics.topDocuments.map((doc, index) => (
@@ -509,16 +521,16 @@ export default function AdminDashboard() {
                       to={`/documents/${doc.id}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-gray-50"
+                      className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-gray-50 dark:hover:bg-slate-900"
                     >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 text-xs font-semibold text-gray-600 dark:text-slate-400">
                         {index + 1}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-gray-900">{doc.title}</p>
-                        <p className="truncate text-xs text-gray-500">{doc.author_name}</p>
+                        <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">{doc.title}</p>
+                        <p className="truncate text-xs text-gray-500 dark:text-slate-400">{doc.author_name}</p>
                       </div>
-                      <div className="shrink-0 text-right text-[11px] text-gray-500">
+                      <div className="shrink-0 text-right text-[11px] text-gray-500 dark:text-slate-400">
                         <p>{doc.view_count || 0} vues</p>
                         <p>{doc.download_count || 0} téléch.</p>
                       </div>
@@ -530,32 +542,32 @@ export default function AdminDashboard() {
 
             <Card className="p-5 sm:p-6">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                <HardDrive className="h-5 w-5 text-primary-600" />
+                <HardDrive className="h-5 w-5 text-primary-600 dark:text-primary-100" />
                 Stockage et modération
               </h2>
               {analyticsLoading ? (
-                <p className="py-4 text-sm text-gray-500">Chargement…</p>
+                <p className="py-4 text-sm text-gray-500 dark:text-slate-400">Chargement…</p>
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm text-gray-500">Espace utilisé</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatSize(analytics?.storage?.totalBytes || 0)}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">Espace utilisé</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">{formatSize(analytics?.storage?.totalBytes || 0)}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">
                       {analytics?.storage?.documents || 0} documents · {formatSize(analytics?.storage?.averageBytes || 0)} en moyenne
                     </p>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 border-t border-gray-100 pt-4">
+                  <div className="grid grid-cols-3 gap-3 border-t border-gray-100 dark:border-slate-700 pt-4">
                     <div>
-                      <p className="text-[11px] text-gray-500">Publics</p>
-                      <p className="text-lg font-semibold text-teal-700">{analytics?.storage?.publicDocuments || 0}</p>
+                      <p className="text-[11px] text-gray-500 dark:text-slate-400">Publics</p>
+                      <p className="text-lg font-semibold text-teal-700 dark:text-teal-300">{analytics?.storage?.publicDocuments || 0}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] text-gray-500">Privés</p>
-                      <p className="text-lg font-semibold text-gray-700">{analytics?.storage?.privateDocuments || 0}</p>
+                      <p className="text-[11px] text-gray-500 dark:text-slate-400">Privés</p>
+                      <p className="text-lg font-semibold text-gray-700 dark:text-slate-300">{analytics?.storage?.privateDocuments || 0}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] text-gray-500">Signalements</p>
-                      <p className={`text-lg font-semibold ${analytics?.pendingReports > 0 ? "text-red-600" : "text-gray-700"}`}>
+                      <p className="text-[11px] text-gray-500 dark:text-slate-400">Signalements</p>
+                      <p className={`text-lg font-semibold ${analytics?.pendingReports > 0 ? "text-red-600" : "text-gray-700 dark:text-slate-300"}`}>
                         {analytics?.pendingReports || 0}
                       </p>
                     </div>
@@ -570,21 +582,21 @@ export default function AdminDashboard() {
               <h2 className="text-lg font-semibold mb-4">Derniers utilisateurs</h2>
               <div className="space-y-3">
                 {!loading && users.length === 0 && (
-                  <p className="text-sm text-gray-500 py-4">Aucun utilisateur pour le moment.</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 py-4">Aucun utilisateur pour le moment.</p>
                 )}
                 {users.slice(0, 5).map(u => (
-                  <div key={u.id} className="flex items-center justify-between gap-3 py-2 border-b border-gray-50 last:border-0">
+                  <div key={u.id} className="flex items-center justify-between gap-3 py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-gray-900">{u.display_name}</p>
-                      <p className="truncate text-sm text-gray-500">{u.email}</p>
-                      <p className="truncate text-sm text-gray-500">{u.role}</p>
-                      <p className="truncate text-sm text-gray-500">{u.credits}</p>
-                      <p className="truncate text-sm text-gray-500">{u.email_verified ? "Oui" : "Non"}</p>
-                      <p className="truncate text-sm text-gray-500">{u.created_at ? u.created_at.slice(0,10) : ""}</p>
+                      <p className="truncate font-medium text-gray-900 dark:text-slate-100">{u.display_name}</p>
+                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.email}</p>
+                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.role}</p>
+                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.credits}</p>
+                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.email_verified ? "Oui" : "Non"}</p>
+                      <p className="truncate text-sm text-gray-500 dark:text-slate-400">{u.created_at ? u.created_at.slice(0,10) : ""}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <button className="text-xs text-gray-500 underline edit-user" data-id={u.id}>Modifier</button>
-                      <button className="text-xs text-gray-500 delete-user" data-id={u.id}>Supprimer</button>
+                      <button className="text-xs text-gray-500 dark:text-slate-400 underline edit-user" data-id={u.id}>Modifier</button>
+                      <button className="text-xs text-gray-500 dark:text-slate-400 delete-user" data-id={u.id}>Supprimer</button>
                     </div>
                   </div>
                 ))}
@@ -594,15 +606,15 @@ export default function AdminDashboard() {
               <h2 className="text-lg font-semibold mb-4">Derniers documents</h2>
               <div className="space-y-3">
                 {!loading && docs.length === 0 && (
-                  <p className="text-sm text-gray-500 py-4">Aucun document pour le moment.</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 py-4">Aucun document pour le moment.</p>
                 )}
                 {docs.slice(0, 5).map(d => (
-                  <div key={d.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                  <div key={d.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{d.title}</p>
-                      <p className="text-sm text-gray-500">{d.author_name}</p>
+                      <p className="font-medium text-gray-900 dark:text-slate-100 truncate">{d.title}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{d.author_name}</p>
                     </div>
-                    <span className="shrink-0 pl-3 text-xs text-gray-500">{formatDate(d.created_at)}</span>
+                    <span className="shrink-0 pl-3 text-xs text-gray-500 dark:text-slate-400">{formatDate(d.created_at)}</span>
                   </div>
                 ))}
               </div>
@@ -612,12 +624,13 @@ export default function AdminDashboard() {
       )}
 
 {activeTab === "users" && (
+        <>
         <Card className="p-4 sm:p-6">
   <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 sm:text-xl">
     <Users className="w-5 h-5" />
     Gestion des utilisateurs
   </h2>
-  <p className="text-sm text-gray-600 mb-4">
+  <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
     Gérer les utilisateurs du site.
   </p>
   <div className="mb-4 flex items-center gap-2">
@@ -625,7 +638,7 @@ export default function AdminDashboard() {
       placeholder="Rechercher un utilisateur..."
       value={searchUser}
       onChange={(e) => setSearchUser(e.target.value)}
-      className="flex-1 rounded-l border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:outline-none"
+      className="flex-1 rounded-l border border-gray-300 dark:border-slate-600 px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:outline-none"
     />
     <Button variant="secondary" onClick={() => setSearchUser("")}>
       <RefreshCw className="w-4 h-4" />
@@ -633,9 +646,9 @@ export default function AdminDashboard() {
     </Button>
   </div>
   <div className="overflow-x-auto">
-    <table className="w-full min-w-max rounded-lg border border-gray-200">
+    <table className="w-full min-w-max rounded-lg border border-gray-200 dark:border-slate-700">
       <thead>
-        <tr className="border-b border-gray-200 bg-gray-50 text-sm text-gray-600 uppercase">
+        <tr className="border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-sm text-gray-600 dark:text-slate-400 uppercase">
           <th className="p-3 text-left">Nom</th>
           <th className="p-3 text-left">Email</th>
           <th className="p-3 text-left">Rôle</th>
@@ -646,11 +659,11 @@ export default function AdminDashboard() {
       </thead>
       <tbody>
         {filteredUsers.map((u) => (
-          <tr key={u.id} className="border-b border-gray-100 hover:bg-gray-50">
-            <td className="p-3 font-medium text-gray-900">{u.display_name}</td>
-            <td className="p-3 text-gray-600 truncate">{u.email}</td>
-            <td className="p-3 text-gray-500">{u.role}</td>
-            <td className="p-3 text-gray-600">{u.credits}</td>
+          <tr key={u.id} className="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-900">
+            <td className="p-3 font-medium text-gray-900 dark:text-slate-100">{u.display_name}</td>
+            <td className="p-3 text-gray-600 dark:text-slate-400 truncate">{u.email}</td>
+            <td className="p-3 text-gray-500 dark:text-slate-400">{u.role}</td>
+            <td className="p-3 text-gray-600 dark:text-slate-400">{u.credits}</td>
             <td className="p-3">
               <Button
                 size="sm"
@@ -665,7 +678,7 @@ export default function AdminDashboard() {
                 <Button
                   size="sm"
                   variant="link"
-                  className="text-blue-600 hover:text-blue-900"
+                  className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-100"
                   onClick={() => setEditUserId(u.id)}
                 >
                   Modifier
@@ -683,7 +696,7 @@ export default function AdminDashboard() {
         ))}
         {filteredUsers.length === 0 && (
           <tr>
-            <td colSpan={6} className="p-6 text-center text-gray-500">
+            <td colSpan={6} className="p-6 text-center text-gray-500 dark:text-slate-400">
               Aucun utilisateur trouvé.
             </td>
           </tr>
@@ -692,26 +705,14 @@ export default function AdminDashboard() {
     </table>
   </div>
 </Card>
-)}
 
-useEffect(() => {
-    if (!editUserId) return;
-    const user = users.find((u) => u.id === editUserId);
-    if (user) {
-      setEditDisplayName(user.display_name);
-      setEditEmail(user.email);
-      setEditRole(user.role || "membre");
-      setEditCredits(user.credits || 0);
-      setEditEmailVerified(user.email_verified ? "oui" : "non");
-    }
-  }, [editUserId]),
-  {editUserId && (
-  <Card className="p-4 sm:p-6">
+{editUserId && (
+  <Card className="mt-4 p-4 sm:p-6">
     <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 sm:text-xl">
       <Users className="w-5 h-5" />
       Modifier l'utilisateur
     </h2>
-    <p className="text-sm text-gray-600 mb-4">
+    <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
       Modifiez les informations de l'utilisateur.
     </p>
     <form onSubmit={(e) => {
@@ -750,25 +751,25 @@ useEffect(() => {
       </Select>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-sm text-gray-600 mb-1">
+          <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">
             <input
               type="radio"
               name="email_verified"
               checked={editEmailVerified === "oui"}
               onChange={() => setEditEmailVerified("oui")}
-              className="rounded border-gray-300 px-2 py-1"
+              className="rounded border-gray-300 dark:border-slate-600 px-2 py-1"
             />
             Oui
           </label>
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">
+          <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">
             <input
               type="radio"
               name="email_verified"
               checked={editEmailVerified === "non"}
               onChange={() => setEditEmailVerified("non")}
-              className="rounded border-gray-300 px-2 py-1"
+              className="rounded border-gray-300 dark:border-slate-600 px-2 py-1"
             />
             Non
           </label>
@@ -784,6 +785,8 @@ useEffect(() => {
     </form>
   </Card>
 )}
+        </>
+      )}
 
       {activeTab === "documents" && (
         <Card className="p-4 sm:p-6">
@@ -795,7 +798,7 @@ useEffect(() => {
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
               <button
                 onClick={() => handleExport("documents")}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900"
               >
                 <Download className="h-4 w-4" />
                 Exporter CSV
@@ -806,8 +809,8 @@ useEffect(() => {
               </div>
             </div>
           </div>
-          <div className="mb-5 flex flex-col gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3 sm:flex-row sm:items-center sm:justify-between">
-            <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+          <div className="mb-5 flex flex-col gap-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-slate-300">
               <input
                 type="checkbox"
                 checked={allPageDocsSelected}
@@ -816,17 +819,17 @@ useEffect(() => {
                     ? prev.filter((id) => !pageDocIds.includes(id))
                     : [...new Set([...prev, ...pageDocIds])]);
                 }}
-                className="h-4 w-4 rounded border-gray-300 text-primary-600"
+                className="h-4 w-4 rounded border-gray-300 dark:border-slate-600 text-primary-600 dark:text-primary-100"
               />
               Sélectionner la page
             </label>
             {selectedDocIds.length > 0 ? (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-gray-500">{selectedDocIds.length} sélectionné(s)</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">{selectedDocIds.length} sélectionné(s)</span>
                 <button
                   onClick={() => handleBulkVisibility("public")}
                   disabled={bulkBusy}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 text-xs font-medium text-teal-700 ring-1 ring-teal-200 hover:bg-teal-50 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-teal-700 dark:text-teal-300 ring-1 ring-teal-200 dark:ring-teal-800 hover:bg-teal-50 dark:hover:bg-teal-950/40 disabled:opacity-50"
                 >
                   <Globe2 className="h-3.5 w-3.5" />
                   Public
@@ -834,7 +837,7 @@ useEffect(() => {
                 <button
                   onClick={() => handleBulkVisibility("private")}
                   disabled={bulkBusy}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 ring-1 ring-gray-200 hover:bg-gray-100 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 ring-1 ring-gray-200 dark:ring-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-50"
                 >
                   <Lock className="h-3.5 w-3.5" />
                   Privé
@@ -849,21 +852,21 @@ useEffect(() => {
                 </button>
               </div>
             ) : (
-              <span className="text-xs text-gray-500">Cochez des documents pour agir en masse.</span>
+              <span className="text-xs text-gray-500 dark:text-slate-400">Cochez des documents pour agir en masse.</span>
             )}
           </div>
           {filteredDocs.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-500">Aucun document trouvé.</div>
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">Aucun document trouvé.</div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {pagedDocs.map(d => (
-                <article key={d.id} className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+                <article key={d.id} className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-shadow hover:shadow-md">
                   <input
                     type="checkbox"
                     checked={selectedDocIds.includes(d.id)}
                     onChange={() => toggleDocSelection(d.id)}
                     aria-label={`Sélectionner ${d.title}`}
-                    className="absolute right-2.5 top-2.5 z-20 h-4 w-4 cursor-pointer rounded border-white/70 bg-white/90 text-primary-600 shadow-sm"
+                    className="absolute right-2.5 top-2.5 z-20 h-4 w-4 cursor-pointer rounded border-white/70 bg-white/90 dark:bg-slate-800/90 text-primary-600 dark:text-primary-100 shadow-sm"
                   />
                   <Link
                     to={`/documents/${d.id}`}
@@ -889,7 +892,7 @@ useEffect(() => {
                       {d.visibility === "private" ? "Privé" : "Public"}
                     </span>
                     {d.category && (
-                      <span className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-gray-800 backdrop-blur">
+                      <span className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/90 dark:bg-slate-800/90 px-2.5 py-1 text-[11px] font-medium text-gray-800 dark:text-slate-200 backdrop-blur">
                         {d.category}
                       </span>
                     )}
@@ -900,42 +903,42 @@ useEffect(() => {
                       to={`/documents/${d.id}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold text-gray-900 hover:text-primary-600"
+                      className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold text-gray-900 dark:text-slate-100 hover:text-primary-600 dark:hover:text-primary-100"
                     >
                       {d.title}
                     </Link>
-                    <p className="mt-1 truncate text-xs text-gray-500">{d.author_name}</p>
+                    <p className="mt-1 truncate text-xs text-gray-500 dark:text-slate-400">{d.author_name}</p>
                     <p className="mt-1 truncate text-[11px] text-gray-400" title={d.original_filename}>{d.original_filename || "Fichier"}</p>
 
                     <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]">
                       {canShowViewCount(d) && (
                         <div>
                           <p className="text-gray-400">Vues</p>
-                          <p className="font-semibold text-gray-700">{d.view_count || 0}</p>
+                          <p className="font-semibold text-gray-700 dark:text-slate-300">{d.view_count || 0}</p>
                         </div>
                       )}
                       <div>
                         <p className="text-gray-400">Téléch.</p>
-                        <p className="font-semibold text-gray-700">{d.download_count || 0}</p>
+                        <p className="font-semibold text-gray-700 dark:text-slate-300">{d.download_count || 0}</p>
                       </div>
                       <div>
                         <p className="text-gray-400">Taille</p>
-                        <p className="font-semibold text-gray-700">{d.size_bytes ? formatSize(d.size_bytes) : "-"}</p>
+                        <p className="font-semibold text-gray-700 dark:text-slate-300">{d.size_bytes ? formatSize(d.size_bytes) : "-"}</p>
                       </div>
                       <div>
                         <p className="text-gray-400">Ajouté</p>
-                        <p className="font-semibold text-gray-700">{formatDate(d.created_at)}</p>
+                        <p className="font-semibold text-gray-700 dark:text-slate-300">{formatDate(d.created_at)}</p>
                       </div>
                     </div>
 
-                    <div className="mt-auto flex items-center justify-end gap-1 border-t border-gray-100 pt-3">
+                    <div className="mt-auto flex items-center justify-end gap-1 border-t border-gray-100 dark:border-slate-700 pt-3">
                       <Link
                         to={`/documents/${d.id}`}
                         target="_blank"
                         rel="noreferrer"
                         title="Ouvrir le document"
                         aria-label="Ouvrir le document"
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600"
+                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-primary-600 dark:hover:text-primary-100"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                         Ouvrir
@@ -944,7 +947,7 @@ useEffect(() => {
                         onClick={() => handleDeleteDoc(d)}
                         title="Supprimer ce document"
                         aria-label="Supprimer ce document"
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         Supprimer
@@ -971,7 +974,7 @@ useEffect(() => {
                 <Flag className="h-5 w-5 text-red-600" />
                 Signalements ({pendingReports} en attente)
               </h2>
-              <p className="mt-1 text-sm text-gray-600">Examinez les contenus signalés par les utilisateurs.</p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">Examinez les contenus signalés par les utilisateurs.</p>
             </div>
             <Button variant="secondary" onClick={loadData} disabled={loading}>
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -980,53 +983,53 @@ useEffect(() => {
           </div>
 
           {reportsLoading ? (
-            <div className="py-12 text-center text-sm text-gray-500">Chargement…</div>
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">Chargement…</div>
           ) : reports.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-500">Aucun signalement pour le moment.</div>
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">Aucun signalement pour le moment.</div>
           ) : (
             <div className="space-y-3">
               {reports.map((report) => {
                 const targetDocId = report.document_id || report.comment_document_id;
                 const statusStyles = report.status === "pending"
-                  ? "bg-amber-50 text-amber-700"
+                  ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300"
                   : report.status === "resolved"
-                    ? "bg-green-50 text-green-700"
-                    : "bg-gray-100 text-gray-600";
+                    ? "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300"
+                    : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400";
                 const statusLabel = report.status === "pending" ? "En attente" : report.status === "resolved" ? "Résolu" : "Ignoré";
                 return (
-                  <article key={report.id} className="rounded-xl border border-gray-100 bg-white p-4">
+                  <article key={report.id} className="rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles}`}>{statusLabel}</span>
-                          <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">
+                          <span className="rounded-full bg-red-50 dark:bg-red-950/40 px-2.5 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
                             {reportReasonLabels[report.reason] || report.reason}
                           </span>
                           <span className="text-xs text-gray-400">{formatDate(report.created_at)}</span>
                         </div>
-                        <p className="mt-2 text-sm font-semibold text-gray-900">
+                        <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
                           {report.document_id ? "Document signalé" : "Commentaire signalé"}
                           {targetDocId && (
                             <>
                               {" · "}
-                              <Link to={`/documents/${targetDocId}`} target="_blank" rel="noreferrer" className="font-medium text-primary-600 hover:underline">
+                              <Link to={`/documents/${targetDocId}`} target="_blank" rel="noreferrer" className="font-medium text-primary-600 dark:text-primary-100 hover:underline">
                                 {report.document_title || "Voir le document"}
                               </Link>
                             </>
                           )}
                         </p>
                         {report.comment_content && (
-                          <p className="mt-1 line-clamp-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                          <p className="mt-1 line-clamp-2 rounded-lg bg-gray-50 dark:bg-slate-900 px-3 py-2 text-sm text-gray-700 dark:text-slate-300">
                             « {report.comment_content} »
                             {report.comment_author_name && <span className="text-gray-400"> — {report.comment_author_name}</span>}
                           </p>
                         )}
                         {report.details && (
-                          <p className="mt-2 text-sm text-gray-600">
-                            <span className="font-medium text-gray-700">Précisions :</span> {report.details}
+                          <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
+                            <span className="font-medium text-gray-700 dark:text-slate-300">Précisions :</span> {report.details}
                           </p>
                         )}
-                        <p className="mt-2 text-xs text-gray-500">
+                        <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">
                           Par {report.reporter_name} ({report.reporter_email})
                         </p>
                       </div>
@@ -1043,7 +1046,7 @@ useEffect(() => {
                             </button>
                             <button
                               onClick={() => handleReportStatus(report, "dismissed")}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200"
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-slate-800 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"
                             >
                               <X className="h-3.5 w-3.5" />
                               Ignorer
@@ -1052,7 +1055,7 @@ useEffect(() => {
                         ) : (
                           <button
                             onClick={() => handleReportStatus(report, "pending")}
-                            className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                            className="rounded-lg border border-gray-200 dark:border-slate-700 px-3 py-2 text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-900"
                           >
                             Réouvrir
                           </button>
@@ -1072,15 +1075,15 @@ useEffect(() => {
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
-                <History className="h-5 w-5 text-primary-600" />
+                <History className="h-5 w-5 text-primary-600 dark:text-primary-100" />
                 Journal d'audit
               </h2>
-              <p className="mt-1 text-sm text-gray-600">Historique des actions administratives récentes.</p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">Historique des actions administratives récentes.</p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handleExport("audit")}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900"
               >
                 <Download className="h-4 w-4" />
                 Exporter CSV
@@ -1093,20 +1096,20 @@ useEffect(() => {
           </div>
 
           {auditLoading ? (
-            <div className="py-12 text-center text-sm text-gray-500">Chargement…</div>
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">Chargement…</div>
           ) : audit.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-500">Aucune action enregistrée pour le moment.</div>
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">Aucune action enregistrée pour le moment.</div>
           ) : (
             <div className="space-y-3">
               {audit.map((entry) => {
                 const details = formatAuditDetails(entry.details);
                 const tone = entry.action.includes("delete")
-                  ? "bg-red-50 text-red-700"
+                  ? "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300"
                   : entry.action.includes("update")
-                    ? "bg-amber-50 text-amber-700"
-                    : "bg-blue-50 text-blue-700";
+                    ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300"
+                    : "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300";
                 return (
-                  <article key={entry.id} className="rounded-xl border border-gray-100 bg-white p-4">
+                  <article key={entry.id} className="rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
@@ -1115,15 +1118,15 @@ useEffect(() => {
                           </span>
                           <span className="text-xs text-gray-400">{formatDate(entry.created_at)}</span>
                         </div>
-                        <p className="mt-2 text-sm text-gray-900">
+                        <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">
                           Par <span className="font-medium">{entry.admin_name || "Administrateur supprimé"}</span>
-                          {entry.admin_email && <span className="text-gray-500"> ({entry.admin_email})</span>}
+                          {entry.admin_email && <span className="text-gray-500 dark:text-slate-400"> ({entry.admin_email})</span>}
                         </p>
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                           Cible : {entry.target_type || "—"}
                           {entry.target_id && <span className="ml-1 font-mono">{String(entry.target_id).slice(0, 8)}…</span>}
                         </p>
-                        {details && <p className="mt-2 text-sm text-gray-600">{details}</p>}
+                        {details && <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">{details}</p>}
                       </div>
                     </div>
                   </article>
@@ -1149,7 +1152,7 @@ useEffect(() => {
             <Settings className="w-5 h-5" />
             Paramètres du site
           </h2>
-          <p className="text-sm text-gray-600 mb-6">
+          <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">
             Ces réglages sont enregistrés en base et appliqués immédiatement à la plateforme et aux e-mails.
           </p>
           <form onSubmit={handleSaveSettings} className="space-y-6">
@@ -1157,7 +1160,7 @@ useEffect(() => {
               <h3 className="font-medium mb-2">Informations générales</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Nom du site</label>
+                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Nom du site</label>
                   <Input
                     value={settings.siteName}
                     onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
@@ -1166,7 +1169,7 @@ useEffect(() => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Email de contact</label>
+                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Email de contact</label>
                   <Input
                     type="email"
                     value={settings.contactEmail || ""}
@@ -1180,7 +1183,7 @@ useEffect(() => {
               <h3 className="font-medium mb-2">Fichiers</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Taille maximale par fichier (Mo)</label>
+                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Taille maximale par fichier (Mo)</label>
                   <Input
                     type="number"
                     min="1"
@@ -1189,7 +1192,7 @@ useEffect(() => {
                     onChange={(e) => setSettings({ ...settings, maxUploadSizeMb: e.target.value })}
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                     Limite appliquée lors du dépôt, entre 1 et 100 Mo.
                   </p>
                 </div>
@@ -1199,7 +1202,7 @@ useEffect(() => {
               <h3 className="font-medium mb-2">Crédits</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Crédits initiaux</label>
+                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Crédits initiaux</label>
                   <Input
                     type="number"
                     min="0"
@@ -1208,10 +1211,10 @@ useEffect(() => {
                     onChange={(e) => setSettings({ ...settings, creditsInitiaux: e.target.value })}
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">Attribués à chaque nouveau compte.</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Attribués à chaque nouveau compte.</p>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Crédits par upload</label>
+                  <label className="block text-sm text-gray-600 dark:text-slate-400 mb-1">Crédits par upload</label>
                   <Input
                     type="number"
                     min="0"
@@ -1220,7 +1223,7 @@ useEffect(() => {
                     onChange={(e) => setSettings({ ...settings, creditsParUpload: e.target.value })}
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">Gagnés à chaque document déposé.</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Gagnés à chaque document déposé.</p>
                 </div>
               </div>
             </div>

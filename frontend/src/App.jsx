@@ -26,7 +26,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 function PageFallback() {
   return (
-    <div className="flex min-h-[40vh] items-center justify-center gap-3 text-sm text-gray-500">
+    <div className="flex min-h-[40vh] items-center justify-center gap-3 text-sm text-gray-500 dark:text-slate-400">
       <span className="h-5 w-5 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
       Chargement...
     </div>

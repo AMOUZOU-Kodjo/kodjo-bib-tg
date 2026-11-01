@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { ThemeContext, useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
 import NotificationBell from "../notifications/NotificationBell";
@@ -20,6 +20,7 @@ const mobileAccentLink =
 export default function Navbar() {
   const { user, setUser } = useAuth();
   const { siteName } = useSiteSettings();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -110,15 +111,12 @@ export default function Navbar() {
             <NotificationBell />
 <button
   type="button"
-  onClick={() => {
-    const newTheme = localStorage.theme === "dark" ? "light" : "dark";
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.dataset.theme = newTheme;
-  }}
-  className="flex items-center gap-1 px-2 py-1 rounded-md text-sm text-gray-300 hover:bg-gray-200 transition-colors"
-  aria-label="Basculer le thème">
-  <Moon className="h-4 w-4" />
-  {localStorage.theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+  onClick={toggleTheme}
+  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/90 transition-colors hover:bg-white/10 hover:text-white"
+  aria-label={theme === "dark" ? "Activer le thème clair" : "Activer le thème sombre"}
+  title={theme === "dark" ? "Thème clair" : "Thème sombre"}
+>
+  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
 </button>
             <button
               type="button"

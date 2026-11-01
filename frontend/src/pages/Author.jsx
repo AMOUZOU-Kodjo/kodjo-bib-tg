@@ -97,17 +97,17 @@ export default function Author() {
 
   return (
     <div>
-      <section className="mb-8 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <section className="mb-8 overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
         <div className="h-24 bg-gradient-to-r from-teal-800 via-teal-700 to-emerald-600 sm:h-32" />
         <div className="px-5 pb-6 sm:px-8">
           <div className="-mt-10 flex flex-col gap-4 sm:-mt-12 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex min-w-0 items-end gap-4">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-teal-50 text-2xl font-bold text-teal-700 shadow-sm sm:h-24 sm:w-24 sm:text-3xl">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-teal-50 dark:bg-teal-950/40 text-2xl font-bold text-teal-700 dark:text-teal-300 shadow-sm sm:h-24 sm:w-24 sm:text-3xl">
                 {(author.display_name || "?").charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 pb-1">
-                <h1 className="truncate text-xl font-bold text-gray-900 sm:text-2xl">{author.display_name}</h1>
-                <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500 sm:text-sm">
+                <h1 className="truncate text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">{author.display_name}</h1>
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
                   <Calendar className="h-3.5 w-3.5" />
                   Membre depuis {formatDate(author.created_at)}
                 </p>
@@ -115,7 +115,7 @@ export default function Author() {
             </div>
 
             {author.is_self ? (
-              <Link to="/profile" className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:w-auto">
+              <Link to="/profile" className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900 sm:w-auto">
                 Mon profil
               </Link>
             ) : user ? (
@@ -124,7 +124,7 @@ export default function Author() {
                 disabled={followingBusy || !user.email_verified}
                 className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto ${
                   author.is_following
-                    ? "border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100"
+                    ? "border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/40"
                     : "bg-teal-700 text-white hover:bg-teal-800"
                 }`}
               >
@@ -139,21 +139,21 @@ export default function Author() {
             )}
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-gray-100 pt-4 text-sm">
-            <span className="inline-flex items-center gap-1.5 text-gray-600">
-              <BookOpen className="h-4 w-4 text-teal-700" />
-              <strong className="text-gray-900">{author.document_count}</strong> document{author.document_count > 1 ? "s" : ""} public{author.document_count > 1 ? "s" : ""}
+          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-gray-100 dark:border-slate-700 pt-4 text-sm">
+            <span className="inline-flex items-center gap-1.5 text-gray-600 dark:text-slate-400">
+              <BookOpen className="h-4 w-4 text-teal-700 dark:text-teal-300" />
+              <strong className="text-gray-900 dark:text-slate-100">{author.document_count}</strong> document{author.document_count > 1 ? "s" : ""} public{author.document_count > 1 ? "s" : ""}
             </span>
-            <span className="text-gray-600">
-              <strong className="text-gray-900">{author.follower_count}</strong> abonné{author.follower_count > 1 ? "s" : ""}
+            <span className="text-gray-600 dark:text-slate-400">
+              <strong className="text-gray-900 dark:text-slate-100">{author.follower_count}</strong> abonné{author.follower_count > 1 ? "s" : ""}
             </span>
           </div>
         </div>
       </section>
 
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-gray-900 sm:text-xl">Publications</h2>
-        <span className="text-sm text-gray-500">{total} document{total > 1 ? "s" : ""}</span>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Publications</h2>
+        <span className="text-sm text-gray-500 dark:text-slate-400">{total} document{total > 1 ? "s" : ""}</span>
       </div>
 
       {docsLoading ? (

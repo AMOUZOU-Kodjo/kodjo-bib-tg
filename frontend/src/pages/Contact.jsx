@@ -18,8 +18,8 @@ const topics = [
 ];
 
 const inputClass =
-  "w-full rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 transition focus:border-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-600";
-const labelClass = "mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500";
+  "w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50/70 dark:bg-slate-900/70 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 transition focus:border-transparent focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-600";
+const labelClass = "mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500 dark:text-slate-400";
 
 export default function Contact() {
   const { user } = useAuth();
@@ -86,10 +86,10 @@ export default function Contact() {
 
   return (
     <div className="font-ui max-w-6xl mx-auto">
-      <nav className="mb-5 flex flex-wrap items-center gap-2 text-xs text-gray-500 sm:text-sm">
-        <Link to="/" className="hover:text-teal-700">Accueil</Link>
+      <nav className="mb-5 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
+        <Link to="/" className="hover:text-teal-700 dark:hover:text-teal-300">Accueil</Link>
         <ChevronRight className="w-4 h-4" />
-        <span className="text-gray-900">Contact</span>
+        <span className="text-gray-900 dark:text-slate-100">Contact</span>
       </nav>
 
       <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950 via-teal-950 to-emerald-950 shadow-2xl sm:rounded-[28px]">
@@ -155,18 +155,18 @@ export default function Contact() {
           </div>
 
           <div className="p-3 sm:p-6 lg:p-8">
-            <div className="rounded-2xl bg-white p-5 shadow-2xl ring-1 ring-black/5 sm:p-8">
+            <div className="rounded-2xl bg-white dark:bg-slate-800 p-5 shadow-2xl ring-1 ring-black/5 sm:p-8">
               {sent ? (
                 <div className="text-center py-8">
-                  <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50 ring-8 ring-teal-50/50">
-                    <CheckCircle className="h-8 w-8 text-teal-700" />
+                  <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/40 ring-8 ring-teal-50/50">
+                    <CheckCircle className="h-8 w-8 text-teal-700 dark:text-teal-300" />
                   </div>
-                  <h2 className="font-display text-2xl font-semibold text-gray-900">Message bien envoyé</h2>
-                  <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-gray-600">
+                  <h2 className="font-display text-2xl font-semibold text-gray-900 dark:text-slate-100">Message bien envoyé</h2>
+                  <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-gray-600 dark:text-slate-400">
                     Merci, votre message a été transmis à l'équipe. Une réponse vous sera adressée
                     à l'adresse indiquée.
                   </p>
-                  <p className="font-signature mt-6 text-3xl text-teal-700">L'équipe {siteName}</p>
+                  <p className="font-signature mt-6 text-3xl text-teal-700 dark:text-teal-300">L'équipe {siteName}</p>
                   <button
                     onClick={reset}
                     className="mt-6 inline-flex items-center gap-2 rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800"
@@ -179,10 +179,10 @@ export default function Contact() {
                 <>
                   <div className="mb-6 flex items-start justify-between gap-3">
                     <div>
-                      <h2 className="font-display text-2xl font-semibold text-gray-900">Écrivez-nous</h2>
-                      <p className="mt-1 text-sm text-gray-500">Tous les champs sont requis.</p>
+                      <h2 className="font-display text-2xl font-semibold text-gray-900 dark:text-slate-100">Écrivez-nous</h2>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Tous les champs sont requis.</p>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
                       <Lock className="h-3 w-3" />
                       Sécurisé
                     </span>
@@ -232,7 +232,7 @@ export default function Contact() {
                               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                                 active
                                   ? "border-teal-600 bg-teal-600 text-white shadow-sm"
-                                  : "border-gray-200 bg-white text-gray-600 hover:border-teal-300 hover:text-teal-700"
+                                  : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:border-teal-300 hover:text-teal-700 dark:hover:text-teal-300"
                               }`}
                             >
                               <Icon className="h-3.5 w-3.5" />
@@ -272,7 +272,7 @@ export default function Contact() {
                     </div>
 
                     {error && (
-                      <div className="flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-3 text-sm text-red-700">
+                      <div className="flex items-start gap-2 rounded-xl border border-red-100 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-3.5 py-3 text-sm text-red-700 dark:text-red-300">
                         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                         <span>{error}</span>
                       </div>
@@ -289,7 +289,7 @@ export default function Contact() {
 
                     <p className="text-center text-[11px] leading-relaxed text-gray-400">
                       En envoyant ce message, vous acceptez notre{" "}
-                      <Link to="/confidentialite" className="font-medium text-teal-700 hover:underline">
+                      <Link to="/confidentialite" className="font-medium text-teal-700 dark:text-teal-300 hover:underline">
                         politique de confidentialité
                       </Link>.
                     </p>
@@ -302,41 +302,41 @@ export default function Contact() {
       </section>
 
       <section className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link to="/documents" className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:border-teal-200 hover:shadow-md">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50">
-            <FileText className="h-5 w-5 text-teal-700" />
+        <Link to="/documents" className="group rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm transition hover:border-teal-200 dark:hover:border-teal-800 hover:shadow-md">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/40">
+            <FileText className="h-5 w-5 text-teal-700 dark:text-teal-300" />
           </div>
-          <h2 className="font-semibold text-gray-900">Contacter un auteur</h2>
-          <p className="mt-1 text-sm text-gray-600">
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100">Contacter un auteur</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
             Ouvrez un document et utilisez le bouton « Contacter l'auteur ». Son e-mail reste privé.
           </p>
-          <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-teal-700">
+          <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-300">
             Parcourir le catalogue <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </Link>
 
-        <Link to="/confidentialite" className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:border-teal-200 hover:shadow-md">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
-            <ShieldCheck className="h-5 w-5 text-emerald-700" />
+        <Link to="/confidentialite" className="group rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm transition hover:border-teal-200 dark:hover:border-teal-800 hover:shadow-md">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40">
+            <ShieldCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
           </div>
-          <h2 className="font-semibold text-gray-900">Vos données</h2>
-          <p className="mt-1 text-sm text-gray-600">
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100">Vos données</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
             Accès, rectification, suppression : consultez la politique de confidentialité et exercez vos droits.
           </p>
-          <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-teal-700">
+          <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-300">
             Politique de confidentialité <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </Link>
 
-        <Link to="/cgu" className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:border-teal-200 hover:shadow-md">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
-            <FileText className="h-5 w-5 text-slate-700" />
+        <Link to="/cgu" className="group rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm transition hover:border-teal-200 dark:hover:border-teal-800 hover:shadow-md">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800">
+            <FileText className="h-5 w-5 text-slate-700 dark:text-slate-300" />
           </div>
-          <h2 className="font-semibold text-gray-900">Règles de la plateforme</h2>
-          <p className="mt-1 text-sm text-gray-600">
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100">Règles de la plateforme</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
             Dépôt, crédits, droits d'auteur et modération : tout est détaillé dans les CGU.
           </p>
-          <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-teal-700">
+          <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-300">
             Lire les conditions <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </Link>

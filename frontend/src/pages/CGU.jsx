@@ -79,7 +79,7 @@ export default function CGU() {
           L'équipe peut examiner, masquer ou supprimer tout document ou message signalé comme
           non conforme. Pour signaler un contenu,{" "}
           {contactEmail ? (
-            <>écrivez à <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>{" "}</>
+            <>écrivez à <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>{" "}</>
           ) : (
             "utilisez le formulaire de contact "
           )}
@@ -120,7 +120,7 @@ export default function CGU() {
           Les présentes CGU sont soumises au droit français. En cas de litige, une solution amiable
           sera recherchée en priorité{" "}
           {contactEmail ? (
-            <>via <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>{" "}</>
+            <>via <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>{" "}</>
           ) : (
             "via le formulaire de contact "
           )}

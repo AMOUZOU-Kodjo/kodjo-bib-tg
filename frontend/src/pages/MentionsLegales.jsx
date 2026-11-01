@@ -12,7 +12,7 @@ export default function MentionsLegales() {
         </p>
         <p>
           Contact : {contactEmail ? (
-            <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>
+            <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>
           ) : (
             "via le formulaire de contact"
           )}
@@ -42,7 +42,7 @@ export default function MentionsLegales() {
           Toute reproduction ou réutilisation non autorisée d'un document est interdite. Pour signaler
           un contenu portant atteinte à vos droits,{" "}
           {contactEmail ? (
-            <>écrivez à <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>.</>
+            <>écrivez à <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>.</>
           ) : (
             "utilisez le formulaire de contact."
           )}

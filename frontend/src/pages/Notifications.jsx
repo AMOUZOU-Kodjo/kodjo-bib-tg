@@ -74,18 +74,18 @@ export default function Notifications() {
     <div className="mx-auto max-w-3xl">
       <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 sm:text-3xl">
-            <Bell className="h-6 w-6 text-teal-700" />
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">
+            <Bell className="h-6 w-6 text-teal-700 dark:text-teal-300" />
             Notifications
           </h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
             {unread > 0 ? `${unread} notification${unread > 1 ? "s" : ""} non lue${unread > 1 ? "s" : ""}` : "Tout est à jour."}
           </p>
         </div>
         {unread > 0 && (
           <button
             onClick={readAll}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900"
           >
             <CheckCheck className="h-4 w-4" />
             Tout marquer comme lu
@@ -102,16 +102,16 @@ export default function Notifications() {
           {notifications.map((notification) => {
             const Icon = TYPE_ICONS[notification.type] || Bell;
             const content = (
-              <div className={`flex items-start gap-3 rounded-2xl border p-4 transition-colors ${notification.read_at ? "border-gray-100 bg-white" : "border-teal-100 bg-teal-50/50"}`}>
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${notification.read_at ? "bg-gray-100 text-gray-500" : "bg-teal-100 text-teal-700"}`}>
+              <div className={`flex items-start gap-3 rounded-2xl border p-4 transition-colors ${notification.read_at ? "border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800" : "border-teal-100 dark:border-teal-900 bg-teal-50/50 dark:bg-teal-950/40"}`}>
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${notification.read_at ? "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400" : "bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300"}`}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{notification.title}</p>
                     {!notification.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-teal-600" />}
                   </div>
-                  {notification.message && <p className="mt-0.5 text-sm text-gray-600">{notification.message}</p>}
+                  {notification.message && <p className="mt-0.5 text-sm text-gray-600 dark:text-slate-400">{notification.message}</p>}
                   <p className="mt-1 text-xs text-gray-400">{formatDate(notification.created_at)}</p>
                 </div>
                 {notification.link && <ChevronRight className="mt-2 h-4 w-4 shrink-0 text-gray-400" />}

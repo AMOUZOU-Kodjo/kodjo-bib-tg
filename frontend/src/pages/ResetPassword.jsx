@@ -33,33 +33,33 @@ export default function ResetPassword() {
 
   return (
     <div className="mx-auto max-w-md py-6 sm:py-10">
-      <Link to="/login" className="mb-6 inline-flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600">
+      <Link to="/login" className="mb-6 inline-flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-100">
         <ArrowLeft className="w-4 h-4" />
         Retour à la connexion
       </Link>
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+      <div className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-8">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50">
-            <KeyRound className="w-6 h-6 text-primary-600" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/30">
+            <KeyRound className="w-6 h-6 text-primary-600 dark:text-primary-100" />
           </div>
-          <h1 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl">Réinitialiser le mot de passe</h1>
-          <p className="text-sm text-gray-600 sm:text-base">Entrez le code reçu par email et votre nouveau mot de passe</p>
+          <h1 className="mb-2 text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">Réinitialiser le mot de passe</h1>
+          <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">Entrez le code reçu par email et votre nouveau mot de passe</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Adresse email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Adresse email</label>
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Code de réinitialisation</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Code de réinitialisation</label>
             <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="123456" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nouveau mot de passe</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Nouveau mot de passe</label>
             <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimum 8 caractères" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Confirmer le mot de passe</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Confirmer le mot de passe</label>
             <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>

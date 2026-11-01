@@ -91,27 +91,27 @@ export default function InstallPWA({ className = "" }) {
           onClick={() => setHelpOpen(false)}
         >
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl"
+            className="w-full max-w-md overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-              <h2 id="install-pwa-title" className="font-semibold text-gray-900">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 px-5 py-4">
+              <h2 id="install-pwa-title" className="font-semibold text-gray-900 dark:text-slate-100">
                 Installer l'application
               </h2>
               <button
                 type="button"
                 onClick={() => setHelpOpen(false)}
                 aria-label="Fermer"
-                className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                className="rounded-lg p-1.5 text-gray-500 dark:text-slate-400 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-300"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="space-y-4 p-5 text-sm text-gray-600">
+            <div className="space-y-4 p-5 text-sm text-gray-600 dark:text-slate-400">
               {isIos ? (
                 <>
-                  <p className="flex items-center gap-2 font-medium text-gray-800">
-                    <Share2 className="h-4 w-4 text-teal-700" />
+                  <p className="flex items-center gap-2 font-medium text-gray-800 dark:text-slate-200">
+                    <Share2 className="h-4 w-4 text-teal-700 dark:text-teal-300" />
                     Sur iPhone ou iPad (Safari)
                   </p>
                   <ol className="list-decimal space-y-1.5 pl-5">
@@ -123,8 +123,8 @@ export default function InstallPWA({ className = "" }) {
                 </>
               ) : (
                 <>
-                  <p className="flex items-center gap-2 font-medium text-gray-800">
-                    <Smartphone className="h-4 w-4 text-teal-700" />
+                  <p className="flex items-center gap-2 font-medium text-gray-800 dark:text-slate-200">
+                    <Smartphone className="h-4 w-4 text-teal-700 dark:text-teal-300" />
                     Depuis ton navigateur
                   </p>
                   <ol className="list-decimal space-y-1.5 pl-5">
@@ -132,7 +132,7 @@ export default function InstallPWA({ className = "" }) {
                     <li>Choisis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</li>
                     <li>Confirme l'installation.</li>
                   </ol>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
                     Sur ordinateur, l'icône d'installation apparaît aussi dans la barre d'adresse.
                   </p>
                 </>

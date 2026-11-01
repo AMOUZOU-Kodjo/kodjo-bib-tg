@@ -13,6 +13,23 @@
     <link rel="canonical" href="https://kodjo-bib-tg.pages.dev/" />
     <link rel="alternate" type="application/rss+xml" title="Archives de Documents — Nouveaux documents" href="/rss.xml" />
     <meta name="theme-color" content="#0f766e" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var theme =
+            stored === "dark" || stored === "light"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.style.colorScheme = theme;
+        } catch (error) {
+          /* thème clair par défaut */
+        }
+      })();
+    </script>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />

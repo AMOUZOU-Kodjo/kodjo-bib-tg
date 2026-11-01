@@ -232,26 +232,26 @@ export default function DocumentDetail() {
 
   return (
     <div>
-      <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs text-gray-500 sm:mb-6 sm:text-sm">
-        <Link to="/" className="hover:text-teal-700">Accueil</Link>
+      <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-slate-400 sm:mb-6 sm:text-sm">
+        <Link to="/" className="hover:text-teal-700 dark:hover:text-teal-300">Accueil</Link>
         <ChevronRight className="w-4 h-4" />
-        <Link to="/documents" className="hover:text-teal-700">Livres</Link>
+        <Link to="/documents" className="hover:text-teal-700 dark:hover:text-teal-300">Livres</Link>
         {doc.category && (
           <>
             <ChevronRight className="w-4 h-4" />
-            <Link to={`/documents?category=${encodeURIComponent(doc.category)}`} className="hover:text-teal-700">
+            <Link to={`/documents?category=${encodeURIComponent(doc.category)}`} className="hover:text-teal-700 dark:hover:text-teal-300">
               {formatCategoryName(doc.category)}
             </Link>
           </>
         )}
         <ChevronRight className="w-4 h-4" />
-        <span className="text-gray-900 line-clamp-1">{doc.title}</span>
+        <span className="text-gray-900 dark:text-slate-100 line-clamp-1">{doc.title}</span>
       </nav>
 
       <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:gap-8">
         <aside>
-          <div className="mx-auto mb-4 w-full max-w-[240px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm sm:max-w-[280px] lg:max-w-none">
-            <div className="relative aspect-[3/4] bg-gray-100">
+          <div className="mx-auto mb-4 w-full max-w-[240px] overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm sm:max-w-[280px] lg:max-w-none">
+            <div className="relative aspect-[3/4] bg-gray-100 dark:bg-slate-800">
               {doc.thumbnail && !thumbnailFailed ? (
                 <img
                   src={doc.thumbnail}
@@ -260,11 +260,11 @@ export default function DocumentDetail() {
                   onError={() => setThumbnailFailed(true)}
                 />
               ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-gradient-to-br from-slate-50 via-white to-teal-50">
-                  <div className="w-14 h-14 rounded-full bg-white shadow-sm flex items-center justify-center mb-4">
-                    <FileText className="w-7 h-7 text-teal-700" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-gradient-to-br from-slate-50 dark:from-slate-900 via-white to-teal-50">
+                  <div className="w-14 h-14 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center mb-4">
+                    <FileText className="w-7 h-7 text-teal-700 dark:text-teal-300" />
                   </div>
-                  <p className="text-sm font-semibold text-gray-800 line-clamp-4 px-2">{doc.title}</p>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-slate-200 line-clamp-4 px-2">{doc.title}</p>
                   <p className="mt-4 text-[10px] uppercase tracking-widest text-gray-400">{doc.original_filename?.split('.').pop() || "DOC"}</p>
                 </div>
               )}
@@ -274,7 +274,7 @@ export default function DocumentDetail() {
             </div>
           </div>
           {showViewCount && (
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-slate-400 mb-4">
               <Eye className="w-4 h-4" />
               <span>{doc.view_count || 0} en lecture</span>
             </div>
@@ -283,14 +283,14 @@ export default function DocumentDetail() {
             <FileText className="w-5 h-5" />
             {previewLoading ? "Chargement..." : showPreview ? "Actualiser l'aperçu" : user?.email_verified ? "Consulter en ligne" : "Vérifiez votre email"}
           </button>
-          <button onClick={download} className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 border border-gray-200 transition-colors mb-3">
+          <button onClick={download} className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700 transition-colors mb-3">
             <Download className="w-5 h-5" />
             Télécharger
           </button>
           <button
             onClick={share}
             disabled={!user?.email_verified}
-            className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Share2 className="w-4 h-4" />
             {user && !user.email_verified ? "Vérifiez votre email pour partager" : "Partager le lien"}
@@ -298,7 +298,7 @@ export default function DocumentDetail() {
           {doc.visibility === "public" && (
             <button
               onClick={() => setShareOpen(true)}
-              className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-50 border border-gray-200 transition-colors mb-3"
+              className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700 transition-colors mb-3"
             >
               <Share2 className="w-4 h-4" />
               Partager sur les réseaux
@@ -308,8 +308,8 @@ export default function DocumentDetail() {
             onClick={favorite}
             className={`w-full flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-colors mb-3 ${
               doc.favoritedByMe
-                ? "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
-                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                ? "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-900 hover:bg-amber-100 dark:hover:bg-amber-900/40"
+                : "bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-900"
             }`}
           >
             <Bookmark className={`w-4 h-4 ${doc.favoritedByMe ? "fill-current" : ""}`} />
@@ -319,13 +319,13 @@ export default function DocumentDetail() {
             <WhatsAppPublishButton doc={doc} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-2.5 font-medium text-white transition-colors hover:bg-[#1ebe5b] disabled:cursor-not-allowed disabled:opacity-50" />
           )}
           {!doc.isOwner && !isAdmin && (
-            <button onClick={openContact} className="w-full flex items-center justify-center gap-2 bg-white text-teal-700 px-6 py-2.5 rounded-xl font-medium hover:bg-teal-50 border border-teal-200 transition-colors">
+            <button onClick={openContact} className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 px-6 py-2.5 rounded-xl font-medium hover:bg-teal-50 dark:hover:bg-teal-950/40 border border-teal-200 dark:border-teal-800 transition-colors">
               <Mail className="w-4 h-4" />
               Contacter l'auteur
             </button>
           )}
           {!doc.isOwner && (
-            <button onClick={openReport} className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600">
+            <button onClick={openReport} className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-2 text-sm font-medium text-gray-500 dark:text-slate-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600">
               <Flag className="w-4 h-4" />
               Signaler ce document
             </button>
@@ -334,11 +334,11 @@ export default function DocumentDetail() {
 
         <main>
           <header className="mb-6">
-            <h1 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl md:text-3xl lg:text-4xl">{doc.title}</h1>
+            <h1 className="mb-3 text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl md:text-3xl lg:text-4xl">{doc.title}</h1>
             <div className="mb-4 flex flex-wrap items-center gap-3">
-              <p className="text-base text-gray-600 sm:text-lg">
+              <p className="text-base text-gray-600 dark:text-slate-400 sm:text-lg">
                 par{" "}
-                <Link to={`/authors/${doc.owner_id}`} className="font-medium text-teal-700 hover:underline">
+                <Link to={`/authors/${doc.owner_id}`} className="font-medium text-teal-700 dark:text-teal-300 hover:underline">
                   {doc.author_name}
                 </Link>
               </p>
@@ -349,7 +349,7 @@ export default function DocumentDetail() {
                 </span>
               )}
               {isAdmin && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 border border-blue-200">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-200">
                   <Shield className="w-3 h-3" />
                   Vue administrateur
                 </span>
@@ -365,81 +365,81 @@ export default function DocumentDetail() {
                 <Link
                   key={tag}
                   to={`/documents?tag=${encodeURIComponent(tag)}`}
-                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-teal-700"
+                  className="rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1 text-sm text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:hover:bg-slate-900 hover:text-teal-700 dark:hover:text-teal-300"
                 >
                   #{tag}
                 </Link>
               ))}
-              <button onClick={like} className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border transition-colors ${doc.likedByMe ? "bg-red-50 text-red-600 border-red-200" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}>
+              <button onClick={like} className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm border transition-colors ${doc.likedByMe ? "bg-red-50 dark:bg-red-950/40 text-red-600 border-red-200 dark:border-red-900" : "bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-900"}`}>
                 <Heart className={`w-4 h-4 ${doc.likedByMe ? "fill-current" : ""}`} />
                 {doc.like_count || 0}
               </button>
             </div>
           </header>
 
-          <section className="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-            <h2 className="mb-4 text-lg font-bold text-gray-900 sm:text-xl">Informations</h2>
+          <section className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
+            <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Informations</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50">
-                  <User className="w-5 h-5 text-teal-700" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/40">
+                  <User className="w-5 h-5 text-teal-700 dark:text-teal-300" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500">Auteur</p>
-                  <Link to={`/authors/${doc.owner_id}`} className="font-medium text-teal-700 break-words hover:underline">
+                  <p className="text-sm text-gray-500 dark:text-slate-400">Auteur</p>
+                  <Link to={`/authors/${doc.owner_id}`} className="font-medium text-teal-700 dark:text-teal-300 break-words hover:underline">
                     {doc.author_name}
                   </Link>
                 </div>
               </div>
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50">
-                  <FileText className="w-5 h-5 text-blue-700" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40">
+                  <FileText className="w-5 h-5 text-blue-700 dark:text-blue-300" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500">Catégorie</p>
-                  <p className="font-medium text-gray-900">{doc.category ? formatCategoryName(doc.category) : "-"}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">Catégorie</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">{doc.category ? formatCategoryName(doc.category) : "-"}</p>
                 </div>
               </div>
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50">
-                  <Download className="w-5 h-5 text-emerald-700" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/40">
+                  <Download className="w-5 h-5 text-emerald-700 dark:text-emerald-300" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500">Disponibilité</p>
-                  <p className="font-medium text-gray-900">Gratuit</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">Disponibilité</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">Gratuit</p>
                 </div>
               </div>
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50">
-                  <Calendar className="w-5 h-5 text-amber-700" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/40">
+                  <Calendar className="w-5 h-5 text-amber-700 dark:text-amber-300" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500">Ajouté</p>
-                  <p className="font-medium text-gray-900">{formatDate(doc.created_at)}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">Ajouté</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">{formatDate(doc.created_at)}</p>
                 </div>
               </div>
             </div>
           </section>
 
           {doc.description && (
-            <section className="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-              <h2 className="mb-3 text-lg font-bold text-gray-900 sm:text-xl">À propos de ce livre</h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{doc.description}</p>
+            <section className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
+              <h2 className="mb-3 text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">À propos de ce livre</h2>
+              <p className="text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{doc.description}</p>
             </section>
           )}
 
-          <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+          <section className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-lg font-bold text-gray-900 sm:text-xl">Aperçu du livre</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Aperçu du livre</h2>
               {showPreview && (
-                <a href={previewSrc || getDocumentViewFile(id)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-medium text-teal-700 hover:underline">
+                <a href={previewSrc || getDocumentViewFile(id)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-300 hover:underline">
                   <Maximize2 className="w-4 h-4" />
                   Plein écran
                 </a>
               )}
             </div>
             {showPreview ? (
-              <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white">
+              <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                 {previewSrc ? (
                   <object
                     data={previewSrc}
@@ -449,7 +449,7 @@ export default function DocumentDetail() {
                   >
                     <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
                       <FileText className="h-10 w-10 text-gray-400" />
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-slate-400">
                         L’aperçu ne s’affiche pas correctement sur ce navigateur.
                       </p>
                       <a
@@ -464,16 +464,16 @@ export default function DocumentDetail() {
                   </object>
                 ) : null}
                 {previewLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/80 text-sm text-gray-600" aria-live="polite">
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 text-sm text-gray-600 dark:text-slate-400" aria-live="polite">
                     Chargement de l’aperçu…
                   </div>
                 )}
               </div>
             ) : (
-              <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-100">
+              <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 dark:from-slate-800 to-gray-50 dark:to-slate-900 border border-gray-100 dark:border-slate-700">
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
                   <FileText className="w-12 h-12 text-gray-400 mb-3" />
-                  <p className="text-gray-600 mb-4">{user?.email_verified ? "Cliquez sur \"Consulter en ligne\" pour afficher l'aperçu" : "Vérifiez votre email pour consulter l'aperçu en ligne"}</p>
+                  <p className="text-gray-600 dark:text-slate-400 mb-4">{user?.email_verified ? "Cliquez sur \"Consulter en ligne\" pour afficher l'aperçu" : "Vérifiez votre email pour consulter l'aperçu en ligne"}</p>
                   <button onClick={loadPreview} disabled={previewLoading || !user?.email_verified} className="px-4 py-2 bg-teal-700 text-white rounded-lg shadow-sm hover:bg-teal-800 disabled:opacity-50">
                     {previewLoading ? "Chargement..." : user?.email_verified ? "Charger l'aperçu" : "Vérifier mon email"}
                   </button>
@@ -481,7 +481,7 @@ export default function DocumentDetail() {
               </div>
             )}
             {doc.size_bytes && (
-              <p className="text-sm text-gray-500 mt-3">Taille : {formatSize(doc.size_bytes)} • Format : {doc.mime_type?.split("/")[1]?.toUpperCase() || "-"}</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-3">Taille : {formatSize(doc.size_bytes)} • Format : {doc.mime_type?.split("/")[1]?.toUpperCase() || "-"}</p>
             )}
           </section>
 
@@ -522,12 +522,12 @@ export default function DocumentDetail() {
 
       {creditsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="credits-dialog-title">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-700">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 p-6 shadow-xl">
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
               <Download className="h-5 w-5" />
             </div>
-            <h2 id="credits-dialog-title" className="text-lg font-semibold text-gray-900">Crédits insuffisants</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-600">
+            <h2 id="credits-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-slate-100">Crédits insuffisants</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-slate-400">
               Chaque document déposé vous offre 2 téléchargements gratuits. Déposez un document pour continuer à télécharger.
             </p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row-reverse">
@@ -540,7 +540,7 @@ export default function DocumentDetail() {
               <button
                 type="button"
                 onClick={() => setCreditsOpen(false)}
-                className="inline-flex flex-1 items-center justify-center rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                className="inline-flex flex-1 items-center justify-center rounded-xl border border-gray-200 dark:border-slate-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:hover:bg-slate-900"
               >
                 Fermer
               </button>
@@ -551,7 +551,7 @@ export default function DocumentDetail() {
 
       {related.length > 0 && (
         <section>
-          <h2 className="mb-5 text-lg font-bold text-gray-900 sm:text-xl md:text-2xl">Dans la même catégorie</h2>
+          <h2 className="mb-5 text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl md:text-2xl">Dans la même catégorie</h2>
           <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {related.map((item) => (
               <DocumentCard key={item.id} doc={item} />

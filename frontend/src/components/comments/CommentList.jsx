@@ -4,7 +4,7 @@ import { formatDate } from "../../utils/format";
 export default function CommentList({ comments, currentUserId, isOwner, onDelete, deletingId, onReport }) {
   if (comments.length === 0) {
     return (
-      <div className="text-center text-gray-500 py-8 flex flex-col items-center gap-2">
+      <div className="text-center text-gray-500 dark:text-slate-400 py-8 flex flex-col items-center gap-2">
         <MessageSquare className="w-8 h-8 text-gray-300" />
         <p className="text-sm">Aucun commentaire pour le moment. Soyez le premier !</p>
       </div>
@@ -17,20 +17,20 @@ export default function CommentList({ comments, currentUserId, isOwner, onDelete
         const canDelete = currentUserId === comment.user_id || isOwner;
         return (
           <li key={comment.id} className="flex gap-3">
-            <div className="w-9 h-9 rounded-full bg-teal-50 text-teal-700 flex items-center justify-center text-sm font-semibold shrink-0">
+            <div className="w-9 h-9 rounded-full bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 flex items-center justify-center text-sm font-semibold shrink-0">
               {(comment.author_name || "?").charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-sm font-semibold text-gray-900 truncate">{comment.author_name}</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-slate-100 truncate">{comment.author_name}</span>
                   <span className="text-xs text-gray-400 shrink-0">{formatDate(comment.created_at)}</span>
                 </div>
                 <div className="flex shrink-0 items-center gap-0.5">
                   {onReport && currentUserId && comment.user_id !== currentUserId && (
                     <button
                       onClick={() => onReport(comment)}
-                      className="p-1.5 rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                      className="p-1.5 rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
                       aria-label="Signaler le commentaire"
                       title="Signaler"
                     >
@@ -41,7 +41,7 @@ export default function CommentList({ comments, currentUserId, isOwner, onDelete
                     <button
                       onClick={() => onDelete(comment.id)}
                       disabled={deletingId === comment.id}
-                      className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                      className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors disabled:opacity-40"
                       aria-label="Supprimer le commentaire"
                       title="Supprimer"
                     >
@@ -50,7 +50,7 @@ export default function CommentList({ comments, currentUserId, isOwner, onDelete
                   )}
                 </div>
               </div>
-              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words mt-1">
+              <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words mt-1">
                 {comment.content}
               </p>
             </div>

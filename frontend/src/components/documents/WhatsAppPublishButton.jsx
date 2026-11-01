@@ -95,24 +95,24 @@ export default function WhatsAppPublishButton({ doc, className = "" }) {
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl"
+            className="w-full max-w-lg overflow-hidden rounded-2xl bg-white dark:bg-slate-800 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-              <h2 id="whatsapp-publish-title" className="font-semibold text-gray-900">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 px-5 py-4">
+              <h2 id="whatsapp-publish-title" className="font-semibold text-gray-900 dark:text-slate-100">
                 Publier sur la chaîne WhatsApp
               </h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Fermer"
-                className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                className="rounded-lg p-1.5 text-gray-500 dark:text-slate-400 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-300"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="space-y-4 p-5">
-              <ol className="list-decimal space-y-1 pl-5 text-sm text-gray-600">
+              <ol className="list-decimal space-y-1 pl-5 text-sm text-gray-600 dark:text-slate-400">
                 <li>Copie le message ci-dessous.</li>
                 <li>Ouvre la chaîne WhatsApp.</li>
                 <li>Colle le message et publie.</li>
@@ -122,13 +122,13 @@ export default function WhatsAppPublishButton({ doc, className = "" }) {
                 value={message}
                 rows={8}
                 onFocus={(event) => event.target.select()}
-                className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-800 focus:border-teal-500 focus:outline-none"
+                className="w-full resize-none rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-3 text-sm text-gray-800 dark:text-slate-200 focus:border-teal-500 focus:outline-none"
               />
               <div className="grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={copyMessage}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-200"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-100 dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-gray-800 dark:text-slate-200 transition-colors hover:bg-gray-200 dark:hover:bg-slate-700"
                 >
                   <Copy className="h-4 w-4" />
                   Copier le message
@@ -147,7 +147,7 @@ export default function WhatsAppPublishButton({ doc, className = "" }) {
                 href={`https://wa.me/?text=${encodeURIComponent(message)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center text-sm font-medium text-teal-700 hover:text-teal-800"
+                className="block text-center text-sm font-medium text-teal-700 dark:text-teal-300 hover:text-teal-800 dark:hover:text-teal-200"
               >
                 Ou partager via WhatsApp (contacts et groupes)
               </a>

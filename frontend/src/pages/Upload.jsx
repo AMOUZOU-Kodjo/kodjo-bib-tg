@@ -157,23 +157,23 @@ export default function Upload() {
   return (
     <div className="max-w-3xl mx-auto py-4 sm:py-8">
       <div className="mb-6 sm:mb-8">
-        <h1 className="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">Déposer un document</h1>
-        <p className="text-sm text-gray-600 sm:text-base">Partagez vos documents avec la communauté. Formats acceptés : PDF, Word, Excel, PowerPoint et TXT.</p>
+        <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl md:text-4xl">Déposer un document</h1>
+        <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">Partagez vos documents avec la communauté. Formats acceptés : PDF, Word, Excel, PowerPoint et TXT.</p>
       </div>
 
       {createdDoc && (
-        <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50 p-4 sm:p-5">
+        <div className="mb-6 rounded-2xl border border-teal-100 dark:border-teal-900 bg-teal-50 dark:bg-teal-950/40 p-4 sm:p-5">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-teal-900">Document déposé</p>
-              <p className="truncate text-sm text-teal-800">{createdDoc.title}</p>
+              <p className="font-semibold text-teal-900 dark:text-teal-100">Document déposé</p>
+              <p className="truncate text-sm text-teal-800 dark:text-teal-200">{createdDoc.title}</p>
             </div>
             <button
               type="button"
               onClick={() => setCreatedDoc(null)}
               aria-label="Fermer"
-              className="rounded-lg p-1 text-teal-700 transition-colors hover:bg-teal-100"
+              className="rounded-lg p-1 text-teal-700 dark:text-teal-300 transition-colors hover:bg-teal-100 dark:hover:bg-teal-900/40"
             >
               <X className="h-4 w-4" />
             </button>
@@ -188,10 +188,10 @@ export default function Upload() {
             </Link>
             <WhatsAppPublishButton
               doc={createdDoc}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#25D366] bg-white px-4 py-2.5 text-sm font-semibold text-[#128C4A] transition-colors hover:bg-[#25D366]/10 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#25D366] bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-[#128C4A] transition-colors hover:bg-[#25D366]/10 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
-          <p className="mt-3 text-xs text-teal-700">
+          <p className="mt-3 text-xs text-teal-700 dark:text-teal-300">
             {createdDoc.visibility === "public"
               ? "Ce document public est publié automatiquement sur la chaîne Telegram."
               : "Ce document privé n'est pas publié sur la chaîne Telegram."}
@@ -200,7 +200,7 @@ export default function Upload() {
             href={TELEGRAM_CHANNEL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-teal-700 hover:text-teal-800"
+            className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-teal-700 dark:text-teal-300 hover:text-teal-800 dark:hover:text-teal-200"
           >
             <Send className="h-3.5 w-3.5" />
             Voir la chaîne Telegram
@@ -208,10 +208,10 @@ export default function Upload() {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <form onSubmit={submit} className="divide-y divide-gray-100">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+        <form onSubmit={submit} className="divide-y divide-gray-100 dark:divide-slate-700">
           <div className="p-4 sm:p-6 md:p-8">
-            <label className="block text-sm font-semibold text-gray-900 mb-3">Fichier *</label>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3">Fichier *</label>
             <div
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -219,10 +219,10 @@ export default function Upload() {
               onDrop={handleDrop}
               className={`relative rounded-xl border-2 border-dashed p-5 text-center transition-all sm:p-8 ${
                 dragActive
-                  ? "border-teal-500 bg-teal-50/50"
+                  ? "border-teal-500 bg-teal-50/50 dark:bg-teal-950/40"
                   : file
-                  ? "border-teal-200 bg-teal-50/30"
-                  : "border-gray-200 hover:border-teal-400 hover:bg-gray-50/50"
+                  ? "border-teal-200 dark:border-teal-800 bg-teal-50/30 dark:bg-teal-950/40"
+                  : "border-gray-200 dark:border-slate-700 hover:border-teal-400 hover:bg-gray-50/50 dark:hover:bg-slate-900/50"
               }`}
             >
               <input
@@ -235,12 +235,12 @@ export default function Upload() {
               {file ? (
                 <div className="flex items-center justify-between gap-3 text-left">
                   <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 sm:h-12 sm:w-12">
-                      <FileText className="w-6 h-6 text-teal-700" />
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 dark:bg-teal-900/40 sm:h-12 sm:w-12">
+                      <FileText className="w-6 h-6 text-teal-700 dark:text-teal-300" />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-gray-900">{file.name}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="truncate font-medium text-gray-900 dark:text-slate-100">{file.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">
                         {formatFileSize(file.size)}
                         {file.type && ` • ${file.type.split("/")[1]?.toUpperCase()}`}
                       </p>
@@ -255,18 +255,18 @@ export default function Upload() {
                     setSuggestionApplied(false);
                     if (inputRef.current) inputRef.current.value = "";
                   }}
-                    className="shrink-0 rounded-lg p-2 transition-colors hover:bg-gray-100"
+                    className="shrink-0 rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800"
                   >
-                    <X className="w-5 h-5 text-gray-500" />
+                    <X className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                   </button>
                 </div>
               ) : (
                 <>
                   <UploadCloud className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-900 font-medium mb-1">
+                  <p className="text-gray-900 dark:text-slate-100 font-medium mb-1">
                     Glissez-déposez votre fichier ici
                   </p>
-                  <p className="text-sm text-gray-500 mb-3">ou cliquez pour parcourir</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 mb-3">ou cliquez pour parcourir</p>
                   <p className="text-xs text-gray-400">PDF, Word, Excel, PowerPoint, TXT • {maxUploadSizeMb} Mo maximum</p>
                 </>
               )}
@@ -275,7 +275,7 @@ export default function Upload() {
 
           <div className="space-y-6 p-4 sm:p-6 md:p-8">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">Titre *</label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Titre *</label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -285,7 +285,7 @@ export default function Upload() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">Catégorie</label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Catégorie</label>
                 <select
                 value={category}
                 onChange={(e) => {
@@ -295,7 +295,7 @@ export default function Upload() {
                     setSuggestionApplied(false);
                   }
                 }}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
+                className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-slate-800"
               >
                 <option value="">Sélectionner une catégorie</option>
                 {CATEGORIES.map((cat) => (
@@ -305,7 +305,7 @@ export default function Upload() {
                 ))}
               </select>
               {suggestedCategory && !category && !suggestionApplied && (
-                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-teal-50 px-3 py-2 text-xs text-teal-800">
+                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-teal-50 dark:bg-teal-950/40 px-3 py-2 text-xs text-teal-800 dark:text-teal-200">
                   <Sparkles className="w-4 h-4" />
                   <span>
                     Suggestion automatique : <strong>{suggestedCategory}</strong>
@@ -327,7 +327,7 @@ export default function Upload() {
                       setSuggestedCategory(null);
                       setSuggestionApplied(false);
                     }}
-                    className="rounded-md px-2.5 py-1 text-teal-700 hover:bg-teal-100"
+                    className="rounded-md px-2.5 py-1 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/40"
                   >
                     Ignorer
                   </button>
@@ -336,7 +336,7 @@ export default function Upload() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">Mots-clés</label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Mots-clés</label>
               <Input
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
@@ -347,7 +347,7 @@ export default function Upload() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">Visibilité</label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Visibilité</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -355,14 +355,14 @@ export default function Upload() {
                   aria-pressed={visibility === "public"}
                   className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
                     visibility === "public"
-                      ? "border-teal-600 bg-teal-50/60 ring-1 ring-teal-600"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-teal-600 bg-teal-50/60 dark:bg-teal-950/40 ring-1 ring-teal-600"
+                      : "border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600"
                   }`}
                 >
-                  <Globe2 className={`w-5 h-5 mt-0.5 ${visibility === "public" ? "text-teal-700" : "text-gray-400"}`} />
+                  <Globe2 className={`w-5 h-5 mt-0.5 ${visibility === "public" ? "text-teal-700 dark:text-teal-300" : "text-gray-400"}`} />
                   <span>
-                    <span className="block text-sm font-semibold text-gray-900">Public</span>
-                    <span className="mt-0.5 block text-xs text-gray-500">Visible par tous dans la bibliothèque et les recherches.</span>
+                    <span className="block text-sm font-semibold text-gray-900 dark:text-slate-100">Public</span>
+                    <span className="mt-0.5 block text-xs text-gray-500 dark:text-slate-400">Visible par tous dans la bibliothèque et les recherches.</span>
                   </span>
                 </button>
                 <button
@@ -371,25 +371,25 @@ export default function Upload() {
                   aria-pressed={visibility === "private"}
                   className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
                     visibility === "private"
-                      ? "border-teal-600 bg-teal-50/60 ring-1 ring-teal-600"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-teal-600 bg-teal-50/60 dark:bg-teal-950/40 ring-1 ring-teal-600"
+                      : "border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600"
                   }`}
                 >
-                  <Lock className={`w-5 h-5 mt-0.5 ${visibility === "private" ? "text-teal-700" : "text-gray-400"}`} />
+                  <Lock className={`w-5 h-5 mt-0.5 ${visibility === "private" ? "text-teal-700 dark:text-teal-300" : "text-gray-400"}`} />
                   <span>
-                    <span className="block text-sm font-semibold text-gray-900">Privé</span>
-                    <span className="mt-0.5 block text-xs text-gray-500">Visible uniquement par vous et les personnes ayant le lien.</span>
+                    <span className="block text-sm font-semibold text-gray-900 dark:text-slate-100">Privé</span>
+                    <span className="mt-0.5 block text-xs text-gray-500 dark:text-slate-400">Visible uniquement par vous et les personnes ayant le lien.</span>
                   </span>
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">Description</label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 rows={5}
                 placeholder="Ajoutez une description pour aider les autres à comprendre le contenu..."
               />
@@ -397,14 +397,14 @@ export default function Upload() {
             </div>
           </div>
 
-          <div className="bg-gray-50/50 p-4 sm:p-6 md:p-8">
+          <div className="bg-gray-50/50 dark:bg-slate-900/50 p-4 sm:p-6 md:p-8">
             {loading && (
               <div className="mb-4">
-                <div className="mb-1 flex items-center justify-between text-xs font-medium text-gray-600">
+                <div className="mb-1 flex items-center justify-between text-xs font-medium text-gray-600 dark:text-slate-400">
                   <span>{progress < 100 ? "Envoi du fichier..." : "Traitement et optimisation..."}</span>
                   <span>{progress}%</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-gray-200" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}>
+                <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}>
                   <div className="h-full rounded-full bg-teal-600 transition-all duration-300" style={{ width: `${progress}%` }} />
                 </div>
               </div>
@@ -426,7 +426,7 @@ export default function Upload() {
                 </>
               )}
             </Button>
-            <p className="text-xs text-gray-500 mt-3">
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-3">
               {visibility === "private"
                 ? "Ce document restera privé. Vous pourrez générer un lien de partage depuis votre profil."
                 : "En déposant ce document, vous acceptez qu'il soit partagé avec la communauté."}

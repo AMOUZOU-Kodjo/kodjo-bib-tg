@@ -114,8 +114,8 @@ export default function Documents() {
   return (
     <div>
       <section className="mb-8">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">Bibliothèque numérique</h1>
-        <p className="text-sm text-gray-600 mb-4 sm:text-base">{total} livre{total > 1 ? "s" : ""} dans la bibliothèque</p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">Bibliothèque numérique</h1>
+        <p className="text-sm text-gray-600 dark:text-slate-400 mb-4 sm:text-base">{total} livre{total > 1 ? "s" : ""} dans la bibliothèque</p>
         <form onSubmit={handleSearchSubmit} className="mb-4">
           <div className="relative max-w-xl">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -127,7 +127,7 @@ export default function Documents() {
             />
           </div>
         </form>
-        <div className="text-xs text-gray-600 sm:text-sm">
+        <div className="text-xs text-gray-600 dark:text-slate-400 sm:text-sm">
           {total} livres · {categories.length} catégories
         </div>
       </section>
@@ -135,7 +135,7 @@ export default function Documents() {
       <nav className="-mx-4 mb-8 flex gap-2 overflow-x-auto px-4 pb-2 sm:-mx-1 sm:px-1">
         <button
           onClick={() => setCategory("")}
-          className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${!categoryParam ? "bg-teal-700 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+          className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${!categoryParam ? "bg-teal-700 text-white shadow-sm" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"}`}
         >
           Tous {total}
         </button>
@@ -143,7 +143,7 @@ export default function Documents() {
           <button
             key={c.category}
             onClick={() => setCategory(c.category)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${categoryParam === c.category ? "bg-teal-700 text-white shadow-sm" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${categoryParam === c.category ? "bg-teal-700 text-white shadow-sm" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"}`}
           >
             {formatCategoryName(c.category)} {c.count}
           </button>
@@ -152,7 +152,7 @@ export default function Documents() {
 
       {tagOptions.length > 0 && (
         <nav className="-mx-4 mb-8 flex items-center gap-2 overflow-x-auto px-4 pb-2 sm:-mx-1 sm:px-1">
-          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-gray-500">
+          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-gray-500 dark:text-slate-400">
             <Tag className="h-3.5 w-3.5" />
             Mots-clés
           </span>
@@ -170,7 +170,7 @@ export default function Documents() {
               <button
                 key={item.tag}
                 onClick={() => setTag(item.tag)}
-                className="whitespace-nowrap rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200"
+                className="whitespace-nowrap rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-200 dark:hover:bg-slate-700"
               >
                 #{item.tag} {item.count}
               </button>
@@ -179,7 +179,7 @@ export default function Documents() {
       )}
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-bold text-gray-900">À la une</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">À la une</h2>
         <select
           value={sort}
           onChange={(e) => {
@@ -191,7 +191,7 @@ export default function Documents() {
             next.set("page", "1");
             setSearchParams(next);
           }}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 sm:w-auto"
+          className="w-full rounded-lg border border-gray-200 dark:border-slate-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 sm:w-auto"
         >
           <option value="recent">Plus récents</option>
           <option value="likes">Plus aimés</option>

@@ -10,7 +10,7 @@ export default function Confidentialite() {
           Les données personnelles collectées sur {siteName} sont traitées par l'équipe éditoriale de
           la plateforme, responsable du traitement. Pour toute question :{" "}
           {contactEmail ? (
-            <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>
+            <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>
           ) : (
             "utilisez le formulaire de contact"
           )}.
@@ -76,7 +76,7 @@ export default function Confidentialite() {
           Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement,
           de limitation, d'opposition et de portabilité de vos données. Vous pouvez exercer ces droits
           {contactEmail ? (
-            <>en écrivant à <a href={`mailto:${contactEmail}`} className="text-teal-700 hover:underline">{contactEmail}</a>.</>
+            <>en écrivant à <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>.</>
           ) : (
             "via le formulaire de contact."
           )}

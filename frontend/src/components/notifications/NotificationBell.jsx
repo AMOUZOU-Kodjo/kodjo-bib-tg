@@ -99,18 +99,18 @@ export default function NotificationBell() {
       >
         <Bell className="h-5 w-5" />
         {unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-bold leading-[18px] text-slate-900">
+          <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-bold leading-[18px] text-slate-900 dark:text-slate-100">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="fixed inset-x-3 top-[4.5rem] z-[70] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80">
-          <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3">
-            <p className="text-sm font-semibold text-gray-900">Notifications</p>
+        <div className="fixed inset-x-3 top-[4.5rem] z-[70] overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80">
+          <div className="flex items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-700 px-4 py-3">
+            <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">Notifications</p>
             {unread > 0 && (
-              <button onClick={readAll} className="inline-flex items-center gap-1 text-xs font-medium text-teal-700 hover:underline">
+              <button onClick={readAll} className="inline-flex items-center gap-1 text-xs font-medium text-teal-700 dark:text-teal-300 hover:underline">
                 <CheckCheck className="h-3.5 w-3.5" />
                 Tout lire
               </button>
@@ -119,25 +119,25 @@ export default function NotificationBell() {
 
           <div className="max-h-[70vh] overflow-y-auto">
             {loading && notifications.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-gray-500">Chargement...</p>
+              <p className="px-4 py-8 text-center text-sm text-gray-500 dark:text-slate-400">Chargement...</p>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center px-4 py-8 text-center">
                 <Inbox className="mb-2 h-8 w-8 text-gray-300" />
-                <p className="text-sm text-gray-500">Aucune notification pour le moment.</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Aucune notification pour le moment.</p>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-50">
+              <ul className="divide-y divide-gray-50 dark:divide-slate-800">
                 {notifications.map((notification) => (
                   <li key={notification.id}>
                     <button
                       onClick={() => openNotification(notification)}
-                      className={`block w-full px-4 py-3 text-left transition-colors hover:bg-gray-50 ${notification.read_at ? "" : "bg-teal-50/40"}`}
+                      className={`block w-full px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-slate-900 ${notification.read_at ? "" : "bg-teal-50/40 dark:bg-teal-950/40"}`}
                     >
                       <div className="flex items-start gap-2">
                         {!notification.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-teal-600" />}
                         <div className={`min-w-0 ${notification.read_at ? "pl-4" : ""}`}>
-                          <p className="text-sm font-medium text-gray-900">{notification.title}</p>
-                          {notification.message && <p className="mt-0.5 line-clamp-2 text-xs text-gray-500">{notification.message}</p>}
+                          <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{notification.title}</p>
+                          {notification.message && <p className="mt-0.5 line-clamp-2 text-xs text-gray-500 dark:text-slate-400">{notification.message}</p>}
                           <p className="mt-1 text-[11px] text-gray-400">{formatDate(notification.created_at)}</p>
                         </div>
                       </div>
@@ -151,7 +151,7 @@ export default function NotificationBell() {
           <Link
             to="/notifications"
             onClick={() => setOpen(false)}
-            className="block border-t border-gray-100 px-4 py-3 text-center text-sm font-medium text-teal-700 hover:bg-gray-50"
+            className="block border-t border-gray-100 dark:border-slate-700 px-4 py-3 text-center text-sm font-medium text-teal-700 dark:text-teal-300 hover:bg-gray-50 dark:hover:bg-slate-900"
           >
             Voir toutes les notifications
           </Link>

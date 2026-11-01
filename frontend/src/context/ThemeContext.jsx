@@ -1,23 +1,44 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-export const ThemeContext = createContext("light");
+const STORAGE_KEY = "theme";
+
+export const ThemeContext = createContext(null);
+
+const getInitialTheme = () => {
+  if (typeof window === "undefined") return "light";
+
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  if (stored === "dark" || stored === "light") return stored;
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+};
 
 export const useTheme = () => {
-  const c = useContext(ThemeContext);
-  return { theme: c, setTheme: c.setTheme };
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useTheme doit être utilisé dans un ThemeProvider");
+  }
+  return context;
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    const stored = localStorage.getItem("theme");
-    return stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  });
+  const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
-    const html = document.documentElement;
-    html.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
+    const root = document.documentElement;
+    root.setAttribute("data-theme", theme);
+    root.style.colorScheme = theme;
+    window.localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      toggleTheme: () => setTheme((current) => (current === "dark" ? "light" : "dark")),
+    }),
+    [theme]
+  );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };

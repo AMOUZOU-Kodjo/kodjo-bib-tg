@@ -63,7 +63,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               onClick={onShare}
               aria-label={`Partager ${doc.title}`}
               title="Partager le lien privé"
-              className="rounded-lg bg-white/95 p-2 text-gray-700 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white hover:text-teal-700"
+              className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
             >
               <Share2 className="h-4 w-4" />
             </button>
@@ -74,7 +74,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               onClick={onEdit}
               aria-label={`Modifier ${doc.title}`}
               title="Modifier"
-              className="rounded-lg bg-white/95 p-2 text-gray-700 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white hover:text-teal-700"
+              className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
             >
               <Pencil className="h-4 w-4" />
             </button>
@@ -86,7 +86,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               disabled={deleting}
               aria-label={`Supprimer ${doc.title}`}
               title="Supprimer"
-              className="rounded-lg bg-white/95 p-2 text-red-600 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white hover:text-red-700 disabled:opacity-50"
+              className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-red-600 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50"
             >
               <Trash2 className="h-4 w-4" />
             </button>

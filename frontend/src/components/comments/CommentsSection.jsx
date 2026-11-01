@@ -91,27 +91,27 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
   };
 
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+    <section className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center gap-2">
-        <MessageSquare className="w-5 h-5 text-teal-700" />
-        <h2 className="text-lg font-bold text-gray-900 sm:text-xl">Commentaires</h2>
-        <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600">{total}</span>
+        <MessageSquare className="w-5 h-5 text-teal-700 dark:text-teal-300" />
+        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Commentaires</h2>
+        <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-800 text-xs font-medium text-gray-600 dark:text-slate-400">{total}</span>
       </div>
 
       {user?.email_verified ? (
         <CommentForm onSubmit={submit} />
       ) : (
-        <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600">
+        <div className="mb-6 rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-4 text-sm text-gray-600 dark:text-slate-400">
           {user ? (
             <>
               Vérifiez votre adresse e-mail pour laisser un commentaire.{" "}
-              <Link to="/verify-email" state={{ email: user.email }} className="font-medium text-teal-700 hover:underline">
+              <Link to="/verify-email" state={{ email: user.email }} className="font-medium text-teal-700 dark:text-teal-300 hover:underline">
                 Vérifier mon e-mail
               </Link>
             </>
           ) : (
             <>
-              <Link to="/login" state={{ from: location }} className="font-medium text-teal-700 hover:underline">
+              <Link to="/login" state={{ from: location }} className="font-medium text-teal-700 dark:text-teal-300 hover:underline">
                 Connectez-vous
               </Link>{" "}
               pour laisser un commentaire.
@@ -137,7 +137,7 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-colors disabled:opacity-50"
               >
                 <ChevronDown className="w-4 h-4" />
                 {loadingMore ? "Chargement..." : "Charger plus"}

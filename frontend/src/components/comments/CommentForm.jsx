@@ -29,7 +29,7 @@ export default function CommentForm({ onSubmit }) {
         rows={3}
         maxLength={1000}
         placeholder="Partagez votre avis ou posez une question..."
-        className="w-full resize-y rounded-xl border border-gray-200 px-3.5 py-3 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-teal-600 sm:px-4"
+        className="w-full resize-y rounded-xl border border-gray-200 dark:border-slate-700 px-3.5 py-3 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-teal-600 sm:px-4"
       />
       <div className="mt-2 flex items-center justify-between gap-3">
         <span className="shrink-0 text-xs text-gray-400">{content.length}/1000</span>

@@ -28,11 +28,11 @@ export default function CookieConsent() {
 
   return (
     <div className="safe-area-bottom fixed bottom-0 left-0 right-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4">
-      <div className="max-w-7xl mx-auto bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-2xl p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
-        <div className="text-sm text-gray-700 leading-relaxed">
+      <div className="max-w-7xl mx-auto bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border border-gray-200 dark:border-slate-700 rounded-2xl shadow-2xl p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
+        <div className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed">
           <p>
             Nous utilisons des cookies pour mesurer l'audience et améliorer ce contenu éducatif gratuit. Vous gardez le contrôle, et pouvez changer d'avis à tout moment.{" "}
-            <Link to="/mentions-legales" className="text-teal-700 hover:underline font-medium">
+            <Link to="/mentions-legales" className="text-teal-700 dark:text-teal-300 hover:underline font-medium">
               En savoir plus
             </Link>
           </p>
@@ -40,7 +40,7 @@ export default function CookieConsent() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={refuse}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
           >
             Refuser
           </button>

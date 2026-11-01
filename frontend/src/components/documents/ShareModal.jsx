@@ -75,7 +75,7 @@ export default function ShareModal({ url, title, description, onClose }) {
       label: "E-mail",
       href: `mailto:?subject=${text}&body=${message}`,
       icon: Mail,
-      className: "bg-amber-50 text-amber-800 hover:bg-amber-100"
+      className: "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
     }
   ];
 
@@ -99,28 +99,28 @@ export default function ShareModal({ url, title, description, onClose }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center p-0 sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative max-h-[90dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-6">
+      <div className="relative max-h-[90dvh] w-full overflow-y-auto rounded-t-2xl bg-white dark:bg-slate-800 p-5 shadow-2xl sm:max-w-lg sm:rounded-2xl sm:p-6">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50">
-              <Share2 className="h-5 w-5 text-teal-700" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/40">
+              <Share2 className="h-5 w-5 text-teal-700 dark:text-teal-300" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg font-bold text-gray-900">Partager ce document</h2>
-              <p className="line-clamp-1 text-sm text-gray-500">{title}</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Partager ce document</h2>
+              <p className="line-clamp-1 text-sm text-gray-500 dark:text-slate-400">{title}</p>
             </div>
           </div>
-          <button onClick={onClose} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="Fermer">
+          <button onClick={onClose} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-300" aria-label="Fermer">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="mb-5 flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 p-2">
+        <div className="mb-5 flex items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-2">
           <input
             readOnly
             value={url}
             onFocus={(e) => e.target.select()}
-            className="min-w-0 flex-1 bg-transparent px-2 text-xs font-mono text-gray-700 focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent px-2 text-xs font-mono text-gray-700 dark:text-slate-300 focus:outline-none"
             aria-label="Lien du document"
           />
           <button onClick={copyLink} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800">
@@ -145,20 +145,20 @@ export default function ShareModal({ url, title, description, onClose }) {
         </div>
 
         {"share" in navigator && (
-          <button onClick={nativeShare} className="mb-5 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <button onClick={nativeShare} className="mb-5 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900">
             <Share2 className="h-4 w-4" />
             Partager avec une application
           </button>
         )}
 
-        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+        <div className="rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-4">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <QrCode className="h-4 w-4 text-teal-700" />
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
+              <QrCode className="h-4 w-4 text-teal-700 dark:text-teal-300" />
               Scanner le QR code
             </h3>
             {qrCode && (
-              <a href={qrCode} download={`qr-${title.slice(0, 40).replace(/[^\w-]+/g, "-") || "document"}.png`} className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 hover:bg-gray-100">
+              <a href={qrCode} download={`qr-${title.slice(0, 40).replace(/[^\w-]+/g, "-") || "document"}.png`} className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-gray-200 dark:ring-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800">
                 <Download className="h-3.5 w-3.5" />
                 Télécharger
               </a>
@@ -166,11 +166,11 @@ export default function ShareModal({ url, title, description, onClose }) {
           </div>
           <div className="mt-3 flex justify-center">
             {qrCode ? (
-              <img src={qrCode} alt={`QR code pour ${title}`} className="h-48 w-48 rounded-lg bg-white p-2 shadow-sm" />
+              <img src={qrCode} alt={`QR code pour ${title}`} className="h-48 w-48 rounded-lg bg-white dark:bg-slate-800 p-2 shadow-sm" />
             ) : qrError ? (
-              <p className="py-8 text-sm text-gray-500">Impossible de générer le QR code.</p>
+              <p className="py-8 text-sm text-gray-500 dark:text-slate-400">Impossible de générer le QR code.</p>
             ) : (
-              <div className="h-48 w-48 animate-pulse rounded-lg bg-gray-200" aria-label="Génération du QR code" />
+              <div className="h-48 w-48 animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700" aria-label="Génération du QR code" />
             )}
           </div>
         </div>
