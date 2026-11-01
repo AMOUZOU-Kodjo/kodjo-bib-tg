@@ -1,8 +1,9 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
+import { useEffect } from "react";
 
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
@@ -34,6 +35,17 @@ function PageFallback() {
 }
 
 export default function App() {
+  const location = useLocation();
+
+  // Animation de transition légère à chaque changement de route
+  useEffect(() => {
+    document.documentElement.classList.add("page-transition");
+    const timer = setTimeout(() => {
+      document.documentElement.classList.remove("page-transition");
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [location.key]);
+
   return (
     <Layout>
       <Suspense fallback={<PageFallback />}>

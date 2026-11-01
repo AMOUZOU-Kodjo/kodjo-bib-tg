@@ -85,3 +85,13 @@ a {
   }
 }
 
+/* === Page transition légère === */
+html.page-transition {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeOut {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
