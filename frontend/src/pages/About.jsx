@@ -42,9 +42,9 @@ export default function About() {
 <p className="text-gray-600 dark:text-slate-400">
               Pour toute question, suggestion ou signalement, vous pouvez nous joindre via le formulaire de <Link to="/contact" className="text-teal-600 hover:underline">contact</Link>.
             </p>
-            <section className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <img src={photo1} alt="Photo personnelle" className="rounded-xl max-w-100 h-auto" />
-              <img src={photo2} alt="Photo personnelle" className="rounded-xl max-w-100 h-auto" />
+            <section className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 justify-items-center">
+              <img src={photo1} alt="Photo personnelle" className="w-48 h-48 object-cover rounded-xl" />
+              <img src={photo2} alt="Photo personnelle" className="w-48 h-48 object-cover rounded-xl" />
             </section>
             <div className="mt-8 p-6 rounded-xl border border-teal-100 bg-teal-50/30 text-center">
             <h3 className="font-medium text-teal-800">Nous contacter</h3>
