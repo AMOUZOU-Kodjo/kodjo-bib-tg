@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-{
-  /* icons */
-}
+import photo1 from "../assets/photo1.png";
+import photo2 from "../assets/photo2.jpeg";
 import { Globe, Users, Shield, Download, Heart, Book } from "lucide-react";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 
@@ -40,11 +39,14 @@ export default function About() {
           </ul>
 
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-slate-100 border-b-2 border-teal-500 pb-2 mb-4">Contact</h2>
-          <p className="text-gray-600 dark:text-slate-400">
-            Pour toute question, suggestion ou signalement, vous pouvez nous joindre via le formulaire de <Link to="/contact" className="text-teal-600 hover:underline">contact</Link>.
-          </p>
-
-          <div className="mt-8 p-6 rounded-xl border border-teal-100 bg-teal-50/30 text-center">
+<p className="text-gray-600 dark:text-slate-400">
+              Pour toute question, suggestion ou signalement, vous pouvez nous joindre via le formulaire de <Link to="/contact" className="text-teal-600 hover:underline">contact</Link>.
+            </p>
+            <section className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <img src={photo1} alt="Photo personnelle" className="rounded-xl max-w-100 h-auto" />
+              <img src={photo2} alt="Photo personnelle" className="rounded-xl max-w-100 h-auto" />
+            </section>
+            <div className="mt-8 p-6 rounded-xl border border-teal-100 bg-teal-50/30 text-center">
             <h3 className="font-medium text-teal-800">Nous contacter</h3>
             <p className="mt-2 text-teal-600">
               Équipe de développement — kodjo-bib-tg
