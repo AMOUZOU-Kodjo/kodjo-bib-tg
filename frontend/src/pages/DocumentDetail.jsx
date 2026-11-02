@@ -18,6 +18,7 @@ import ReportModal from "../components/reports/ReportModal";
 import ShareModal from "../components/documents/ShareModal";
 import { getCategoryColor, formatCategoryName } from "../utils/document";
 import useSeo from "../hooks/useSeo";
+import { getPublicShareUrl } from "../api/share";
 
 export default function DocumentDetail() {
   const { id } = useParams();
@@ -188,6 +189,15 @@ export default function DocumentDetail() {
   };
 
   const share = async () => {
+    if (doc.visibility === "public") {
+      try {
+        await navigator.clipboard.writeText(getPublicShareUrl(doc.id));
+        toast.success("Lien copié");
+      } catch {
+        toast.error("Impossible de copier le lien");
+      }
+      return;
+    }
     if (!user) {
       promptLogin("Connectez-vous pour partager ce document");
       return;
@@ -291,11 +301,11 @@ export default function DocumentDetail() {
           </button>
           <button
             onClick={share}
-            disabled={!user?.email_verified}
+            disabled={doc.visibility !== "public" && !user?.email_verified}
             className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Share2 className="w-4 h-4" />
-            {user && !user.email_verified ? "Vérifiez votre email pour partager" : "Partager le lien"}
+            {doc.visibility !== "public" && user && !user.email_verified ? "Vérifiez votre email pour partager" : "Partager le lien"}
           </button>
           {doc.visibility === "public" && (
             <button
@@ -442,6 +452,13 @@ export default function DocumentDetail() {
             </div>
             {showPreview ? (
               <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                {!previewSrc && doc.thumbnail && (
+                  <img
+                    src={doc.thumbnail}
+                    alt={doc.title}
+                    className="h-[65vh] min-h-[380px] w-full object-cover object-top md:h-[900px]"
+                  />
+                )}
                 {previewSrc ? (
                   <object
                     data={previewSrc}
@@ -466,8 +483,9 @@ export default function DocumentDetail() {
                   </object>
                 ) : null}
                 {previewLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 text-sm text-gray-600 dark:text-slate-400" aria-live="polite">
-                    Chargement de l’aperçu…
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 dark:bg-slate-800/80 text-sm text-gray-600 dark:text-slate-400" aria-live="polite">
+                    <div className="h-7 w-7 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
+                    Chargement de l’aperçu complet…
                   </div>
                 )}
               </div>
@@ -515,7 +533,7 @@ export default function DocumentDetail() {
 
       {shareOpen && (
         <ShareModal
-          url={`${window.location.origin}/documents/${doc.id}`}
+          url={getPublicShareUrl(doc.id)}
           title={doc.title}
           description={doc.description}
           onClose={() => setShareOpen(false)}

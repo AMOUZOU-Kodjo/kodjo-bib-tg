@@ -3,10 +3,11 @@ import { Readable } from "node:stream";
 import { query } from "../config/db.js";
 import { getDocumentThumbnailUrl, getSignedDownloadUrl } from "../services/cloudinary.service.js";
 import { streamDocumentFile } from "../services/documentStream.service.js";
-import { verifyDocumentShareToken } from "../services/share.service.js";
+import { createDocumentShareToken, verifyDocumentShareToken } from "../services/share.service.js";
 import { config } from "../config/env.js";
 
 const router = express.Router();
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 router.use((req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
@@ -41,6 +42,18 @@ async function loadSharedDocument(token) {
   return null;
 }
 
+async function loadPublicDocument(id) {
+  if (!UUID_RE.test(id)) return null;
+  const docRes = await query(
+    `SELECT d.*, u.display_name AS author_name
+     FROM documents d
+     JOIN users u ON u.id = d.owner_id
+     WHERE d.id = $1 AND d.visibility = 'public'`,
+    [id]
+  );
+  return docRes.rows[0] || null;
+}
+
 function serializeSharedDocument(doc) {
   let thumbnail = null;
   try {
@@ -53,6 +66,7 @@ function serializeSharedDocument(doc) {
     title: doc.title,
     description: doc.description,
     category: doc.category,
+    visibility: doc.visibility,
     author_name: doc.author_name,
     original_filename: doc.original_filename,
     mime_type: doc.mime_type,
@@ -73,76 +87,26 @@ function escapeHtml(text = "") {
     .replace(/'/g, "&#039;");
 }
 
-router.get("/:token/og-image", async (req, res, next) => {
-  try {
-    const doc = await loadSharedDocument(req.params.token);
-    if (!doc) return res.status(404).end();
-    let thumbUrl = null;
-    try {
-      thumbUrl = getDocumentThumbnailUrl(doc.cloudinary_public_id, doc.mime_type, doc.preview_public_id, 7200);
-    } catch {
-      thumbUrl = null;
-    }
-    if (!thumbUrl) return res.status(404).end();
-    const response = await fetch(thumbUrl);
-    if (!response.ok) return res.status(404).end();
-    const contentType = response.headers.get("content-type") || "image/jpeg";
-    res.setHeader("Content-Type", contentType);
-    res.setHeader(
-      "Cache-Control",
-      doc.visibility === "public"
-        ? "public, max-age=86400, s-maxage=86400"
-        : "no-store, max-age=0"
-    );
-    res.setHeader("Referrer-Policy", "no-referrer");
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    if (!response.body) return res.end();
-    Readable.fromWeb(response.body)
-      .on("error", () => {
-        if (!res.destroyed) res.destroy();
-      })
-      .pipe(res);
-  } catch (err) {
-    if (res.headersSent) {
-      res.destroy();
-      return;
-    }
-    next(err);
-  }
-});
+function frontendBaseUrl() {
+  return String(config.frontendUrl || "https://kodjo-bib-tg.pages.dev").replace(/\/+$/, "");
+}
 
-router.get("/:token", async (req, res, next) => {
-  try {
-    const doc = await loadSharedDocument(req.params.token);
-    if (!doc) {
-      const accept = req.headers.accept || "";
-      if (accept.includes("application/json")) {
-        return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lien de partage invalide ou expiré" } });
-      }
-      const frontendUrl = String(config.frontendUrl || "https://kodjo-bib-tg.pages.dev").replace(/\/+$/, "");
-      return res.status(404).send(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lien de partage invalide</title><meta http-equiv="refresh" content="0;url=${frontendUrl}/"></head><body></body></html>`);
-    }
-    const accept = req.headers.accept || "";
-    if (accept.includes("application/json")) {
-      return res.json({ document: serializeSharedDocument(doc) });
-    }
+function backendBaseUrl(req) {
+  const configured = process.env.BACKEND_PUBLIC_URL || process.env.RENDER_EXTERNAL_URL;
+  return String(configured || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
+}
 
-    const frontendUrl = String(config.frontendUrl || "https://kodjo-bib-tg.pages.dev").replace(/\/+$/, "");
-    const shareUrl = `${frontendUrl}/share/${req.params.token}`;
-    const backendOrigin = `${req.protocol}://${req.get("host")}`;
-    const mimeType = String(doc.mime_type || "").toLowerCase();
-    const hasThumbnail = Boolean(doc.preview_public_id) || mimeType === "application/pdf" || mimeType.startsWith("image/");
-    const ogImageUrl = hasThumbnail
-      ? `${backendOrigin}/share/${req.params.token}/og-image`
-      : `${frontendUrl}/og-image.png`;
-    const title = escapeHtml(doc.title || "Document partagé");
-    const author = escapeHtml(doc.author_name || "Auteur inconnu");
-    const description = doc.description
-      ? escapeHtml(doc.description).slice(0, 200)
-      : `Document partagé par ${author} sur Archives de Documents`;
+function buildShareHtml(doc, { shareUrl, ogImageUrl }) {
+  const title = escapeHtml(doc.title || "Document partagé");
+  const author = escapeHtml(doc.author_name || "Auteur inconnu");
+  const description = doc.description
+    ? escapeHtml(doc.description).slice(0, 200)
+    : `Document partagé par ${author} sur Archives de Documents`;
+  const mimeType = String(doc.mime_type || "").toLowerCase();
+  const hasThumbnail = Boolean(doc.preview_public_id) || mimeType === "application/pdf" || mimeType.startsWith("image/");
+  const imageUrl = hasThumbnail ? ogImageUrl : `${frontendBaseUrl()}/og-image.png`;
 
-    const html = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
@@ -155,8 +119,8 @@ router.get("/:token", async (req, res, next) => {
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
   <meta property="og:url" content="${escapeHtml(shareUrl)}">
-  <meta property="og:image" content="${escapeHtml(ogImageUrl)}">
-  <meta property="og:image:secure_url" content="${escapeHtml(ogImageUrl)}">
+  <meta property="og:image" content="${escapeHtml(imageUrl)}">
+  <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="600">
   <meta property="og:image:height" content="800">
@@ -164,7 +128,7 @@ router.get("/:token", async (req, res, next) => {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${description}">
-  <meta name="twitter:image" content="${escapeHtml(ogImageUrl)}">
+  <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
   <meta name="twitter:image:alt" content="${title} - Document partagé par ${author}">
   <meta name="author" content="${author}">
   <link rel="canonical" href="${escapeHtml(shareUrl)}">
@@ -173,8 +137,119 @@ router.get("/:token", async (req, res, next) => {
 </head>
 <body></body>
 </html>`;
+}
+
+async function sendOgImage(doc, res) {
+  let thumbUrl = null;
+  try {
+    thumbUrl = getDocumentThumbnailUrl(doc.cloudinary_public_id, doc.mime_type, doc.preview_public_id, 7200);
+  } catch {
+    thumbUrl = null;
+  }
+  if (!thumbUrl) return res.status(404).end();
+
+  const response = await fetch(thumbUrl);
+  if (!response.ok) return res.status(404).end();
+
+  const contentType = response.headers.get("content-type") || "image/jpeg";
+  res.setHeader("Content-Type", contentType);
+  res.setHeader(
+    "Cache-Control",
+    doc.visibility === "public"
+      ? "public, max-age=86400, s-maxage=86400"
+      : "no-store, max-age=0"
+  );
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  if (!response.body) return res.end();
+
+  Readable.fromWeb(response.body)
+    .on("error", () => {
+      if (!res.destroyed) res.destroy();
+    })
+    .pipe(res);
+}
+
+function sendNotFound(req, res) {
+  const accept = req.headers.accept || "";
+  if (accept.includes("application/json")) {
+    return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lien de partage invalide ou expiré" } });
+  }
+  const frontendUrl = frontendBaseUrl();
+  return res
+    .status(404)
+    .send(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lien de partage invalide</title><meta http-equiv="refresh" content="0;url=${frontendUrl}/"></head><body></body></html>`);
+}
+
+router.get("/public/:id/og-image", async (req, res, next) => {
+  try {
+    const doc = await loadPublicDocument(req.params.id);
+    if (!doc) return res.status(404).end();
+    await sendOgImage(doc, res);
+  } catch (err) {
+    if (res.headersSent) {
+      res.destroy();
+      return;
+    }
+    next(err);
+  }
+});
+
+router.get("/public/:id", async (req, res, next) => {
+  try {
+    const doc = await loadPublicDocument(req.params.id);
+    if (!doc) return sendNotFound(req, res);
+
+    const accept = req.headers.accept || "";
+    if (accept.includes("application/json")) {
+      return res.json({ document: serializeSharedDocument(doc) });
+    }
+
+    const frontendUrl = frontendBaseUrl();
+    const token = createDocumentShareToken(doc.id, doc.share_version);
+    const shareUrl = `${frontendUrl}/share/${token}`;
+    const backendOrigin = backendBaseUrl(req);
+    const ogImageUrl = `${backendOrigin}/share/public/${doc.id}/og-image`;
+
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send(html);
+    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl }));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/:token/og-image", async (req, res, next) => {
+  try {
+    const doc = await loadSharedDocument(req.params.token);
+    if (!doc) return res.status(404).end();
+    await sendOgImage(doc, res);
+  } catch (err) {
+    if (res.headersSent) {
+      res.destroy();
+      return;
+    }
+    next(err);
+  }
+});
+
+router.get("/:token", async (req, res, next) => {
+  try {
+    const doc = await loadSharedDocument(req.params.token);
+    if (!doc) return sendNotFound(req, res);
+
+    const accept = req.headers.accept || "";
+    if (accept.includes("application/json")) {
+      return res.json({ document: serializeSharedDocument(doc) });
+    }
+
+    const frontendUrl = frontendBaseUrl();
+    const shareUrl = `${frontendUrl}/share/${req.params.token}`;
+    const backendOrigin = backendBaseUrl(req);
+    const ogImageUrl = `${backendOrigin}/share/${req.params.token}/og-image`;
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl }));
   } catch (err) {
     next(err);
   }

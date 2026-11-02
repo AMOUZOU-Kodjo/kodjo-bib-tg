@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Calendar, Copy, Download, FileText, Lock, User } from "lucide-react";
-import { getSharedDocument, downloadSharedDocument, getSharedFileUrl } from "../api/share";
+import { Calendar, Copy, Download, ExternalLink, FileText, Lock, User } from "lucide-react";
+import { getSharedDocument, downloadSharedDocument, getSharedFileUrl, getPublicShareUrl } from "../api/share";
 import { formatSize, formatDate } from "../utils/format";
 import { getCategoryColor, formatCategoryName } from "../utils/document";
 import { Spinner } from "../components/ui";
@@ -14,6 +14,7 @@ export default function SharedDocument() {
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
+  const [fullPreview, setFullPreview] = useState(false);
 
   useEffect(() => {
     const robots = document.createElement("meta");
@@ -35,6 +36,8 @@ export default function SharedDocument() {
     const previousTitle = document.title;
     setLoading(true);
     setError("");
+    setFullPreview(false);
+    setThumbnailFailed(false);
     getSharedDocument(token)
       .then((res) => {
         if (!active) return;
@@ -56,7 +59,8 @@ export default function SharedDocument() {
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const url = doc?.visibility === "public" ? getPublicShareUrl(doc.id) : window.location.href;
+      await navigator.clipboard.writeText(url);
       toast.success("Lien copié");
     } catch {
       toast.error("Impossible de copier le lien");
@@ -204,14 +208,55 @@ export default function SharedDocument() {
           </section>
 
           <section className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
-            <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Aperçu</h2>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Aperçu</h2>
+              {canPreview && fullPreview && (
+                <button
+                  onClick={() => setFullPreview(false)}
+                  className="text-sm font-medium text-teal-700 hover:underline dark:text-teal-300"
+                >
+                  Réduire l’aperçu
+                </button>
+              )}
+            </div>
             {canPreview ? (
-              <iframe
-                src={fileUrl}
-                title={doc.title}
-                referrerPolicy="no-referrer"
-                className="h-[60vh] min-h-[360px] w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 sm:h-[70vh]"
-              />
+              fullPreview ? (
+                <iframe
+                  src={fileUrl}
+                  title={doc.title}
+                  referrerPolicy="no-referrer"
+                  className="h-[60vh] min-h-[360px] w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 sm:h-[70vh]"
+                />
+              ) : (
+                <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
+                  {doc.thumbnail && !thumbnailFailed ? (
+                    <img
+                      src={doc.thumbnail}
+                      alt={doc.title}
+                      referrerPolicy="no-referrer"
+                      className="h-[60vh] min-h-[360px] w-full object-cover object-top sm:h-[70vh]"
+                      onError={() => setThumbnailFailed(true)}
+                    />
+                  ) : (
+                    <div className="flex h-[40vh] min-h-[240px] flex-col items-center justify-center gap-3 px-6 text-center">
+                      <FileText className="h-12 w-12 text-gray-400" />
+                      <p className="text-sm text-gray-600 dark:text-slate-400">
+                        L’aperçu de la première page n’est pas disponible pour ce format.
+                      </p>
+                    </div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                    <p className="text-sm text-white/90">Aperçu de la première page</p>
+                    <button
+                      onClick={() => setFullPreview(true)}
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-600"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Afficher le document
+                    </button>
+                  </div>
+                </div>
+              )
             ) : (
               <p className="text-sm text-gray-600 dark:text-slate-400">
                 L'aperçu n'est pas disponible pour ce format. Utilisez le bouton de téléchargement.
