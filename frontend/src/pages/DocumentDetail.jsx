@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { FileText, Heart, Eye, Download, Calendar, User, ChevronRight, Share2, Maximize2, Mail, Lock, Shield, Bookmark, Flag } from "lucide-react";
 import { formatSize, formatDate } from "../utils/format";
+import { ReadingProgress } from "../components/ui";
 import ContactModal from "../components/contact/ContactModal";
 import CommentsSection from "../components/comments/CommentsSection";
 import { DocumentCard } from "../components/documents/DocumentCard";
@@ -232,6 +233,7 @@ export default function DocumentDetail() {
 
   return (
     <div>
+      <ReadingProgress />
       <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-slate-400 sm:mb-6 sm:text-sm">
         <Link to="/" className="hover:text-teal-700 dark:hover:text-teal-300">Accueil</Link>
         <ChevronRight className="w-4 h-4" />

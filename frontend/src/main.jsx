@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import "./index.css";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { QuickPreviewProvider } from "./context/QuickPreviewContext.jsx";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { Toaster } from "react-hot-toast";
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <SiteSettingsProvider>
         <ThemeProvider>
           <AuthProvider>
-            <App />
+            <QuickPreviewProvider>
+              <App />
+            </QuickPreviewProvider>
           </AuthProvider>
         </ThemeProvider>
       </SiteSettingsProvider>

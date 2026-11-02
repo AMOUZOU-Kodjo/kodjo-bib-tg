@@ -6,9 +6,10 @@ import { getDocuments } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import useSeo from "../hooks/useSeo";
 import { useSiteSettings } from "../context/SiteSettingsContext";
+import { SkeletonCard, Reveal } from "../components/ui";
 
-function DocumentSection({ title, subtitle, docs, to = "/documents" }) {
-  if (!docs.length) return null;
+function DocumentSection({ title, subtitle, docs, to = "/documents", loading = false }) {
+  if (!loading && !docs.length) return null;
   return (
     <section className="py-10 sm:py-12">
       <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
@@ -21,9 +22,9 @@ function DocumentSection({ title, subtitle, docs, to = "/documents" }) {
         </Link>
       </div>
       <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
-        {docs.map((doc) => (
-          <DocumentCard key={doc.id} doc={doc} />
-        ))}
+        {loading
+          ? Array.from({ length: 5 }).map((_, index) => <SkeletonCard key={index} />)
+          : docs.map((doc) => <DocumentCard key={doc.id} doc={doc} />)}
       </div>
     </section>
   );
@@ -35,6 +36,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState([]);
   const [popular, setPopular] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useSeo({
     title: "Bibliothèque numérique collaborative",
@@ -57,6 +59,9 @@ export default function Home() {
         if (!active) return;
         setRecent([]);
         setPopular([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
     return () => {
       active = false;
@@ -143,19 +148,25 @@ export default function Home() {
         </div>
       </section>
 
-      <DocumentSection
-        title="Derniers ajouts"
-        subtitle="Les documents fraîchement partagés par la communauté"
-        docs={recent}
-        to="/documents"
-      />
+      <Reveal>
+        <DocumentSection
+          title="Derniers ajouts"
+          subtitle="Les documents fraîchement partagés par la communauté"
+          docs={recent}
+          loading={loading}
+          to="/documents"
+        />
+      </Reveal>
 
-      <DocumentSection
-        title="Les plus consultés"
-        subtitle="Les documents que la communauté consulte le plus"
-        docs={popular}
-        to="/documents?sort=views"
-      />
+      <Reveal delay={80}>
+        <DocumentSection
+          title="Les plus consultés"
+          subtitle="Les documents que la communauté consulte le plus"
+          docs={popular}
+          loading={loading}
+          to="/documents?sort=views"
+        />
+      </Reveal>
 
     </div>
   );

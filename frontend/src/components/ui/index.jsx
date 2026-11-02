@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export { Pagination } from "./Pagination";
 
@@ -51,6 +51,78 @@ export function Toggle({ checked, onChange, label, description, disabled = false
 export function Spinner({ size = "md" }) {
   const sizes = { sm: "h-4 w-4", md: "h-6 w-6", lg: "h-8 w-8" };
   return <div className={`animate-spin ${sizes[size]} border-2 border-primary-600 border-t-transparent rounded-full`}></div>;
+}
+
+export function Skeleton({ className = "" }) {
+  return <div className={`animate-pulse rounded-md bg-gray-200 dark:bg-slate-700 ${className}`} />;
+}
+
+export function SkeletonCard() {
+  return (
+    <div className="h-64 md:h-72 overflow-hidden rounded-2xl shadow-sm bg-gray-100 dark:bg-slate-800">
+      <Skeleton className="h-full w-full rounded-none" />
+    </div>
+  );
+}
+
+export function Reveal({ children, className = "", delay = 0 }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ease-out ${visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"} ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function ReadingProgress() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const update = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(height > 0 ? Math.min(100, Math.max(0, (scrollTop / height) * 100)) : 0);
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-x-0 top-0 z-[60] h-0.5 bg-transparent" aria-hidden="true">
+      <div className="h-full bg-teal-400 transition-[width] duration-150 ease-out" style={{ width: `${progress}%` }} />
+    </div>
+  );
 }
 
 export function BackToTop() {

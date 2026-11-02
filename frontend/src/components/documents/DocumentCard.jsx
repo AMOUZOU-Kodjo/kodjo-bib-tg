@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FileText, Lock, Pencil, Share2, Trash2 } from "lucide-react";
+import { Eye, FileText, Lock, Pencil, Share2, Trash2 } from "lucide-react";
 import { getCategoryColor, formatCategoryName } from "../../utils/document";
+import { useQuickPreview } from "../../context/QuickPreviewContext";
 
 export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false }) {
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
-  const hasActions = Boolean(onEdit || onDelete || onShare);
+  const { openPreview } = useQuickPreview();
   const isPrivate = doc.visibility === "private";
   const showThumbnail = Boolean(doc.thumbnail) && !thumbnailFailed;
 
   return (
-    <article className="group relative h-64 md:h-72 overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:shadow-xl">
+    <article className="group relative h-64 md:h-72 overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <Link to={`/documents/${doc.id}`} className="block h-full">
         {showThumbnail ? (
           <img
@@ -55,12 +56,28 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
         </div>
       </Link>
 
-      {hasActions && (
         <div className="absolute right-4 top-4 z-10 flex gap-1.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              openPreview(doc);
+            }}
+            aria-label={`Aperçu rapide de ${doc.title}`}
+            title="Aperçu rapide"
+            className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
           {onShare && isPrivate && (
             <button
               type="button"
-              onClick={onShare}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onShare(event);
+              }}
               aria-label={`Partager ${doc.title}`}
               title="Partager le lien privé"
               className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
@@ -71,7 +88,11 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
           {onEdit && (
             <button
               type="button"
-              onClick={onEdit}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onEdit(event);
+              }}
               aria-label={`Modifier ${doc.title}`}
               title="Modifier"
               className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
@@ -82,7 +103,11 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
           {onDelete && (
             <button
               type="button"
-              onClick={onDelete}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onDelete(event);
+              }}
               disabled={deleting}
               aria-label={`Supprimer ${doc.title}`}
               title="Supprimer"
@@ -92,7 +117,6 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
             </button>
           )}
         </div>
-      )}
     </article>
   );
 }

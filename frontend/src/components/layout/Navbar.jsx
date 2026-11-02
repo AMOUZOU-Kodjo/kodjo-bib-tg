@@ -6,7 +6,7 @@ import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
 import NotificationBell from "../notifications/NotificationBell";
 import {
-  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X
+  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search
 } from "lucide-react";
 import { Moon, Sun } from "lucide-react";
 
@@ -111,15 +111,26 @@ export default function Navbar() {
 
           <div className="flex items-center gap-1">
             <NotificationBell />
-<button
-  type="button"
-  onClick={toggleTheme}
-  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/90 transition-colors hover:bg-white/10 hover:text-white"
-  aria-label={theme === "dark" ? "Activer le thème clair" : "Activer le thème sombre"}
-  title={theme === "dark" ? "Thème clair" : "Thème sombre"}
->
-  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-</button>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
+              className="hidden items-center gap-2 rounded-lg border border-white/20 px-2.5 py-1.5 text-xs text-white/80 transition-colors hover:bg-white/10 hover:text-white lg:inline-flex"
+              title="Palette de commandes (Ctrl+K)"
+              aria-label="Ouvrir la palette de commandes"
+            >
+              <Search className="h-4 w-4" />
+              <span>Rechercher</span>
+              <kbd className="rounded border border-white/30 px-1 text-[10px] uppercase">⌘K</kbd>
+            </button>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/90 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label={theme === "dark" ? "Activer le thème clair" : "Activer le thème sombre"}
+              title={theme === "dark" ? "Thème clair" : "Thème sombre"}
+            >
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
             <button
               type="button"
               onClick={() => setMenuOpen((open) => !open)}

@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { getDocuments, getDocumentCategories } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import { Search, FileText, Tag } from "lucide-react";
-import { Input, Spinner, EmptyState, Pagination } from "../components/ui";
+import { Input, SkeletonCard, EmptyState, Pagination, Reveal } from "../components/ui";
 import { formatCategoryName } from "../utils/document";
 import useSeo from "../hooks/useSeo";
 
@@ -201,31 +201,37 @@ export default function Documents() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <Spinner size="lg" />
+        <div className="grid grid-cols-1 gap-5 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <SkeletonCard key={index} />
+          ))}
         </div>
       ) : docs.length === 0 ? (
         <EmptyState message="Aucun document trouvé" icon={FileText} />
       ) : (
         <>
           {featured.length > 0 && (
-            <section className="mb-10">
-              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-                {featured.map((doc) => (
-                  <DocumentCard key={doc.id} doc={doc} />
-                ))}
-              </div>
-            </section>
+            <Reveal>
+              <section className="mb-10">
+                <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+                  {featured.map((doc) => (
+                    <DocumentCard key={doc.id} doc={doc} />
+                  ))}
+                </div>
+              </section>
+            </Reveal>
           )}
 
           {list.length > 0 && (
-            <section className="mb-10">
-              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-                {list.map((doc) => (
-                  <DocumentCard key={doc.id} doc={doc} />
-                ))}
-              </div>
-            </section>
+            <Reveal delay={80}>
+              <section className="mb-10">
+                <div className="grid grid-cols-1 min-[360px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+                  {list.map((doc) => (
+                    <DocumentCard key={doc.id} doc={doc} />
+                  ))}
+                </div>
+              </section>
+            </Reveal>
           )}
 
           <Pagination page={page} totalPages={totalPages} onPageChange={goToPage} />
