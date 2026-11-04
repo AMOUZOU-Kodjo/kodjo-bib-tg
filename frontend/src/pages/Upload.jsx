@@ -63,7 +63,7 @@ export default function Upload() {
   const inputRef = useRef(null);
 
   const handleGenerateDescription = async () => {
-    if (!file && !title) {
+    if (!file && !title.trim()) {
       toast.error("Ajoutez un fichier ou un titre pour générer une description");
       return;
     }
@@ -75,7 +75,7 @@ export default function Upload() {
         category: category || undefined
       });
       if (res.data?.description) {
-        setDescription(res.data.description);
+        setDescription(res.data.description.trim());
         toast.success("Description générée avec l'IA");
       }
     } catch (err) {
