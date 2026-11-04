@@ -6,7 +6,7 @@ import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
 import NotificationBell from "../notifications/NotificationBell";
 import {
-  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search
+  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart
 } from "lucide-react";
 import { Moon, Sun } from "lucide-react";
 
@@ -71,6 +71,10 @@ export default function Navbar() {
                       <Upload className="h-4 w-4 shrink-0" />
                       <span>Déposer</span>
                     </Link>
+                    <Link to="/favorites" className={desktopLink}>
+                      <Heart className="h-4 w-4 shrink-0" />
+                      <span>Mes favoris</span>
+                    </Link>
                     <Link to="/profile" className={desktopLink}>
                       <User className="h-4 w-4 shrink-0" />
                       <span>Mon profil ({user.credits} cr.)</span>
@@ -81,6 +85,10 @@ export default function Navbar() {
                     <Link to="/verify-email" state={{ email: user.email }} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-500/10 px-2.5 py-2 text-sm font-medium text-amber-300 transition-colors hover:bg-amber-500/20">
                       <Mail className="h-4 w-4 shrink-0" />
                       <span>Vérifier mon email</span>
+                    </Link>
+                    <Link to="/favorites" className={desktopLink}>
+                      <Heart className="h-4 w-4 shrink-0" />
+                      <span>Mes favoris</span>
                     </Link>
                     <Link to="/profile" className={desktopLink}>
                       <User className="h-4 w-4 shrink-0" />
@@ -167,6 +175,10 @@ export default function Navbar() {
                         <Upload className="h-4 w-4 shrink-0" />
                         Déposer un document
                       </Link>
+                      <Link to="/favorites" onClick={closeMenu} className={mobileLink}>
+                        <Heart className="h-4 w-4 shrink-0" />
+                        Mes favoris
+                      </Link>
                       <Link to="/profile" onClick={closeMenu} className={mobileLink}>
                         <User className="h-4 w-4 shrink-0" />
                         Mon profil
@@ -180,6 +192,10 @@ export default function Navbar() {
                       <Link to="/verify-email" state={{ email: user.email }} onClick={closeMenu} className={`${mobileAccentLink} bg-amber-500/10 text-amber-300 hover:bg-amber-500/20`}>
                         <Mail className="h-4 w-4 shrink-0" />
                         Vérifier mon email
+                      </Link>
+                      <Link to="/favorites" onClick={closeMenu} className={mobileLink}>
+                        <Heart className="h-4 w-4 shrink-0" />
+                        Mes favoris
                       </Link>
                       <Link to="/profile" onClick={closeMenu} className={mobileLink}>
                         <User className="h-4 w-4 shrink-0" />
