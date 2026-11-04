@@ -29,20 +29,15 @@ router.post("/generate-description", authRequired, requireVerified, aiLimiter, a
       context.push(`Extrait du contenu: ${excerpt}`);
     }
 
-    const prompt = `Génère une description courte en français pour un document de bibliothèque.
-
+    const prompt = `Génère une description en français pour une bibliothèque de documents.
 ${context.join("\n")}
-
-Fais une description entre 40 et 80 caractères, en 1 phrase simple. 
-Sois direct et précis. 
-N'utilise pas de guillemets, pas d'emojis, pas de préfixe comme "Ce document". 
-Réponds uniquement par le texte de la description.`
+Contraintes: 50-90 caractères, 1 phrase, descriptif et utile, sans "Ce document", sans guillemets. Réponds uniquement avec la description.`
 
     const requestBody = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 40
+        temperature: 0.25,
+        maxOutputTokens: 50
       }
     };
 
