@@ -9,11 +9,16 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  overflow-x: clip;
+  scrollbar-gutter: stable;
 }
 
 body {
   min-width: 320px;
   background-color: #f8fafc;
+  overflow-x: clip;
+  width: 100%;
+  position: relative;
 }
 
 [data-theme="dark"] {
