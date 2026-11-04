@@ -62,6 +62,29 @@ export default function Upload() {
   const [generatingDesc, setGeneratingDesc] = useState(false);
   const inputRef = useRef(null);
 
+  const handleGenerateDescription = async () => {
+    if (!file && !title) {
+      toast.error("Ajoutez un fichier ou un titre pour générer une description");
+      return;
+    }
+    setGeneratingDesc(true);
+    try {
+      const res = await generateDescription({
+        filename: file?.name,
+        title: title.trim() || undefined,
+        category: category || undefined
+      });
+      if (res.data?.description) {
+        setDescription(res.data.description);
+        toast.success("Description générée avec l'IA");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Impossible de générer la description");
+    } finally {
+      setGeneratingDesc(false);
+    }
+  };
+
   const handleFile = async (selectedFile) => {
     if (!selectedFile) return;
     const extension = `.${selectedFile.name.split(".").pop()?.toLowerCase() || ""}`;
