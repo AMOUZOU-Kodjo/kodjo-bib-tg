@@ -62,7 +62,7 @@ export default function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
+          <Route path="/upload" element={<ProtectedRoute requireVerified={false}><Upload /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute requireVerified={false}><Profile /></ProtectedRoute>} />
           <Route path="/favorites" element={<ProtectedRoute requireVerified={false}><Favorites /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute requireVerified={false}><Notifications /></ProtectedRoute>} />
