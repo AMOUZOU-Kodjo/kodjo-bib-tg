@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { uploadDocument, suggestDocumentCategory } from "../api/documents";
+import { generateDescription } from "../api/ai";
 import toast from "react-hot-toast";
-import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles, ArrowRight, Send } from "lucide-react";
+import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles, ArrowRight, Send, Loader2 } from "lucide-react";
 import { Input, Button } from "../components/ui";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useAuth } from "../context/AuthContext";
@@ -58,6 +59,7 @@ export default function Upload() {
   const [suggestedCategory, setSuggestedCategory] = useState(null);
   const [suggestionApplied, setSuggestionApplied] = useState(false);
   const [createdDoc, setCreatedDoc] = useState(null);
+  const [generatingDesc, setGeneratingDesc] = useState(false);
   const inputRef = useRef(null);
 
   const handleFile = async (selectedFile) => {
@@ -385,7 +387,18 @@ export default function Upload() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Description</label>
+              <div className="mb-2 flex items-center justify-between">
+                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100">Description</label>
+                <button
+                  type="button"
+                  onClick={handleGenerateDescription}
+                  disabled={generatingDesc || loading}
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-teal-300 dark:hover:bg-teal-950/40"
+                >
+                  {generatingDesc ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  {generatingDesc ? "Génération..." : "Générer avec l'IA"}
+                </button>
+              </div>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
