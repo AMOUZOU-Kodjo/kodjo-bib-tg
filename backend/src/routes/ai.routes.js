@@ -29,31 +29,40 @@ router.post("/generate-description", authRequired, requireVerified, aiLimiter, a
       context.push(`Extrait du contenu: ${excerpt}`);
     }
 
-    const prompt = `Tu es un rédacteur pour une bibliothèque de documents. Génère une description courte, claire et utile en français pour aider les utilisateurs à comprendre de quoi traite ce document.
-
-Règles:
-- Maximum 200 caractères
-- 1-2 phrases
-- Ne pas utiliser de guillemets, emojis ou hashtags
-- Ne pas inventer d'informations non présentes
-- Être factuel et concis
-- Si peu d'informations, fais une description neutre basée sur le nom de fichier
+    const prompt = `Tu es un rédacteur expert pour une bibliothèque numérique collaborative. Génère une description pertinente et utile en français.
 
 Contexte:
 ${context.join("\n")}
 
-Réponds uniquement avec la description, sans explication.`;
+Règles strictes:
+- Entre 80 et 150 caractères
+- 1 phrase maximum, fluide et naturelle
+- Décris précisément le contenu probable du document
+- Si le nom de fichier contient des mots-clés (cours, TD, TP, examen, rapport, mémoire, corrigé), utilise-les intelligemment
+- Ne pas utiliser de guillemets, d'emojis, de hashtags
+- Ne pas ajouter "Ce document", "Fichier", "Téléchargez"
+- Ne pas inventer d'auteur, de date ou d'établissement
+- Réponds UNIQUEMENT avec la description, aucun préfixe, aucun commentaire
+
+Exemples:
+- "Cours d'algèbre linéaire avec exercices et applications"
+- "TD de physique sur les lois de Newton"
+- "Annales d'examen de biologie cellulaire"`
+
+    const requestBody = {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 80,
+        topP: 0.9,
+        topK: 40
+      }
+    };
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 100
-        }
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
