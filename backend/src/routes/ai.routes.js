@@ -29,15 +29,25 @@ router.post("/generate-description", authRequired, requireVerified, aiLimiter, a
       context.push(`Extrait du contenu: ${excerpt}`);
     }
 
-    const prompt = `Génère une description en français pour une bibliothèque de documents.
+    const prompt = `Génère une description détaillée et utile en français pour ce document dans une bibliothèque numérique.
+
 ${context.join("\n")}
-Contraintes: 50-90 caractères, 1 phrase, descriptif et utile, sans "Ce document", sans guillemets. Réponds uniquement avec la description.`
+
+Règles:
+- Longueur: 80 à 150 mots
+- 2 à 4 phrases claires et cohérentes
+- Décris le contenu probable, les thèmes abordés et l'intérêt pour les lecteurs
+- Si tu vois "cours", "TD", "TP", "examen", "corrigé", "rapport", "mémoire", précise-le
+- Ne commence pas par "Ce document", "Il s'agit de", "Ce fichier"
+- Évite les formules trop génériques comme "document intéressant"
+- Pas de guillemets, pas d'emojis
+- Réponds UNIQUEMENT avec la description.`
 
     const requestBody = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
-        temperature: 0.25,
-        maxOutputTokens: 50
+        temperature: 0.4,
+        maxOutputTokens: 300
       }
     };
 
