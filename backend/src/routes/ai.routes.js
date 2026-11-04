@@ -29,33 +29,20 @@ router.post("/generate-description", authRequired, requireVerified, aiLimiter, a
       context.push(`Extrait du contenu: ${excerpt}`);
     }
 
-    const prompt = `Tu es un rédacteur expert pour une bibliothèque numérique collaborative. Génère une description pertinente et utile en français.
+    const prompt = `Génère une description courte en français pour un document de bibliothèque.
 
-Contexte:
 ${context.join("\n")}
 
-Règles strictes:
-- Entre 80 et 150 caractères
-- 1 phrase maximum, fluide et naturelle
-- Décris précisément le contenu probable du document
-- Si le nom de fichier contient des mots-clés (cours, TD, TP, examen, rapport, mémoire, corrigé), utilise-les intelligemment
-- Ne pas utiliser de guillemets, d'emojis, de hashtags
-- Ne pas ajouter "Ce document", "Fichier", "Téléchargez"
-- Ne pas inventer d'auteur, de date ou d'établissement
-- Réponds UNIQUEMENT avec la description, aucun préfixe, aucun commentaire
-
-Exemples:
-- "Cours d'algèbre linéaire avec exercices et applications"
-- "TD de physique sur les lois de Newton"
-- "Annales d'examen de biologie cellulaire"`
+Fais une description entre 40 et 80 caractères, en 1 phrase simple. 
+Sois direct et précis. 
+N'utilise pas de guillemets, pas d'emojis, pas de préfixe comme "Ce document". 
+Réponds uniquement par le texte de la description.`
 
     const requestBody = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 80,
-        topP: 0.9,
-        topK: 40
+        temperature: 0.2,
+        maxOutputTokens: 40
       }
     };
 
