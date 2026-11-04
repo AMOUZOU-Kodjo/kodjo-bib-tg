@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Download, Share2, Smartphone, X } from "lucide-react";
 
 function isStandalone() {
@@ -10,20 +11,27 @@ function isStandalone() {
 }
 
 const DISMISS_KEY = "pwa-install-banner-dismissed";
+const DISMISS_TS_KEY = "pwa-install-banner-dismissed-at";
+const REMIND_DAYS = 7;
 
 export default function InstallBanner() {
+  const location = useLocation();
   const [promptEvent, setPromptEvent] = useState(null);
   const [installed, setInstalled] = useState(isStandalone);
   const [dismissed, setDismissed] = useState(() => {
     if (typeof window === "undefined") return false;
     try {
-      return localStorage.getItem(DISMISS_KEY) === "true";
+      const dismissedAt = localStorage.getItem(DISMISS_TS_KEY);
+      if (!dismissedAt) return localStorage.getItem(DISMISS_KEY) === "true";
+      const diffDays = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60 * 24);
+      return diffDays < REMIND_DAYS;
     } catch {
       return false;
     }
   });
   const [helpOpen, setHelpOpen] = useState(false);
   const [isIos, setIsIos] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -56,6 +64,15 @@ export default function InstallBanner() {
   }, []);
 
   useEffect(() => {
+    if (installed || dismissed || location.pathname !== "/") {
+      setVisible(false);
+      return;
+    }
+    const timer = setTimeout(() => setVisible(true), 1200);
+    return () => clearTimeout(timer);
+  }, [installed, dismissed, location.pathname]);
+
+  useEffect(() => {
     if (!helpOpen) return;
     const onKeyDown = (event) => {
       if (event.key === "Escape") setHelpOpen(false);
@@ -68,12 +85,13 @@ export default function InstallBanner() {
     setDismissed(true);
     try {
       localStorage.setItem(DISMISS_KEY, "true");
+      localStorage.setItem(DISMISS_TS_KEY, Date.now().toString());
     } catch {
       /* ignore */
     }
   };
 
-  if (installed || dismissed) return null;
+  if (installed || dismissed || location.pathname !== "/" || !visible) return null;
 
   const handleClick = async () => {
     if (!promptEvent) {
@@ -90,7 +108,7 @@ export default function InstallBanner() {
 
   return (
     <>
-      <div className="sticky top-0 z-40 w-full">
+      <div className="sticky top-0 z-40 w-full animate-[fadeIn_0.4s_ease-in-out]">
         <div className="bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-600 text-white shadow-lg dark:from-teal-800 dark:via-teal-700 dark:to-emerald-700">
           <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -118,7 +136,7 @@ export default function InstallBanner() {
               <button
                 type="button"
                 onClick={dismiss}
-                aria-label="Masquer cette bannière"
+                aria-label="Masquer cette bannière pour 7 jours"
                 className="rounded-lg p-1.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
               >
                 <X className="h-4 w-4" />
