@@ -46,8 +46,11 @@ Règles:
     const requestBody = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
-        temperature: 0.4,
-        maxOutputTokens: 300
+        temperature: 0.7,
+        maxOutputTokens: 250,
+        thinkingConfig: {
+          thinkingBudget: 0
+        }
       }
     };
 
