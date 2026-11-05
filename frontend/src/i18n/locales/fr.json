@@ -74,7 +74,10 @@
     "suggestAi": "Suggérer avec l'IA",
     "suggesting": "Suggestion...",
     "generateAi": "Générer avec l'IA",
-    "generating": "Génération..."
+    "generating": "Génération...",
+    "suggestSuccess": "Métadonnées suggérées avec l'IA",
+    "suggestError": "Impossible de suggérer les métadonnées",
+    "suggestNeed": "Ajoutez un fichier ou un titre pour suggérer des métadonnées"
   },
   "document": {
     "aiSummary": "Résumé IA",
@@ -82,6 +85,12 @@
     "improve": "Améliorer avec l'IA",
     "improving": "Amélioration...",
     "summaryError": "Impossible de générer le résumé",
-    "translateError": "Impossible de traduire"
+    "translateError": "Impossible de traduire",
+    "about": "À propos de ce livre",
+    "added": "Ajouté",
+    "generatingSummary": "Génération du résumé...",
+    "translation": "Traduction ({{lang}})",
+    "noDescription": "Aucune description. Utilisez le résumé IA pour obtenir un aperçu.",
+    "improveError": "Impossible d'améliorer la description"
   }
 }

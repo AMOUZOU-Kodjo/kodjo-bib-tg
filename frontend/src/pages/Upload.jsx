@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { uploadDocument, suggestDocumentCategory } from "../api/documents";
 import { generateDescription, suggestMetadata } from "../api/ai";
 import toast from "react-hot-toast";
@@ -44,9 +45,9 @@ function formatFileSize(bytes) {
 }
 
 export default function Upload() {
-  const { maxUploadSizeMb: configuredMaxSizeMb } = useSiteSettings();
-  const { setUser } = useAuth();
-  const maxUploadSizeMb = Number(configuredMaxSizeMb) || 10;
+  const { maxUploadSizeMb, publicationCreditsReward } = useSiteSettings();
+  const { user } = useAuth();
+  const { t } = useTranslation();
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -341,7 +342,7 @@ export default function Upload() {
                   className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-teal-300 dark:hover:bg-teal-950/40"
                 >
                   {suggestingMeta ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                  {suggestingMeta ? "Suggestion..." : "Suggérer avec l'IA"}
+                  {suggestingMeta ? t("upload.suggesting") : t("upload.suggestAi")}
                 </button>
               </div>
               <Input
@@ -462,7 +463,7 @@ export default function Upload() {
                   className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-teal-300 dark:hover:bg-teal-950/40"
                 >
                   {generatingDesc ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                  {generatingDesc ? "Génération..." : "Générer avec l'IA"}
+                  {generatingDesc ? t("upload.generating") : t("upload.generateAi")}
                 </button>
               </div>
               <textarea

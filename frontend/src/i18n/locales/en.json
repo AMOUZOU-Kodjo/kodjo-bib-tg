@@ -74,7 +74,10 @@
     "suggestAi": "Suggest with AI",
     "suggesting": "Suggesting...",
     "generateAi": "Generate with AI",
-    "generating": "Generating..."
+    "generating": "Generating...",
+    "suggestSuccess": "Metadata suggested with AI",
+    "suggestError": "Could not suggest metadata",
+    "suggestNeed": "Add a file or title to suggest metadata"
   },
   "document": {
     "aiSummary": "AI summary",
@@ -82,6 +85,12 @@
     "improve": "Improve with AI",
     "improving": "Improving...",
     "summaryError": "Could not generate summary",
-    "translateError": "Could not translate"
+    "translateError": "Could not translate",
+    "about": "About this book",
+    "added": "Added",
+    "generatingSummary": "Generating summary...",
+    "translation": "Translation ({{lang}})",
+    "noDescription": "No description. Use the AI summary to get an overview.",
+    "improveError": "Could not improve description"
   }
 }

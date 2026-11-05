@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import {
   User, Mail, Shield, Coins, AlertCircle, FileText,
@@ -29,6 +30,7 @@ const reasonLabels = {
 };
 
 function EditDocumentModal({ doc, onClose, onSaved }) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState(doc.title || "");
   const [description, setDescription] = useState(doc.description || "");
   const [category, setCategory] = useState(doc.category || "");
@@ -58,7 +60,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
       setDescription(res.data?.description || description);
       toast.success("Description améliorée avec l'IA");
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible d'améliorer la description");
+      toast.error(err.response?.data?.error?.message || t("document.improveError", "Impossible d'améliorer la description"));
     } finally {
       setImproving(false);
     }
@@ -190,7 +192,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
                 className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-teal-300 dark:hover:bg-teal-950/40"
               >
                 {improving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                {improving ? "Amélioration..." : "Améliorer avec l'IA"}
+                {improving ? t("document.improving") : t("document.improve")}
               </button>
             </div>
             <textarea

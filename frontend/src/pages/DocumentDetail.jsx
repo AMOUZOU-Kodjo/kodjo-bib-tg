@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   getDocument, viewDocument, downloadDocument, likeDocument, getDocuments,
   getDocumentViewFile, fetchDocumentViewBlob, getDocumentShareLink, createDocumentShareLink,
@@ -25,6 +26,7 @@ export default function DocumentDetail() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [doc, setDoc] = useState(null);
   const [loading, setLoading] = useState(true);
   const [related, setRelated] = useState([]);
@@ -199,7 +201,7 @@ export default function DocumentDetail() {
       });
       setSummary(res.data?.summary || "");
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de générer le résumé");
+      toast.error(err.response?.data?.error?.message || t("document.summaryError"));
     } finally {
       setSummaryLoading(false);
     }
@@ -215,7 +217,7 @@ export default function DocumentDetail() {
       setTranslation(res.data?.translation || "");
       setTranslationLang(target);
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de traduire");
+      toast.error(err.response?.data?.error?.message || t("document.translateError"));
     } finally {
       setTranslationLoading(false);
     }
@@ -481,7 +483,7 @@ export default function DocumentDetail() {
           {(doc.description || doc.title || summary || summaryLoading || translation) && (
             <section className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">À propos de ce livre</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">{t("document.about")}</h2>
                 <div className="flex flex-wrap items-center gap-2">
                   {!summary && !summaryLoading && (doc.description || doc.title) && (
                     <button
@@ -490,7 +492,7 @@ export default function DocumentDetail() {
                       className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-medium text-teal-800 transition-colors hover:bg-teal-100 dark:border-teal-900/50 dark:bg-teal-950/30 dark:text-teal-200 dark:hover:bg-teal-950/50"
                     >
                       <Sparkles className="h-3.5 w-3.5" />
-                      Résumé IA
+                      {t("document.aiSummary")}
                     </button>
                   )}
                   {(doc.description || summary || doc.title) && (
@@ -520,25 +522,25 @@ export default function DocumentDetail() {
               {summaryLoading && (
                 <div className="mb-3 flex items-center gap-2 text-sm text-teal-700 dark:text-teal-300">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Génération du résumé...
+                  {t("document.generatingSummary")}
                 </div>
               )}
               {summary && (
                 <div className="mb-4 rounded-xl border border-teal-100 bg-teal-50/70 p-4 dark:border-teal-900/40 dark:bg-teal-950/20">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-300">Résumé IA</p>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-300">{t("document.aiSummary")}</p>
                   <p className="text-sm leading-relaxed text-gray-800 dark:text-slate-200">{summary}</p>
                 </div>
               )}
               {translation && (
                 <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-900/40">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-slate-400">Traduction ({translationLang.toUpperCase()})</p>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-slate-400">{t("document.translation", { lang: translationLang.toUpperCase() })}</p>
                   <p className="text-sm leading-relaxed text-gray-800 dark:text-slate-200">{translation}</p>
                 </div>
               )}
               {doc.description ? (
                 <p className="text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{doc.description}</p>
               ) : !summary && !summaryLoading ? (
-                <p className="text-sm text-gray-500 dark:text-slate-400">Aucune description. Utilisez le résumé IA pour obtenir un aperçu.</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">{t("document.noDescription")}</p>
               ) : null}
             </section>
           )}
