@@ -37,7 +37,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-teal-700 backdrop-blur supports-[backdrop-filter]:bg-teal-700/95">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-teal-700 backdrop-blur supports-[backdrop-filter]:bg-teal-700/95">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3 py-3">
           <Link to="/" onClick={closeMenu} className="group flex min-w-0 items-center gap-2.5">

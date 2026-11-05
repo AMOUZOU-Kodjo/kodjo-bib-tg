@@ -7,7 +7,7 @@ export default function Layout({ children }) {
     <div className="flex min-h-screen w-full flex-col overflow-x-hidden bg-white text-gray-900 transition-colors dark:bg-slate-900 dark:text-slate-100">
       <InstallBanner />
       <Navbar />
-      <main className="flex-1 w-full pt-4 sm:pt-6 lg:pt-8">
+      <main className="flex-1 w-full pt-[72px] sm:pt-[76px] lg:pt-[80px]">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           {children}
         </div>
