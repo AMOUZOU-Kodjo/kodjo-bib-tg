@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { uploadDocument, suggestDocumentCategory } from "../api/documents";
-import { generateDescription } from "../api/ai";
+import { generateDescription, suggestMetadata } from "../api/ai";
 import toast from "react-hot-toast";
 import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles, ArrowRight, Send, Loader2 } from "lucide-react";
 import { Input, Button } from "../components/ui";
@@ -60,7 +60,39 @@ export default function Upload() {
   const [suggestionApplied, setSuggestionApplied] = useState(false);
   const [createdDoc, setCreatedDoc] = useState(null);
   const [generatingDesc, setGeneratingDesc] = useState(false);
+  const [suggestingMeta, setSuggestingMeta] = useState(false);
   const inputRef = useRef(null);
+
+  const handleSuggestMetadata = async () => {
+    if (!file && !title.trim()) {
+      toast.error("Ajoutez un fichier ou un titre pour suggérer des métadonnées");
+      return;
+    }
+    setSuggestingMeta(true);
+    try {
+      const res = await suggestMetadata({
+        filename: file?.name,
+        title: title.trim() || undefined,
+        category: category || undefined,
+        description: description.trim() || undefined
+      });
+      const meta = res.data || {};
+      if (meta.title && !title.trim()) setTitle(meta.title);
+      if (meta.category && CATEGORIES.includes(meta.category)) {
+        setCategory(meta.category);
+        setSuggestedCategory(meta.category);
+        setSuggestionApplied(true);
+      }
+      if (Array.isArray(meta.tags) && meta.tags.length && !tags.trim()) {
+        setTags(meta.tags.join(", "));
+      }
+      toast.success("Métadonnées suggérées avec l'IA");
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Impossible de suggérer les métadonnées");
+    } finally {
+      setSuggestingMeta(false);
+    }
+  };
 
   const handleGenerateDescription = async () => {
     if (!file && !title.trim()) {
@@ -300,7 +332,18 @@ export default function Upload() {
 
           <div className="space-y-6 p-4 sm:p-6 md:p-8">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Titre *</label>
+              <div className="mb-2 flex items-center justify-between">
+                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100">Titre *</label>
+                <button
+                  type="button"
+                  onClick={handleSuggestMetadata}
+                  disabled={suggestingMeta || loading}
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-teal-300 dark:hover:bg-teal-950/40"
+                >
+                  {suggestingMeta ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  {suggestingMeta ? "Suggestion..." : "Suggérer avec l'IA"}
+                </button>
+              </div>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
