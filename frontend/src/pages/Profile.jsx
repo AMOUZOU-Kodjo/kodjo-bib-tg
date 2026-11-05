@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import {
   User, Mail, Shield, Coins, AlertCircle, FileText,
   Upload, X, Check, History, Copy, Globe2, Link2, Lock,
-  RotateCw, Share2, Bookmark, Bell, Trash2
+  RotateCw, Share2, Bookmark, Bell, Trash2, Sparkles, Loader2
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
@@ -12,8 +12,9 @@ import { getMyDocuments, getMyCredits, getMyFavorites, updateMyProfile, updateNo
 import { getPushConfig, subscribePush, unsubscribePush } from "../api/notifications";
 import {
   updateDocument, deleteDocument, getDocumentShareLink,
-  createDocumentShareLink, disableDocumentShare
+  enableDocumentShare, disableDocumentShare
 } from "../api/documents";
+import { improveDescription } from "../api/ai";
 import { formatDate } from "../utils/format";
 import { Spinner, EmptyState, Pagination } from "../components/ui";
 import { DocumentCard } from "../components/documents/DocumentCard";
@@ -34,6 +35,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
   const [tags, setTags] = useState((doc.tags || []).join(", "));
   const [visibility, setVisibility] = useState(doc.visibility || "public");
   const [saving, setSaving] = useState(false);
+  const [improving, setImproving] = useState(false);
   const visibilityChanged = visibility !== (doc.visibility || "public");
 
   useEffect(() => {
@@ -43,6 +45,24 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
+
+  const handleImproveDescription = async () => {
+    if (!description.trim()) return toast.error("Ajoutez une description à améliorer");
+    setImproving(true);
+    try {
+      const res = await improveDescription({
+        description: description.trim(),
+        title: title.trim() || doc.title,
+        category: category.trim() || doc.category
+      });
+      setDescription(res.data?.description || description);
+      toast.success("Description améliorée avec l'IA");
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Impossible d'améliorer la description");
+    } finally {
+      setImproving(false);
+    }
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -161,7 +181,18 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
             )}
           </div>
           <div>
-            <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Description</label>
+            <div className="mb-1 flex items-center justify-between">
+              <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Description</label>
+              <button
+                type="button"
+                onClick={handleImproveDescription}
+                disabled={improving || saving || !description.trim()}
+                className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-teal-300 dark:hover:bg-teal-950/40"
+              >
+                {improving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                {improving ? "Amélioration..." : "Améliorer avec l'IA"}
+              </button>
+            </div>
             <textarea
               id="edit-description"
               value={description}
@@ -169,6 +200,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
               rows={5}
               maxLength={2000}
               className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent resize-y"
+              placeholder="Décrivez brièvement le contenu du document"
             />
           </div>
           <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:items-center sm:justify-end">
