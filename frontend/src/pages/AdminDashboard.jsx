@@ -762,8 +762,8 @@ export default function AdminDashboard() {
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
                     <th className="px-3 py-3 font-semibold">Utilisateur</th>
-                    <th className="px-3 py-3 font-semibold">Rôle</th>
-                    <th className="px-3 py-3 font-semibold">Crédits</th>
+                    <th className="px-3 py-3 font-semibold">{t("admin.role")}</th>
+                    <th className="px-3 py-3 font-semibold">{t("admin.credits")}</th>
                     <th className="px-3 py-3 font-semibold">Statut</th>
                     <th className="px-3 py-3 font-semibold">Inscrit le</th>
                     <th className="px-3 py-3 text-right font-semibold">Actions</th>
@@ -901,14 +901,14 @@ export default function AdminDashboard() {
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="edit-user-role" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Rôle</label>
+                      <label htmlFor="edit-user-role" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">{t("admin.role")}</label>
                       <Select id="edit-user-role" value={editRole || "user"} onChange={(e) => setEditRole(e.target.value)}>
                         <option value="user">Membre</option>
                         <option value="admin">Administrateur</option>
                       </Select>
                     </div>
                     <div>
-                      <label htmlFor="edit-user-credits" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Crédits</label>
+                      <label htmlFor="edit-user-credits" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">{t("admin.credits")}</label>
                       <Input id="edit-user-credits" type="number" min={0} max={1000000} step={1} value={editCredits} onChange={(e) => setEditCredits(e.target.value)} required />
                     </div>
                   </div>
@@ -1002,7 +1002,7 @@ export default function AdminDashboard() {
             )}
           </div>
           {filteredDocs.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">Aucun document trouvé.</div>
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">{t("admin.noDocs")}</div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {pagedDocs.map(d => (
@@ -1402,7 +1402,7 @@ export default function AdminDashboard() {
                     <Coins className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-slate-100">Crédits</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-slate-100">{t("admin.credits")}</h3>
                     <p className="text-xs text-gray-500 dark:text-slate-400">{t("admin.creditsSectionDesc")}</p>
                   </div>
                 </div>
@@ -1433,7 +1433,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/60 p-3 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
-                  Un nouvel inscrit reçoit <strong>{Number(settings.creditsInitiaux) || 0}</strong> crédit(s) et chaque dépôt lui en rapporte <strong>{Number(settings.creditsParUpload) || 0}</strong>.
+                  {t("admin.creditsSummary", { initial: Number(settings.creditsInitiaux) || 0, upload: Number(settings.creditsParUpload) || 0 })}
                 </div>
               </Card>
 

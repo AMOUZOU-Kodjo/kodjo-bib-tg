@@ -455,7 +455,7 @@ export default function DocumentDetail() {
                   <FileText className="w-5 h-5 text-blue-700 dark:text-blue-300" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500 dark:text-slate-400">Catégorie</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{t("document.category")}</p>
                   <p className="font-medium text-gray-900 dark:text-slate-100">{doc.category ? formatCategoryName(doc.category) : "-"}</p>
                 </div>
               </div>
@@ -464,7 +464,7 @@ export default function DocumentDetail() {
                   <Download className="w-5 h-5 text-emerald-700 dark:text-emerald-300" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500 dark:text-slate-400">Disponibilité</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{t("document.availability")}</p>
                   <p className="font-medium text-gray-900 dark:text-slate-100">Gratuit</p>
                 </div>
               </div>
@@ -473,7 +473,7 @@ export default function DocumentDetail() {
                   <Calendar className="w-5 h-5 text-amber-700 dark:text-amber-300" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500 dark:text-slate-400">Ajouté</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{t("document.added")}</p>
                   <p className="font-medium text-gray-900 dark:text-slate-100">{formatDate(doc.created_at)}</p>
                 </div>
               </div>
@@ -547,7 +547,7 @@ export default function DocumentDetail() {
 
           <section className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Aperçu du livre</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">{t("document.previewTitle")}</h2>
               {showPreview && (
                 <a href={previewSrc || getDocumentViewFile(id)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-300 hover:underline">
                   <Maximize2 className="w-4 h-4" />
@@ -651,7 +651,7 @@ export default function DocumentDetail() {
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
               <Download className="h-5 w-5" />
             </div>
-            <h2 id="credits-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-slate-100">Crédits insuffisants</h2>
+            <h2 id="credits-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-slate-100">{t("document.insufficientCredits")}</h2>
             <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-slate-400">
               Chaque document déposé vous offre 2 téléchargements gratuits. Déposez un document pour continuer à télécharger.
             </p>
@@ -676,7 +676,7 @@ export default function DocumentDetail() {
 
       {related.length > 0 && (
         <section>
-          <h2 className="mb-5 text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl md:text-2xl">Dans la même catégorie</h2>
+          <h2 className="mb-5 text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl md:text-2xl">{t("document.sameCategory")}</h2>
           <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {related.map((item) => (
               <DocumentCard key={item.id} doc={item} />

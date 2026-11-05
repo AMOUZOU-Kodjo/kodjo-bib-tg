@@ -30,7 +30,8 @@
     "seeAll": "Tout voir",
     "retry": "Réessayer",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "download": "Télécharger"
   },
   "home": {
     "title": "La bibliothèque numérique",
@@ -145,7 +146,12 @@
     "generatingSummary": "Génération du résumé...",
     "translation": "Traduction ({{lang}})",
     "noDescription": "Aucune description. Utilisez le résumé IA pour obtenir un aperçu.",
-    "improveError": "Impossible d'améliorer la description"
+    "improveError": "Impossible d'améliorer la description",
+    "category": "Catégorie",
+    "availability": "Disponibilité",
+    "previewTitle": "Aperçu du livre",
+    "insufficientCredits": "Crédits insuffisants",
+    "sameCategory": "Dans la même catégorie"
   },
   "footer": {
     "tagline": "Plateforme collaborative gratuite d'archivage et de partage de documents.",
@@ -664,7 +670,8 @@
     "reasonInappropriate": "Contenu inapproprié",
     "reasonCopyright": "Droit d'auteur",
     "reasonMisleading": "Information trompeuse",
-    "reasonOther": "Autre"
+    "reasonOther": "Autre",
+    "creditsSummary": "Un nouvel inscrit reçoit {{initial}} crédit(s) et chaque dépôt lui en rapporte {{upload}}."
   },
   "profile": {
     "notFound": "Document introuvable",
@@ -772,5 +779,85 @@
     "displayName": "Nom affiché",
     "pushNotifications": "Notifications push",
     "noCreditsHistory": "Aucun mouvement pour le moment."
+  },
+  "comments": {
+    "yourComment": "Votre commentaire",
+    "placeholder": "Partagez votre avis ou posez une question...",
+    "sending": "Envoi...",
+    "publish": "Publier",
+    "title": "Commentaires",
+    "loadError": "Impossible de charger les commentaires",
+    "published": "Commentaire publié",
+    "publishError": "Impossible de publier le commentaire",
+    "deleteConfirm": "Supprimer ce commentaire ?",
+    "deleted": "Commentaire supprimé",
+    "deleteError": "Impossible de supprimer le commentaire",
+    "loadMoreError": "Impossible de charger plus de commentaires",
+    "verifyToComment": "Vérifiez votre adresse e-mail pour laisser un commentaire.",
+    "verifyEmail": "Vérifier mon e-mail",
+    "login": "Connectez-vous",
+    "toComment": "pour laisser un commentaire.",
+    "loading": "Chargement...",
+    "loadMore": "Charger plus"
+  },
+  "contactModal": {
+    "aboutSubject": "À propos de « {{title}} »",
+    "fillRequired": "Merci de remplir le sujet et le message",
+    "sent": "Message envoyé à l'auteur",
+    "sendError": "Impossible d'envoyer le message",
+    "title": "Contacter l'auteur",
+    "privacy": "Votre message est transmis par e-mail à l'auteur. Son adresse reste confidentielle.",
+    "subject": "Sujet",
+    "message": "Message",
+    "placeholder": "Bonjour, je souhaite...",
+    "sending": "Envoi...",
+    "send": "Envoyer"
+  },
+  "shareModal": {
+    "title": "Partager ce document",
+    "email": "E-mail",
+    "linkLabel": "Lien du document",
+    "nativeShare": "Partager avec une application",
+    "qrTitle": "Scanner le QR code",
+    "qrAlt": "QR code pour {{title}}",
+    "qrError": "Impossible de générer le QR code.",
+    "qrGenerating": "Génération du QR code"
+  },
+  "report": {
+    "spam": "Spam ou publicité",
+    "inappropriate": "Contenu inapproprié",
+    "copyright": "Atteinte au droit d'auteur",
+    "misleading": "Information trompeuse",
+    "other": "Autre",
+    "sent": "Signalement envoyé à la modération",
+    "error": "Impossible d'envoyer le signalement",
+    "title": "Signaler ce contenu",
+    "reason": "Motif",
+    "details": "Précisions (optionnel)",
+    "detailsPlaceholder": "Décrivez le problème…",
+    "sending": "Envoi...",
+    "submit": "Envoyer le signalement"
+  },
+  "whatsapp": {
+    "newDoc": "Nouveau document sur {{siteName}}",
+    "document": "Document",
+    "author": "Auteur",
+    "loginRequired": "Connectez-vous pour publier sur la chaîne",
+    "verifyRequired": "Vérifiez votre email pour publier sur la chaîne",
+    "privateError": "Ce document est privé. Passez-le en public avant de le publier sur la chaîne.",
+    "copiedReady": "Message copié, prêt à coller dans la chaîne",
+    "ready": "Message prêt",
+    "prepareError": "Impossible de préparer la publication",
+    "copied": "Message copié",
+    "copyError": "Copie impossible, sélectionnez le texte manuellement",
+    "preparing": "Préparation...",
+    "publish": "Publier sur la chaîne WhatsApp",
+    "modalTitle": "Publier sur la chaîne WhatsApp",
+    "step1": "Copie le message ci-dessous.",
+    "step2": "Ouvre la chaîne WhatsApp.",
+    "step3": "Colle le message et publie.",
+    "copyMessage": "Copier le message",
+    "openChannel": "Ouvrir la chaîne",
+    "shareVia": "Ou partager via WhatsApp (contacts et groupes)"
   }
 }

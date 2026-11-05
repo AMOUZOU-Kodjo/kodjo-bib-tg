@@ -30,7 +30,8 @@
     "seeAll": "See all",
     "retry": "Retry",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "download": "Download"
   },
   "home": {
     "title": "The digital library",
@@ -145,7 +146,12 @@
     "generatingSummary": "Generating summary...",
     "translation": "Translation ({{lang}})",
     "noDescription": "No description. Use the AI summary to get an overview.",
-    "improveError": "Could not improve description"
+    "improveError": "Could not improve description",
+    "category": "Category",
+    "availability": "Availability",
+    "previewTitle": "Book preview",
+    "insufficientCredits": "Insufficient credits",
+    "sameCategory": "In the same category"
   },
   "footer": {
     "tagline": "Free collaborative platform for archiving and sharing documents.",
@@ -664,7 +670,8 @@
     "reasonInappropriate": "Inappropriate content",
     "reasonCopyright": "Copyright",
     "reasonMisleading": "Misleading information",
-    "reasonOther": "Other"
+    "reasonOther": "Other",
+    "creditsSummary": "A new user receives {{initial}} credit(s) and earns {{upload}} for each upload."
   },
   "profile": {
     "notFound": "Document not found",
@@ -772,5 +779,85 @@
     "displayName": "Display name",
     "pushNotifications": "Push notifications",
     "noCreditsHistory": "No credit activity yet."
+  },
+  "comments": {
+    "yourComment": "Your comment",
+    "placeholder": "Share your thoughts or ask a question...",
+    "sending": "Sending...",
+    "publish": "Post",
+    "title": "Comments",
+    "loadError": "Unable to load comments",
+    "published": "Comment posted",
+    "publishError": "Unable to post comment",
+    "deleteConfirm": "Delete this comment?",
+    "deleted": "Comment deleted",
+    "deleteError": "Unable to delete comment",
+    "loadMoreError": "Unable to load more comments",
+    "verifyToComment": "Verify your email address to leave a comment.",
+    "verifyEmail": "Verify my email",
+    "login": "Log in",
+    "toComment": "to leave a comment.",
+    "loading": "Loading...",
+    "loadMore": "Load more"
+  },
+  "contactModal": {
+    "aboutSubject": "About \"{{title}}\"",
+    "fillRequired": "Please fill in the subject and message",
+    "sent": "Message sent to the author",
+    "sendError": "Unable to send message",
+    "title": "Contact the author",
+    "privacy": "Your message is emailed to the author. Their address remains confidential.",
+    "subject": "Subject",
+    "message": "Message",
+    "placeholder": "Hello, I would like...",
+    "sending": "Sending...",
+    "send": "Send"
+  },
+  "shareModal": {
+    "title": "Share this document",
+    "email": "Email",
+    "linkLabel": "Document link",
+    "nativeShare": "Share with an app",
+    "qrTitle": "Scan QR code",
+    "qrAlt": "QR code for {{title}}",
+    "qrError": "Unable to generate QR code.",
+    "qrGenerating": "Generating QR code"
+  },
+  "report": {
+    "spam": "Spam or advertising",
+    "inappropriate": "Inappropriate content",
+    "copyright": "Copyright infringement",
+    "misleading": "Misleading information",
+    "other": "Other",
+    "sent": "Report sent to moderation",
+    "error": "Unable to send report",
+    "title": "Report this content",
+    "reason": "Reason",
+    "details": "Details (optional)",
+    "detailsPlaceholder": "Describe the issue…",
+    "sending": "Sending...",
+    "submit": "Send report"
+  },
+  "whatsapp": {
+    "newDoc": "New document on {{siteName}}",
+    "document": "Document",
+    "author": "Author",
+    "loginRequired": "Log in to publish to the channel",
+    "verifyRequired": "Verify your email to publish to the channel",
+    "privateError": "This document is private. Make it public before publishing to the channel.",
+    "copiedReady": "Message copied, ready to paste in the channel",
+    "ready": "Message ready",
+    "prepareError": "Unable to prepare publication",
+    "copied": "Message copied",
+    "copyError": "Copy failed, select the text manually",
+    "preparing": "Preparing...",
+    "publish": "Publish to WhatsApp channel",
+    "modalTitle": "Publish to WhatsApp channel",
+    "step1": "Copy the message below.",
+    "step2": "Open the WhatsApp channel.",
+    "step3": "Paste the message and publish.",
+    "copyMessage": "Copy message",
+    "openChannel": "Open channel",
+    "shareVia": "Or share via WhatsApp (contacts and groups)"
   }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { MessageSquare, ChevronDown } from "lucide-react";
 import { getComments, addComment, deleteComment } from "../../api/comments";
@@ -12,6 +13,7 @@ import ReportModal from "../reports/ReportModal";
 const PAGE_SIZE = 10;
 
 export default function CommentsSection({ documentId, initialCount = 0, isOwner = false }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const location = useLocation();
   const [comments, setComments] = useState([]);
@@ -35,38 +37,36 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
         if (typeof res.data.total === "number") setTotal(res.data.total);
       })
       .catch(() => {
-        if (active) toast.error("Impossible de charger les commentaires");
+        if (active) toast.error(t("comments.loadError"));
       })
       .finally(() => {
         if (active) setLoading(false);
       });
-    return () => {
-      active = false;
-    };
-  }, [documentId, initialCount]);
+    return () => { active = false; };
+  }, [documentId, initialCount, t]);
 
   const submit = async (content) => {
     try {
       const res = await addComment(documentId, { content });
       setComments((prev) => [res.data.comment, ...prev]);
-      setTotal((t) => t + 1);
-      toast.success("Commentaire publié");
+      setTotal((n) => n + 1);
+      toast.success(t("comments.published"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de publier le commentaire");
+      toast.error(err.response?.data?.error?.message || t("comments.publishError"));
       throw err;
     }
   };
 
   const remove = async (commentId) => {
-    if (!window.confirm("Supprimer ce commentaire ?")) return;
+    if (!window.confirm(t("comments.deleteConfirm"))) return;
     setDeletingId(commentId);
     try {
       await deleteComment(commentId);
       setComments((prev) => prev.filter((c) => c.id !== commentId));
-      setTotal((t) => Math.max(0, t - 1));
-      toast.success("Commentaire supprimé");
+      setTotal((n) => Math.max(0, n - 1));
+      toast.success(t("comments.deleted"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de supprimer le commentaire");
+      toast.error(err.response?.data?.error?.message || t("comments.deleteError"));
     } finally {
       setDeletingId(null);
     }
@@ -84,7 +84,7 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
       if (typeof res.data.total === "number") setTotal(res.data.total);
       setPage(nextPage);
     } catch (err) {
-      toast.error("Impossible de charger plus de commentaires");
+      toast.error(t("comments.loadMoreError"));
     } finally {
       setLoadingMore(false);
     }
@@ -94,7 +94,7 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
     <section className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center gap-2">
         <MessageSquare className="w-5 h-5 text-teal-700 dark:text-teal-300" />
-        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Commentaires</h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">{t("comments.title")}</h2>
         <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-800 text-xs font-medium text-gray-600 dark:text-slate-400">{total}</span>
       </div>
 
@@ -104,17 +104,17 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
         <div className="mb-6 rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-4 text-sm text-gray-600 dark:text-slate-400">
           {user ? (
             <>
-              Vérifiez votre adresse e-mail pour laisser un commentaire.{" "}
+              {t("comments.verifyToComment")}{" "}
               <Link to="/verify-email" state={{ email: user.email }} className="font-medium text-teal-700 dark:text-teal-300 hover:underline">
-                Vérifier mon e-mail
+                {t("comments.verifyEmail")}
               </Link>
             </>
           ) : (
             <>
               <Link to="/login" state={{ from: location }} className="font-medium text-teal-700 dark:text-teal-300 hover:underline">
-                Connectez-vous
+                {t("comments.login")}
               </Link>{" "}
-              pour laisser un commentaire.
+              {t("comments.toComment")}
             </>
           )}
         </div>
@@ -140,7 +140,7 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-colors disabled:opacity-50"
               >
                 <ChevronDown className="w-4 h-4" />
-                {loadingMore ? "Chargement..." : "Charger plus"}
+                {loadingMore ? t("comments.loading") : t("comments.loadMore")}
               </button>
             </div>
           )}
