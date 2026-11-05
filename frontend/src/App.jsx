@@ -40,14 +40,15 @@ function PageFallback() {
 export default function App() {
   const location = useLocation();
 
-  // Animation de transition légère à chaque changement de route
+  // Retour en haut + animation légère à chaque changement de route
   useEffect(() => {
+    window.scrollTo(0, 0);
     document.documentElement.classList.add("page-transition");
     const timer = setTimeout(() => {
       document.documentElement.classList.remove("page-transition");
     }, 300);
     return () => clearTimeout(timer);
-  }, [location.key]);
+  }, [location.key, location.pathname]);
 
   return (
     <Layout>
