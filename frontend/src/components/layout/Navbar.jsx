@@ -38,21 +38,21 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-teal-700 backdrop-blur supports-[backdrop-filter]:bg-teal-700/95">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 py-3">
-          <Link to="/" onClick={closeMenu} className="group flex min-w-0 items-center gap-2.5">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 py-2.5 sm:py-3">
+          <Link to="/" onClick={closeMenu} className="group flex min-w-0 items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
             <img
               src="/logo.png"
               alt={siteName}
-              className="h-9 w-auto shrink-0 rounded-lg object-contain shadow-sm ring-1 ring-white/20 transition group-hover:ring-white/30 sm:h-10"
+              className="h-8 w-auto shrink-0 rounded-lg object-contain shadow-sm ring-1 ring-white/20 transition group-hover:ring-white/30 sm:h-9 lg:h-10"
             />
-            <div className="min-w-0">
-              <div className="truncate text-lg leading-tight text-white sm:text-xl" style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}>{siteName}</div>
-              <div className="hidden truncate text-xs leading-tight text-white/80 sm:block">{siteTagline}</div>
+            <div className="min-w-0 hidden sm:block">
+              <div className="truncate text-base leading-tight text-white sm:text-lg lg:text-xl" style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}>{siteName}</div>
+              <div className="hidden truncate text-xs leading-tight text-white/80 md:block">{siteTagline}</div>
             </div>
           </Link>
 
-          <div className="hidden items-center gap-1 lg:flex xl:gap-2">
+          <div className="hidden items-center gap-0.5 lg:flex xl:gap-1.5 flex-shrink min-w-0">
             <Link to="/documents" className={desktopLink}>
               <BookOpen className="h-4 w-4 shrink-0" />
               <span>Catalogue</span>
