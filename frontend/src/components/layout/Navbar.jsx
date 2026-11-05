@@ -62,51 +62,53 @@ export default function Navbar() {
                 {user.role === "admin" && (
                   <Link to="/admin" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-red-500/10 px-2.5 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20">
                     <Shield className="h-4 w-4 shrink-0" />
-                    <span>Administration</span>
+                    <span className="hidden xl:inline">Administration</span>
                   </Link>
                 )}
                 {user.email_verified ? (
                   <>
                     <Link to="/upload" className={desktopLink}>
                       <Upload className="h-4 w-4 shrink-0" />
-                      <span>Déposer</span>
+                      <span className="hidden xl:inline">Déposer</span>
                     </Link>
-                    <Link to="/favorites" className={desktopLink}>
+                    <Link to="/favorites" className={desktopLink} title="Mes favoris">
                       <Heart className="h-4 w-4 shrink-0" />
-                      <span>Mes favoris</span>
+                      <span className="hidden xl:inline">Mes favoris</span>
                     </Link>
-                    <Link to="/downloads" className={desktopLink}>
+                    <Link to="/downloads" className={desktopLink} title="Mes téléchargements">
                       <Download className="h-4 w-4 shrink-0" />
-                      <span>Mes téléchargements</span>
+                      <span className="hidden xl:inline">Mes téléchargements</span>
                     </Link>
                     <Link to="/profile" className={desktopLink}>
                       <User className="h-4 w-4 shrink-0" />
-                      <span>Mon profil ({user.credits} cr.)</span>
+                      <span className="hidden xl:inline">Mon profil ({user.credits} cr.)</span>
+                      <span className="xl:hidden">Profil</span>
                     </Link>
                   </>
                 ) : (
                   <>
                     <Link to="/verify-email" state={{ email: user.email }} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-500/10 px-2.5 py-2 text-sm font-medium text-amber-300 transition-colors hover:bg-amber-500/20">
                       <Mail className="h-4 w-4 shrink-0" />
-                      <span>Vérifier mon email</span>
+                      <span className="hidden xl:inline">Vérifier mon email</span>
                     </Link>
-                    <Link to="/favorites" className={desktopLink}>
+                    <Link to="/favorites" className={desktopLink} title="Mes favoris">
                       <Heart className="h-4 w-4 shrink-0" />
-                      <span>Mes favoris</span>
+                      <span className="hidden xl:inline">Mes favoris</span>
                     </Link>
-                    <Link to="/downloads" className={desktopLink}>
+                    <Link to="/downloads" className={desktopLink} title="Mes téléchargements">
                       <Download className="h-4 w-4 shrink-0" />
-                      <span>Mes téléchargements</span>
+                      <span className="hidden xl:inline">Mes téléchargements</span>
                     </Link>
                     <Link to="/profile" className={desktopLink}>
                       <User className="h-4 w-4 shrink-0" />
-                      <span>Mon profil</span>
+                      <span className="hidden xl:inline">Mon profil</span>
+                      <span className="xl:hidden">Profil</span>
                     </Link>
                   </>
                 )}
                 <button onClick={handleLogout} className={desktopLink}>
                   <LogOut className="h-4 w-4 shrink-0" />
-                  <span>Déconnexion</span>
+                  <span className="hidden xl:inline">Déconnexion</span>
                 </button>
               </>
             ) : (
