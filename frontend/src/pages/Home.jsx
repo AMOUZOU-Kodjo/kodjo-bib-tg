@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Upload, Search, ArrowRight, CheckCircle } from "lucide-react";
 import heroImg from "../assets/hero.jpg";
 import { getDocuments } from "../api/documents";
@@ -8,7 +9,7 @@ import useSeo from "../hooks/useSeo";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { SkeletonCard, Reveal } from "../components/ui";
 
-function DocumentSection({ title, subtitle, docs, to = "/documents", loading = false }) {
+function DocumentSection({ title, subtitle, docs, to = "/documents", loading = false, seeAll }) {
   if (!loading && !docs.length) return null;
   return (
     <section className="py-10 sm:py-12">
@@ -18,7 +19,7 @@ function DocumentSection({ title, subtitle, docs, to = "/documents", loading = f
           <p className="mt-1 text-sm text-gray-600 dark:text-slate-400 sm:text-base">{subtitle}</p>
         </div>
         <Link to={to} className="inline-flex shrink-0 items-center gap-1 self-start text-sm font-medium text-teal-700 dark:text-teal-300 hover:underline sm:self-auto">
-          Tout voir <ArrowRight className="w-4 h-4" />
+          {seeAll} <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
       <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
@@ -32,6 +33,7 @@ function DocumentSection({ title, subtitle, docs, to = "/documents", loading = f
 
 export default function Home() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { allowRegistrations } = useSiteSettings();
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState([]);
@@ -39,8 +41,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useSeo({
-    title: "Bibliothèque numérique collaborative",
-    description: "Déposez, archivez et partagez gratuitement vos documents. Découvrez des ressources utiles et contribuez à une bibliothèque numérique collaborative.",
+    title: t("home.seoTitle"),
+    description: t("home.seoDesc"),
     url: `${window.location.origin}/`
   });
 
@@ -76,18 +78,17 @@ export default function Home() {
 
   return (
     <div>
-      {/* Hero Section */}
       <section className="mt-4 sm:mt-6 mb-8 sm:mb-10 overflow-hidden max-w-full rounded-2xl sm:rounded-3xl border border-slate-800/60 bg-slate-950">
         <div className="grid lg:grid-cols-2">
           <div className="relative px-3 py-5 min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
             <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-teal-500/20 blur-3xl" />
             <div className="relative min-w-0 max-w-full">
               <h1 className="text-base min-[360px]:text-lg sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold text-white mb-2 sm:mb-2.5 leading-tight break-words">
-                Partagez et découvrez
-                <span className="text-teal-300 block">des documents gratuitement</span>
+                {t("home.heroTitle")}
+                <span className="text-teal-300 block">{t("home.heroAccent")}</span>
               </h1>
               <p className="text-[11px] min-[360px]:text-xs sm:text-sm md:text-base text-gray-200 mb-3 sm:mb-4 leading-relaxed break-words">
-                Une archive collaborative au service du partage du savoir. Déposez, gagnez des crédits, téléchargez librement.
+                {t("home.heroDesc")}
               </p>
 
               <form onSubmit={submitSearch} className="w-full mb-3 sm:mb-4 max-w-full sm:max-w-md lg:max-w-lg">
@@ -97,15 +98,15 @@ export default function Home() {
                     type="search"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Rechercher..."
-                    aria-label="Rechercher un document"
+                    placeholder={t("home.searchPlaceholder")}
+                    aria-label={t("home.searchAria")}
                     className="flex-1 min-w-0 w-0 bg-transparent px-0.5 py-1 min-[360px]:px-1 min-[360px]:py-1.5 text-[11px] min-[360px]:text-xs sm:text-sm text-gray-900 dark:text-slate-100 placeholder-gray-500 dark:placeholder-slate-400 focus:outline-none"
                   />
                   <button
                     type="submit"
                     className="shrink-0 bg-teal-700 text-white text-[10px] min-[360px]:text-[11px] sm:text-sm px-2 min-[360px]:px-2.5 sm:px-3.5 py-1 min-[360px]:py-1.5 rounded-md hover:bg-teal-800 transition-colors font-medium"
                   >
-                    Rechercher
+                    {t("home.searchBtn")}
                   </button>
                 </div>
               </form>
@@ -113,13 +114,13 @@ export default function Home() {
               <div className="flex flex-col justify-center gap-2 sm:flex-row">
                 <Link to="/documents" className="flex w-full items-center justify-center gap-1.5 rounded-md bg-teal-600 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-teal-700 sm:w-auto sm:text-sm">
                   <Search className="w-3.5 h-3.5" />
-                  Explorer la bibliothèque
+                  {t("home.explore")}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
                 {allowRegistrations && (
                   <Link to="/register" className="flex w-full items-center justify-center gap-1.5 rounded-md border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-white/20 sm:w-auto sm:text-sm">
                     <Upload className="w-3.5 h-3.5" />
-                    Créer un compte
+                    {t("home.createAccount")}
                   </Link>
                 )}
               </div>
@@ -127,15 +128,15 @@ export default function Home() {
               <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-gray-300 text-[11px] sm:text-xs">
                 <div className="flex items-center gap-1">
                   <CheckCircle className="w-3.5 h-3.5 text-teal-400" />
-                  <span>100% Gratuit</span>
+                  <span>{t("home.free")}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <CheckCircle className="w-3.5 h-3.5 text-teal-400" />
-                  <span>Sans publicité</span>
+                  <span>{t("home.noAds")}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <CheckCircle className="w-3.5 h-3.5 text-teal-400" />
-                  <span>Partage équitable</span>
+                  <span>{t("home.fairShare")}</span>
                 </div>
               </div>
             </div>
@@ -150,21 +151,23 @@ export default function Home() {
 
       <Reveal>
         <DocumentSection
-          title="Derniers ajouts"
-          subtitle="Les documents fraîchement partagés par la communauté"
+          title={t("home.recentTitle")}
+          subtitle={t("home.recentDesc")}
           docs={recent}
           loading={loading}
           to="/documents"
+          seeAll={t("common.seeAll")}
         />
       </Reveal>
 
       <Reveal delay={80}>
         <DocumentSection
-          title="Les plus consultés"
-          subtitle="Les documents que la communauté consulte le plus"
+          title={t("home.popularTitle")}
+          subtitle={t("home.popularDesc")}
           docs={popular}
           loading={loading}
           to="/documents?sort=views"
+          seeAll={t("common.seeAll")}
         />
       </Reveal>
 

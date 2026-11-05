@@ -58,72 +58,72 @@ export default function Navbar() {
           <div className="hidden items-center gap-0 lg:flex xl:gap-0.5 2xl:gap-1 flex-shrink min-w-0">
             <Link to="/documents" className={desktopLink}>
               <BookOpen className="h-4 w-4 shrink-0" />
-              <span>Catalogue</span>
+              <span>{t("nav.catalog")}</span>
             </Link>
             {user ? (
               <>
                 {user.role === "admin" && (
-                  <Link to="/admin" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-red-500/10 px-2.5 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20" title="Administration">
+                  <Link to="/admin" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-red-500/10 px-2.5 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20" title={t("nav.admin")}>
                     <Shield className="h-4 w-4 shrink-0" />
-                    <span className="hidden 2xl:inline">Administration</span>
+                    <span className="hidden 2xl:inline">{t("nav.admin")}</span>
                   </Link>
                 )}
                 {user.email_verified ? (
                   <>
-                <Link to="/upload" className={desktopLink} title="Déposer">
+                <Link to="/upload" className={desktopLink} title={t("nav.upload")}>
                   <Upload className="h-4 w-4 shrink-0" />
-                  <span className="hidden 2xl:inline">Déposer</span>
+                  <span className="hidden 2xl:inline">{t("nav.upload")}</span>
                 </Link>
-                <Link to="/favorites" className={desktopLink} title="Mes favoris">
+                <Link to="/favorites" className={desktopLink} title={t("nav.favorites")}>
                   <Heart className="h-4 w-4 shrink-0" />
-                  <span className="hidden 2xl:inline">Mes favoris</span>
+                  <span className="hidden 2xl:inline">{t("nav.favorites")}</span>
                 </Link>
-                <Link to="/downloads" className={desktopLink} title="Mes téléchargements">
+                <Link to="/downloads" className={desktopLink} title={t("nav.downloads")}>
                   <Download className="h-4 w-4 shrink-0" />
-                  <span className="hidden 2xl:inline">Mes téléchargements</span>
+                  <span className="hidden 2xl:inline">{t("nav.downloads")}</span>
                 </Link>
                 <Link to="/profile" className={desktopLink}>
                   <User className="h-4 w-4 shrink-0" />
-                  <span className="hidden 2xl:inline">Mon profil ({user.credits} cr.)</span>
-                  <span className="2xl:hidden">Profil</span>
+                  <span className="hidden 2xl:inline">{t("nav.myProfile")} ({t("nav.credits", { count: user.credits })})</span>
+                  <span className="2xl:hidden">{t("nav.profile")}</span>
                 </Link>
                   </>
                 ) : (
                   <>
                     <Link to="/verify-email" state={{ email: user.email }} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-500/10 px-2.5 py-2 text-sm font-medium text-amber-300 transition-colors hover:bg-amber-500/20">
                       <Mail className="h-4 w-4 shrink-0" />
-                      <span className="hidden xl:inline">Vérifier mon email</span>
+                      <span className="hidden xl:inline">{t("nav.verifyEmail")}</span>
                     </Link>
-                <Link to="/favorites" className={desktopLink} title="Mes favoris">
+                <Link to="/favorites" className={desktopLink} title={t("nav.favorites")}>
                   <Heart className="h-4 w-4 shrink-0" />
-                  <span className="hidden 2xl:inline">Mes favoris</span>
+                  <span className="hidden 2xl:inline">{t("nav.favorites")}</span>
                 </Link>
-                <Link to="/downloads" className={desktopLink} title="Mes téléchargements">
+                <Link to="/downloads" className={desktopLink} title={t("nav.downloads")}>
                   <Download className="h-4 w-4 shrink-0" />
-                  <span className="hidden 2xl:inline">Mes téléchargements</span>
+                  <span className="hidden 2xl:inline">{t("nav.downloads")}</span>
                 </Link>
                 <Link to="/profile" className={desktopLink}>
                   <User className="h-4 w-4 shrink-0" />
-                  <span className="hidden 2xl:inline">Mon profil</span>
-                  <span className="2xl:hidden">Profil</span>
+                  <span className="hidden 2xl:inline">{t("nav.myProfile")}</span>
+                  <span className="2xl:hidden">{t("nav.profile")}</span>
                 </Link>
                   </>
                 )}
-                <button onClick={handleLogout} className={desktopLink} title="Déconnexion">
+                <button onClick={handleLogout} className={desktopLink} title={t("nav.logout")}>
                   <LogOut className="h-4 w-4 shrink-0" />
-                  <span className="hidden 2xl:inline">Déconnexion</span>
+                  <span className="hidden 2xl:inline">{t("nav.logout")}</span>
                 </button>
               </>
             ) : (
               <>
                 <Link to="/login" className={desktopLink}>
                   <LogIn className="h-4 w-4 shrink-0" />
-                  <span>Connexion</span>
+                  <span>{t("nav.login")}</span>
                 </Link>
                 {allowRegistrations && (
                   <Link to="/register" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-white/10 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20">
                     <UserPlus className="h-4 w-4 shrink-0" />
-                    <span>Inscription</span>
+                    <span>{t("nav.register")}</span>
                   </Link>
                 )}
               </>
@@ -166,7 +166,7 @@ export default function Navbar() {
               type="button"
               onClick={() => setMenuOpen((open) => !open)}
               className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/20 text-white transition-colors hover:bg-white/10 lg:hidden"
-              aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-label={menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
               aria-expanded={menuOpen}
               aria-controls="mobile-menu"
             >
@@ -180,7 +180,7 @@ export default function Navbar() {
             <div className="flex flex-col gap-1 pt-3">
               <Link to="/documents" onClick={closeMenu} className={mobileLink}>
                 <BookOpen className="h-4 w-4 shrink-0" />
-                Catalogue
+                {t("nav.catalog")}
               </Link>
 
               {user ? (
@@ -188,7 +188,7 @@ export default function Navbar() {
                   {user.role === "admin" && (
                     <Link to="/admin" onClick={closeMenu} className={`${mobileAccentLink} bg-red-500/10 text-red-400 hover:bg-red-500/20`}>
                       <Shield className="h-4 w-4 shrink-0" />
-                      Administration
+                      {t("nav.admin")}
                     </Link>
                   )}
 
@@ -196,21 +196,21 @@ export default function Navbar() {
                     <>
                       <Link to="/upload" onClick={closeMenu} className={mobileLink}>
                         <Upload className="h-4 w-4 shrink-0" />
-                        Déposer un document
+                        {t("nav.uploadDoc")}
                       </Link>
                       <Link to="/favorites" onClick={closeMenu} className={mobileLink}>
                         <Heart className="h-4 w-4 shrink-0" />
-                        Mes favoris
+                        {t("nav.favorites")}
                       </Link>
                       <Link to="/downloads" onClick={closeMenu} className={mobileLink}>
                         <Download className="h-4 w-4 shrink-0" />
-                        Mes téléchargements
+                        {t("nav.downloads")}
                       </Link>
                       <Link to="/profile" onClick={closeMenu} className={mobileLink}>
                         <User className="h-4 w-4 shrink-0" />
-                        Mon profil
+                        {t("nav.myProfile")}
                         <span className="ml-auto rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-semibold text-teal-300">
-                          {user.credits} cr.
+                          {t("nav.credits", { count: user.credits })}
                         </span>
                       </Link>
                     </>
@@ -218,38 +218,38 @@ export default function Navbar() {
                     <>
                       <Link to="/verify-email" state={{ email: user.email }} onClick={closeMenu} className={`${mobileAccentLink} bg-amber-500/10 text-amber-300 hover:bg-amber-500/20`}>
                         <Mail className="h-4 w-4 shrink-0" />
-                        Vérifier mon email
+                        {t("nav.verifyEmail")}
                       </Link>
                       <Link to="/favorites" onClick={closeMenu} className={mobileLink}>
                         <Heart className="h-4 w-4 shrink-0" />
-                        Mes favoris
+                        {t("nav.favorites")}
                       </Link>
                       <Link to="/downloads" onClick={closeMenu} className={mobileLink}>
                         <Download className="h-4 w-4 shrink-0" />
-                        Mes téléchargements
+                        {t("nav.downloads")}
                       </Link>
                       <Link to="/profile" onClick={closeMenu} className={mobileLink}>
                         <User className="h-4 w-4 shrink-0" />
-                        Mon profil
+                        {t("nav.myProfile")}
                       </Link>
                     </>
                   )}
 
                   <button onClick={handleLogout} className={`${mobileAccentLink} text-red-400 hover:bg-red-500/10`}>
                     <LogOut className="h-4 w-4 shrink-0" />
-                    Déconnexion
+                    {t("nav.logout")}
                   </button>
                 </>
               ) : (
                 <>
                   <Link to="/login" onClick={closeMenu} className={mobileLink}>
                     <LogIn className="h-4 w-4 shrink-0" />
-                    Connexion
+                    {t("nav.login")}
                   </Link>
                   {allowRegistrations && (
                     <Link to="/register" onClick={closeMenu} className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/20">
                       <UserPlus className="h-4 w-4" />
-                      Inscription gratuite
+                      {t("nav.registerFree")}
                     </Link>
                   )}
                 </>
