@@ -115,7 +115,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Titre</label>
+            <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t("profile.docTitle")}</label>
             <input
               id="edit-title"
               value={title}
@@ -126,7 +126,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
             />
           </div>
           <div>
-            <label htmlFor="edit-category" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Catégorie</label>
+            <label htmlFor="edit-category" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t("profile.category")}</label>
             <input
               id="edit-category"
               value={category}
@@ -137,19 +137,19 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
             />
           </div>
           <div>
-            <label htmlFor="edit-tags" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Mots-clés</label>
+            <label htmlFor="edit-tags" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t("profile.tags")}</label>
             <input
               id="edit-tags"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               maxLength={240}
               className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
-              placeholder="maths, bac, révision"
+              placeholder={t("upload.tagsPlaceholder")}
             />
-            <p className="mt-1 text-xs text-gray-400">Jusqu'à 5 mots-clés séparés par des virgules.</p>
+            <p className="mt-1 text-xs text-gray-400">{t("upload.tagsHint")}</p>
           </div>
           <div>
-            <span className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Visibilité</span>
+            <span className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t("profile.visibility")}</span>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
@@ -179,12 +179,12 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
               </button>
             </div>
             {visibilityChanged && (
-              <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">Changer la visibilité désactive le lien de partage existant.</p>
+              <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">{t("profile.visibilityShareHint")}</p>
             )}
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Description</label>
+              <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 dark:text-slate-300">{t("profile.description")}</label>
               <button
                 type="button"
                 onClick={handleImproveDescription}
@@ -793,25 +793,25 @@ export default function Profile() {
 
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-2 text-gray-600 dark:text-slate-400"><Mail className="w-4 h-4" />E-mail</span>
+                <span className="inline-flex items-center gap-2 text-gray-600 dark:text-slate-400"><Mail className="w-4 h-4" />{t("profile.email")}</span>
                 {user?.email_verified ? (
-                  <span className="px-2.5 py-0.5 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">Vérifié</span>
+                  <span className="px-2.5 py-0.5 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">{t("profile.verified")}</span>
                 ) : (
-                  <span className="px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 rounded-full text-xs font-medium">Non vérifié</span>
+                  <span className="px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 rounded-full text-xs font-medium">{t("profile.unverified")}</span>
                 )}
               </div>
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-2 text-gray-600 dark:text-slate-400"><Shield className="w-4 h-4" />Rôle</span>
+                <span className="inline-flex items-center gap-2 text-gray-600 dark:text-slate-400"><Shield className="w-4 h-4" />{t("profile.role")}</span>
                 <span className="text-gray-900 dark:text-slate-100 font-medium capitalize">{user?.role}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-2 text-gray-600 dark:text-slate-400"><Coins className="w-4 h-4" />Crédits</span>
+                <span className="inline-flex items-center gap-2 text-gray-600 dark:text-slate-400"><Coins className="w-4 h-4" />{t("profile.credits")}</span>
                 <span className="text-gray-900 dark:text-slate-100 font-semibold">{credits}</span>
               </div>
             </div>
 
             <form onSubmit={saveName} className="mt-5 pt-5 border-t border-gray-100 dark:border-slate-700">
-              <label htmlFor="profile-name" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Nom affiché</label>
+              <label htmlFor="profile-name" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t("profile.displayName")}</label>
               <div className="flex gap-2">
                 <div className="relative min-w-0 flex-1">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -880,7 +880,7 @@ export default function Profile() {
               />
               {pushSupported && pushConfig.enabled && (
                 <PreferenceToggle
-                  label="Notifications push"
+                  label={t("profile.pushNotifications")}
                   description="Recevoir des alertes même lorsque l'application est fermée."
                   checked={pushEnabled}
                   disabled={pushBusy}
@@ -913,7 +913,7 @@ export default function Profile() {
             {creditsLoading ? (
               <div className="flex justify-center py-6"><Spinner /></div>
             ) : history.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-slate-400 py-2">Aucun mouvement pour le moment.</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400 py-2">{t("profile.noCreditsHistory")}</p>
             ) : (
               <ul className="max-h-72 overflow-y-auto -mx-1 px-1">
                 {history.map((item) => (
