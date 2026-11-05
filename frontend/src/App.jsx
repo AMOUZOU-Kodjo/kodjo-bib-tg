@@ -18,6 +18,7 @@ const SharedDocument = lazy(() => import("./pages/SharedDocument"));
 const Upload = lazy(() => import("./pages/Upload"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Favorites = lazy(() => import("./pages/Favorites"));
+const MyDownloads = lazy(() => import("./pages/MyDownloads"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Contact = lazy(() => import("./pages/Contact"));
 const About = lazy(() => import("./pages/About"));
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/upload" element={<ProtectedRoute requireVerified={false}><Upload /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute requireVerified={false}><Profile /></ProtectedRoute>} />
           <Route path="/favorites" element={<ProtectedRoute requireVerified={false}><Favorites /></ProtectedRoute>} />
+          <Route path="/downloads" element={<ProtectedRoute requireVerified={false}><MyDownloads /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute requireVerified={false}><Notifications /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/contact" element={<Contact />} />

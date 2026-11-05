@@ -6,7 +6,7 @@ import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
 import NotificationBell from "../notifications/NotificationBell";
 import {
-  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart
+  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart, Download
 } from "lucide-react";
 import { Moon, Sun } from "lucide-react";
 
@@ -75,6 +75,10 @@ export default function Navbar() {
                       <Heart className="h-4 w-4 shrink-0" />
                       <span>Mes favoris</span>
                     </Link>
+                    <Link to="/downloads" className={desktopLink}>
+                      <Download className="h-4 w-4 shrink-0" />
+                      <span>Mes téléchargements</span>
+                    </Link>
                     <Link to="/profile" className={desktopLink}>
                       <User className="h-4 w-4 shrink-0" />
                       <span>Mon profil ({user.credits} cr.)</span>
@@ -89,6 +93,10 @@ export default function Navbar() {
                     <Link to="/favorites" className={desktopLink}>
                       <Heart className="h-4 w-4 shrink-0" />
                       <span>Mes favoris</span>
+                    </Link>
+                    <Link to="/downloads" className={desktopLink}>
+                      <Download className="h-4 w-4 shrink-0" />
+                      <span>Mes téléchargements</span>
                     </Link>
                     <Link to="/profile" className={desktopLink}>
                       <User className="h-4 w-4 shrink-0" />
@@ -179,6 +187,10 @@ export default function Navbar() {
                         <Heart className="h-4 w-4 shrink-0" />
                         Mes favoris
                       </Link>
+                      <Link to="/downloads" onClick={closeMenu} className={mobileLink}>
+                        <Download className="h-4 w-4 shrink-0" />
+                        Mes téléchargements
+                      </Link>
                       <Link to="/profile" onClick={closeMenu} className={mobileLink}>
                         <User className="h-4 w-4 shrink-0" />
                         Mon profil
@@ -196,6 +208,10 @@ export default function Navbar() {
                       <Link to="/favorites" onClick={closeMenu} className={mobileLink}>
                         <Heart className="h-4 w-4 shrink-0" />
                         Mes favoris
+                      </Link>
+                      <Link to="/downloads" onClick={closeMenu} className={mobileLink}>
+                        <Download className="h-4 w-4 shrink-0" />
+                        Mes téléchargements
                       </Link>
                       <Link to="/profile" onClick={closeMenu} className={mobileLink}>
                         <User className="h-4 w-4 shrink-0" />
