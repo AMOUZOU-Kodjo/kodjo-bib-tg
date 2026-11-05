@@ -307,4 +307,23 @@ router.post("/:id/follow", authRequired, requireVerified, async (req, res, next)
   }
 });
 
+router.get("/me/downloads", authRequired, async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      `SELECT d.id, d.title, d.description, d.category, d.tags, d.original_filename, d.mime_type, d.preview_public_id, d.size_bytes, d.view_count, d.download_count, d.created_at,
+              u.display_name as author_name, u.id as owner_id,
+              dl.created_at as downloaded_at
+       FROM downloads dl
+       JOIN documents d ON d.id = dl.document_id
+       LEFT JOIN users u ON u.id = d.owner_id
+       WHERE dl.user_id = $1
+       ORDER BY dl.created_at DESC`,
+      [req.user.id]
+    );
+    res.json({ downloads: rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
