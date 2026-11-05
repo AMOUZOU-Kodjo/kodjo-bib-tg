@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Download, Share2, Smartphone, X } from "lucide-react";
 
 function isStandalone() {
@@ -10,6 +11,7 @@ function isStandalone() {
 }
 
 export default function InstallPWA({ className = "" }) {
+  const { t } = useTranslation();
   const [promptEvent, setPromptEvent] = useState(null);
   const [installed, setInstalled] = useState(isStandalone);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -79,7 +81,7 @@ export default function InstallPWA({ className = "" }) {
         }
       >
         <Download className="h-4 w-4" />
-        Installer l'application
+        {t("install.installApp")}
       </button>
 
       {helpOpen && (
@@ -96,12 +98,12 @@ export default function InstallPWA({ className = "" }) {
           >
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 px-5 py-4">
               <h2 id="install-pwa-title" className="font-semibold text-gray-900 dark:text-slate-100">
-                Installer l'application
+                {t("install.title")}
               </h2>
               <button
                 type="button"
                 onClick={() => setHelpOpen(false)}
-                aria-label="Fermer"
+                aria-label={t("install.close")}
                 className="rounded-lg p-1.5 text-gray-500 dark:text-slate-400 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-slate-300"
               >
                 <X className="h-5 w-5" />
@@ -112,28 +114,28 @@ export default function InstallPWA({ className = "" }) {
                 <>
                   <p className="flex items-center gap-2 font-medium text-gray-800 dark:text-slate-200">
                     <Share2 className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-                    Sur iPhone ou iPad (Safari)
+                    {t("install.iosTitle")}
                   </p>
                   <ol className="list-decimal space-y-1.5 pl-5">
-                    <li>Ouvre ce site dans Safari.</li>
-                    <li>Touche le bouton Partager.</li>
-                    <li>Choisis « Sur l'écran d'accueil ».</li>
-                    <li>Valide avec « Ajouter ».</li>
+                    <li>{t("install.ios1")}</li>
+                    <li>{t("install.ios2")}</li>
+                    <li>{t("install.ios3")}</li>
+                    <li>{t("install.ios4")}</li>
                   </ol>
                 </>
               ) : (
                 <>
                   <p className="flex items-center gap-2 font-medium text-gray-800 dark:text-slate-200">
                     <Smartphone className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-                    Depuis ton navigateur
+                    {t("install.browserTitle")}
                   </p>
                   <ol className="list-decimal space-y-1.5 pl-5">
-                    <li>Ouvre le menu du navigateur (les trois points).</li>
-                    <li>Choisis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</li>
-                    <li>Confirme l'installation.</li>
+                    <li>{t("install.browser1")}</li>
+                    <li>{t("install.browser2")}</li>
+                    <li>{t("install.browser3")}</li>
                   </ol>
                   <p className="text-xs text-gray-500 dark:text-slate-400">
-                    Sur ordinateur, l'icône d'installation apparaît aussi dans la barre d'adresse.
+                    {t("install.desktopHint")}
                   </p>
                 </>
               )}

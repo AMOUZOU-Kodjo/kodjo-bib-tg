@@ -66,7 +66,7 @@ export default function Upload() {
 
   const handleSuggestMetadata = async () => {
     if (!file && !title.trim()) {
-      toast.error("Ajoutez un fichier ou un titre pour suggérer des métadonnées");
+      toast.error(t("upload.toastMetaNeed"));
       return;
     }
     setSuggestingMeta(true);
@@ -87,9 +87,9 @@ export default function Upload() {
       if (Array.isArray(meta.tags) && meta.tags.length && !tags.trim()) {
         setTags(meta.tags.join(", "));
       }
-      toast.success("Métadonnées suggérées avec l'IA");
+      toast.success(t("upload.toastMetaDone"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de suggérer les métadonnées");
+      toast.error(err.response?.data?.error?.message || t("upload.toastMetaErr"));
     } finally {
       setSuggestingMeta(false);
     }
@@ -97,7 +97,7 @@ export default function Upload() {
 
   const handleGenerateDescription = async () => {
     if (!file && !title.trim()) {
-      toast.error("Ajoutez un fichier ou un titre pour générer une description");
+      toast.error(t("upload.toastDescNeed"));
       return;
     }
     setGeneratingDesc(true);
@@ -109,10 +109,10 @@ export default function Upload() {
       });
       if (res.data?.description) {
         setDescription(res.data.description.trim());
-        toast.success("Description générée avec l'IA");
+        toast.success(t("upload.toastDescDone"));
       }
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de générer la description");
+      toast.error(err.response?.data?.error?.message || t("upload.toastDescErr"));
     } finally {
       setGeneratingDesc(false);
     }
@@ -122,7 +122,7 @@ export default function Upload() {
     if (!selectedFile) return;
     const extension = `.${selectedFile.name.split(".").pop()?.toLowerCase() || ""}`;
     if (!ALLOWED_EXTENSIONS.has(extension)) {
-      toast.error("Format non autorisé. Utilisez PDF, Word, Excel, PowerPoint ou TXT.");
+      toast.error(t("upload.toastFormat"));
       if (inputRef.current) inputRef.current.value = "";
       return;
     }
@@ -165,13 +165,13 @@ export default function Upload() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!file) return toast.error("Fichier requis");
-    if (!title.trim()) return toast.error("Titre requis");
+    if (!file) return toast.error(t("upload.toastFileReq"));
+    if (!title.trim()) return toast.error(t("upload.toastTitleReq"));
     if (file.size > maxUploadSizeMb * 1024 * 1024) {
-      return toast.error(`Fichier trop volumineux (maximum ${maxUploadSizeMb} Mo)`);
+      return toast.error(t("upload.toastTooLarge", { max: maxUploadSizeMb }));
     }
     if (tags.split(",").map((tag) => tag.trim()).filter(Boolean).length > 5) {
-      return toast.error("Maximum 5 mots-clés");
+      return toast.error(t("upload.toastMaxTags"));
     }
     const formData = new FormData();
     formData.append("file", file);
@@ -191,10 +191,10 @@ export default function Upload() {
       const savedBytes = (data.compression?.originalSize || 0) - (data.compression?.finalSize || 0);
       toast.success(
         visibility === "private"
-          ? "Document privé déposé avec succès"
+          ? t("upload.toastPrivateDone")
           : savedBytes > 0
-          ? `Document déposé, ${formatFileSize(savedBytes)} économisés`
-          : "Document déposé avec succès"
+          ? t("upload.toastSaved", { size: formatFileSize(savedBytes) })
+          : t("upload.toastDone")
       );
       setCreatedDoc(data.document || null);
       setFile(null);
@@ -205,7 +205,7 @@ export default function Upload() {
       setVisibility("public");
       if (inputRef.current) inputRef.current.value = "";
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Erreur lors de l'envoi");
+      toast.error(err.response?.data?.error?.message || t("upload.toastError"));
     } finally {
       setLoading(false);
       setProgress(0);
@@ -215,8 +215,8 @@ export default function Upload() {
   return (
     <div className="max-w-3xl mx-auto py-4 sm:py-8">
       <div className="mb-6 sm:mb-8">
-        <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl md:text-4xl">Déposer un document</h1>
-        <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">Partagez vos documents avec la communauté. Formats acceptés : PDF, Word, Excel, PowerPoint et TXT.</p>
+        <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl md:text-4xl">{t("upload.title")}</h1>
+        <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("upload.subtitle")}</p>
       </div>
 
       {createdDoc && (
@@ -224,13 +224,13 @@ export default function Upload() {
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-teal-900 dark:text-teal-100">Document déposé</p>
+              <p className="font-semibold text-teal-900 dark:text-teal-100">{t("upload.deposited")}</p>
               <p className="truncate text-sm text-teal-800 dark:text-teal-200">{createdDoc.title}</p>
             </div>
             <button
               type="button"
               onClick={() => setCreatedDoc(null)}
-              aria-label="Fermer"
+              aria-label={t("upload.close")}
               className="rounded-lg p-1 text-teal-700 dark:text-teal-300 transition-colors hover:bg-teal-100 dark:hover:bg-teal-900/40"
             >
               <X className="h-4 w-4" />
@@ -241,7 +241,7 @@ export default function Upload() {
               to={`/documents/${createdDoc.id}`}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-800"
             >
-              Voir le document
+              {t("upload.viewDoc")}
               <ArrowRight className="h-4 w-4" />
             </Link>
             <WhatsAppPublishButton
@@ -261,7 +261,7 @@ export default function Upload() {
             className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-teal-700 dark:text-teal-300 hover:text-teal-800 dark:hover:text-teal-200"
           >
             <Send className="h-3.5 w-3.5" />
-            Voir la chaîne Telegram
+            {t("upload.seeChannel")}
           </a>
         </div>
       )}
@@ -269,7 +269,7 @@ export default function Upload() {
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
         <form onSubmit={submit} className="divide-y divide-gray-100 dark:divide-slate-700">
           <div className="p-4 sm:p-6 md:p-8">
-            <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3">Fichier *</label>
+            <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3">{t("upload.file")}</label>
             <div
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -322,10 +322,10 @@ export default function Upload() {
                 <>
                   <UploadCloud className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                   <p className="text-gray-900 dark:text-slate-100 font-medium mb-1">
-                    Glissez-déposez votre fichier ici
+                    {t("upload.drop")}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-slate-400 mb-3">ou cliquez pour parcourir</p>
-                  <p className="text-xs text-gray-400">PDF, Word, Excel, PowerPoint, TXT • {maxUploadSizeMb} Mo maximum</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 mb-3">{t("upload.orClick")}</p>
+                  <p className="text-xs text-gray-400">{t("upload.maxSize", { max: maxUploadSizeMb })}</p>
                 </>
               )}
             </div>
@@ -334,7 +334,7 @@ export default function Upload() {
           <div className="space-y-6 p-4 sm:p-6 md:p-8">
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100">Titre *</label>
+                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100">{t("upload.titleLabel")}</label>
                 <button
                   type="button"
                   onClick={handleSuggestMetadata}
@@ -348,13 +348,13 @@ export default function Upload() {
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Donnez un titre clair à votre document"
+                placeholder={t("upload.titlePlaceholder")}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Catégorie</label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.category")}</label>
                 <select
                 value={category}
                 onChange={(e) => {
@@ -366,7 +366,7 @@ export default function Upload() {
                 }}
                 className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-slate-800"
               >
-                <option value="">Sélectionner une catégorie</option>
+                <option value="">{t("upload.selectCategory")}</option>
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat === "physique-chimie" ? "Physique-Chimie" : cat}
@@ -377,7 +377,7 @@ export default function Upload() {
                 <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-teal-50 dark:bg-teal-950/40 px-3 py-2 text-xs text-teal-800 dark:text-teal-200">
                   <Sparkles className="w-4 h-4" />
                   <span>
-                    Suggestion automatique : <strong>{suggestedCategory}</strong>
+                    {t("upload.autoSuggestion")} <strong>{suggestedCategory}</strong>
                   </span>
                   <button
                     type="button"
@@ -405,18 +405,18 @@ export default function Upload() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Mots-clés</label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.tags")}</label>
               <Input
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="ex: maths, bac, révision"
+                placeholder={t("upload.tagsPlaceholder")}
                 maxLength={240}
               />
-              <p className="mt-1 text-xs text-gray-400">Jusqu'à 5 mots-clés séparés par des virgules.</p>
+              <p className="mt-1 text-xs text-gray-400">{t("upload.tagsHint")}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">Visibilité</label>
+              <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.visibility")}</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -430,8 +430,8 @@ export default function Upload() {
                 >
                   <Globe2 className={`w-5 h-5 mt-0.5 ${visibility === "public" ? "text-teal-700 dark:text-teal-300" : "text-gray-400"}`} />
                   <span>
-                    <span className="block text-sm font-semibold text-gray-900 dark:text-slate-100">Public</span>
-                    <span className="mt-0.5 block text-xs text-gray-500 dark:text-slate-400">Visible par tous dans la bibliothèque et les recherches.</span>
+                    <span className="block text-sm font-semibold text-gray-900 dark:text-slate-100">{t("upload.public")}</span>
+                    <span className="mt-0.5 block text-xs text-gray-500 dark:text-slate-400">{t("upload.publicDesc")}</span>
                   </span>
                 </button>
                 <button
@@ -446,8 +446,8 @@ export default function Upload() {
                 >
                   <Lock className={`w-5 h-5 mt-0.5 ${visibility === "private" ? "text-teal-700 dark:text-teal-300" : "text-gray-400"}`} />
                   <span>
-                    <span className="block text-sm font-semibold text-gray-900 dark:text-slate-100">Privé</span>
-                    <span className="mt-0.5 block text-xs text-gray-500 dark:text-slate-400">Visible uniquement par vous et les personnes ayant le lien.</span>
+                    <span className="block text-sm font-semibold text-gray-900 dark:text-slate-100">{t("upload.private")}</span>
+                    <span className="mt-0.5 block text-xs text-gray-500 dark:text-slate-400">{t("upload.privateDesc")}</span>
                   </span>
                 </button>
               </div>
@@ -455,7 +455,7 @@ export default function Upload() {
 
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100">Description</label>
+                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100">{t("upload.description")}</label>
                 <button
                   type="button"
                   onClick={handleGenerateDescription}
@@ -471,9 +471,9 @@ export default function Upload() {
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 rows={5}
-                placeholder="Ajoutez une description pour aider les autres à comprendre le contenu..."
+                placeholder={t("upload.descPlaceholder")}
               />
-              <p className="text-xs text-gray-400 mt-1">Facultatif</p>
+              <p className="text-xs text-gray-400 mt-1">{t("upload.optional")}</p>
             </div>
           </div>
 
@@ -481,7 +481,7 @@ export default function Upload() {
             {loading && (
               <div className="mb-4">
                 <div className="mb-1 flex items-center justify-between text-xs font-medium text-gray-600 dark:text-slate-400">
-                  <span>{progress < 100 ? "Envoi du fichier..." : "Traitement et optimisation..."}</span>
+                  <span>{progress < 100 ? t("upload.sending") : t("upload.processing")}</span>
                   <span>{progress}%</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}>
@@ -497,19 +497,19 @@ export default function Upload() {
               {loading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Envoi en cours...
+                  {t("upload.submitting")}
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-5 h-5" />
-                  Déposer le document
+                  {t("upload.submit")}
                 </>
               )}
             </Button>
             <p className="text-xs text-gray-500 dark:text-slate-400 mt-3">
               {visibility === "private"
-                ? "Ce document restera privé. Vous pourrez générer un lien de partage depuis votre profil."
-                : "En déposant ce document, vous acceptez qu'il soit partagé avec la communauté."}
+                ? t("upload.privateNote")
+                : t("upload.publicNote")}
             </p>
           </div>
         </form>

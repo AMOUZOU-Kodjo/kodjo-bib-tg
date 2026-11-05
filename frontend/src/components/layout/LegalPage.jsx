@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ChevronRight, ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function LegalSection({ title, children }) {
   return (
@@ -11,10 +12,11 @@ export function LegalSection({ title, children }) {
 }
 
 export default function LegalPage({ title, updatedAt = "25 octobre 2026", children }) {
+  const { t } = useTranslation();
   return (
     <div className="max-w-3xl mx-auto">
       <nav className="mb-6 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
-        <Link to="/" className="hover:text-teal-700 dark:hover:text-teal-300">Accueil</Link>
+        <Link to="/" className="hover:text-teal-700 dark:hover:text-teal-300">{t("legal.home")}</Link>
         <ChevronRight className="w-4 h-4" />
         <span className="text-gray-900 dark:text-slate-100">{title}</span>
       </nav>
@@ -24,7 +26,7 @@ export default function LegalPage({ title, updatedAt = "25 octobre 2026", childr
           <ShieldCheck className="w-6 h-6 text-teal-700 dark:text-teal-300" />
         </div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">{title}</h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400">Dernière mise à jour : {updatedAt}</p>
+        <p className="text-sm text-gray-500 dark:text-slate-400">{t("legal.updatedAt")} : {updatedAt}</p>
       </header>
 
       <div className="space-y-7 break-words rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-8">
