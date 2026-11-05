@@ -52,7 +52,7 @@ export default function Navbar() {
             </div>
           </Link>
 
-          <div className="hidden items-center gap-0.5 lg:flex xl:gap-1.5 flex-shrink min-w-0">
+          <div className="hidden items-center gap-0 lg:flex xl:gap-0.5 2xl:gap-1 flex-shrink min-w-0">
             <Link to="/documents" className={desktopLink}>
               <BookOpen className="h-4 w-4 shrink-0" />
               <span>Catalogue</span>
