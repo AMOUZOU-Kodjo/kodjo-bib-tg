@@ -5,6 +5,9 @@ import { useSiteSettings } from "../../context/SiteSettingsContext";
 import InstallPWA from "./InstallPWA";
 import SocialLinks from "./SocialLinks";
 
+const linkClass =
+  "text-sm text-slate-300 transition-colors duration-200 hover:text-white";
+
 export default function Footer() {
   const { t } = useTranslation();
   const { siteName, siteTagline, allowRegistrations } = useSiteSettings();
@@ -13,31 +16,31 @@ export default function Footer() {
   };
 
   return (
-    <footer className="mt-20 border-t border-blue-950 bg-gradient-to-b from-blue-950 to-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-12 lg:gap-8">
-          <div className="col-span-2 lg:col-span-5">
-            <div className="mb-5 flex min-w-0 items-center gap-3">
+    <footer className="mt-20 border-t border-slate-800/80 bg-gradient-to-b from-blue-950 via-slate-950 to-slate-950 text-slate-200">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
+          <div className="sm:col-span-2 lg:col-span-4">
+            <Link to="/" className="inline-flex items-center gap-3">
               <img
                 src="/logo.png"
                 alt={siteName}
-                className="h-11 w-auto shrink-0 rounded-xl object-contain shadow-sm ring-1 ring-white/20 sm:h-12"
+                className="h-11 w-auto shrink-0 rounded-xl object-contain ring-1 ring-white/15 sm:h-12"
               />
               <span
-                className="truncate text-3xl text-white sm:text-4xl"
+                className="text-3xl leading-none text-white sm:text-4xl"
                 style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}
               >
                 {siteName}
               </span>
-            </div>
-            <p className="text-white/80 leading-relaxed mb-5 max-w-lg">
+            </Link>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
               {siteTagline || t("footer.tagline")}
             </p>
-            <p className="text-sm text-white/70 flex items-center gap-1.5">
-              {t("footer.madeWith")} <Heart className="w-4 h-4 text-rose-400 fill-rose-400/20" /> {t("footer.forCommunity")}
+            <p className="mt-4 flex items-center gap-1.5 text-sm text-slate-400">
+              {t("footer.madeWith")} <Heart className="h-4 w-4 text-rose-400 fill-rose-400/20" /> {t("footer.forCommunity")}
             </p>
-            <div className="mt-5">
-              <p className="mb-3 text-sm font-semibold text-white/90">{t("footer.followUs")}</p>
+            <div className="mt-6">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{t("footer.followUs")}</p>
               <SocialLinks />
             </div>
             <div className="mt-4">
@@ -45,99 +48,54 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="col-span-1 min-w-0 lg:col-span-2">
-            <h3 className="mb-3 text-base font-semibold tracking-wide text-white lg:mb-4">{t("footer.navigation")}</h3>
-            <ul className="space-y-2.5">
-              <li>
-                <Link to="/" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  {t("footer.home")}
-                </Link>
-              </li>
-              <li>
-                <Link to="/documents" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  {t("footer.catalog")}
-                </Link>
-              </li>
-              <li>
-                <Link to="/upload" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  {t("footer.upload")}
-                </Link>
-              </li>
+          <div className="lg:col-span-2 lg:col-start-6">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white">{t("footer.navigation")}</h3>
+            <ul className="mt-4 space-y-3">
+              <li><Link to="/" className={linkClass}>{t("footer.home")}</Link></li>
+              <li><Link to="/documents" className={linkClass}>{t("footer.catalog")}</Link></li>
+              <li><Link to="/upload" className={linkClass}>{t("footer.upload")}</Link></li>
             </ul>
           </div>
 
-          <div className="col-span-1 min-w-0 lg:col-span-2">
-            <h3 className="mb-3 text-base font-semibold tracking-wide text-white lg:mb-4">{t("footer.account")}</h3>
-            <ul className="space-y-2.5">
-              <li>
-                <Link to="/login" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  {t("footer.login")}
-                </Link>
-              </li>
-              {allowRegistrations && (
-                <li>
-                  <Link to="/register" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                    {t("footer.register")}
-                  </Link>
-                </li>
-              )}
-              <li>
-                <Link to="/profile" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  {t("footer.profile")}
-                </Link>
-              </li>
+          <div className="lg:col-span-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white">{t("footer.account")}</h3>
+            <ul className="mt-4 space-y-3">
+              <li><Link to="/login" className={linkClass}>{t("footer.login")}</Link></li>
+              {allowRegistrations && <li><Link to="/register" className={linkClass}>{t("footer.register")}</Link></li>}
+              <li><Link to="/profile" className={linkClass}>{t("footer.profile")}</Link></li>
             </ul>
           </div>
 
-          <div className="col-span-2 lg:col-span-3">
-            <h3 className="mb-3 text-center text-base font-semibold tracking-wide text-white lg:mb-4 lg:text-left">{t("footer.legal")}</h3>
-            <ul className="flex flex-wrap justify-center gap-2 lg:block lg:space-y-2.5">
+          <div className="sm:col-span-2 lg:col-span-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white">{t("footer.legal")}</h3>
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:max-w-sm lg:grid-cols-1">
+              <li><Link to="/a-propos" className={linkClass}>{t("footer.about")}</Link></li>
+              <li><Link to="/mentions-legales" className={linkClass}>{t("footer.legalNotice")}</Link></li>
+              <li><Link to="/confidentialite" className={linkClass}>{t("footer.privacy")}</Link></li>
+              <li><Link to="/cgu" className={linkClass}>{t("footer.terms")}</Link></li>
               <li>
-                <Link to="/a-propos" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  {t("footer.about")}
+                <Link to="/contact" className={`inline-flex items-center gap-2 ${linkClass}`}>
+                  <Mail className="h-3.5 w-3.5" />{t("footer.contact")}
                 </Link>
               </li>
               <li>
-                <Link to="/mentions-legales" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  {t("footer.legalNotice")}
-                </Link>
-              </li>
-              <li>
-                <Link to="/confidentialite" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  {t("footer.privacy")}
-                </Link>
-              </li>
-              <li>
-                <Link to="/cgu" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  {t("footer.terms")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent"
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  {t("footer.contact")}
-                </Link>
-              </li>
-              <li>
-                <button
-                  onClick={reopenCookies}
-                  className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent"
-                >
-                  <Cookie className="w-3.5 h-3.5" />
-                  {t("footer.cookies")}
+                <button type="button" onClick={reopenCookies} className={`inline-flex items-center gap-2 ${linkClass}`}>
+                  <Cookie className="h-3.5 w-3.5" />{t("footer.cookies")}
                 </button>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/15 mt-10 pt-6">
-          <p className="text-center text-sm text-white/60">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-6 sm:flex-row">
+          <p className="text-center text-sm text-slate-500 sm:text-left">
             © {new Date().getFullYear()} {siteName}. {t("footer.rights")}
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+            <Link to="/confidentialite" className="text-slate-500 transition-colors hover:text-slate-300">{t("footer.privacy")}</Link>
+            <Link to="/cgu" className="text-slate-500 transition-colors hover:text-slate-300">{t("footer.terms")}</Link>
+            <Link to="/contact" className="text-slate-500 transition-colors hover:text-slate-300">{t("footer.contact")}</Link>
+          </div>
         </div>
       </div>
     </footer>
