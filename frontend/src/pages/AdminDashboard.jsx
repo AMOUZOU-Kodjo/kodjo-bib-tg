@@ -857,7 +857,7 @@ export default function AdminDashboard() {
               ))}
               {pagedUsers.length === 0 && (
                 <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500 dark:border-slate-700 dark:text-slate-400">
-                  {users.length === 0 ? {t("admin.noUsersYet")} : t("admin.noUsersMatch")}
+                  {users.length === 0 ? t("admin.noUsersYet") : t("admin.noUsersMatch")}
                 </p>
               )}
             </div>
@@ -1360,7 +1360,7 @@ export default function AdminDashboard() {
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/40">
                     <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{t("admin.preview")}</p>
                     <p className="mt-1 truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{settings.siteName || "Nom du site"}</p>
-                    <p className="truncate text-xs text-gray-500 dark:text-slate-400">{settings.siteTagline || {t("admin.shortDescription")}}</p>
+                    <p className="truncate text-xs text-gray-500 dark:text-slate-400">{settings.siteTagline || t("admin.shortDescription")}</p>
                   </div>
                 </div>
               </Card>
