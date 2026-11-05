@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Heart, Mail, Cookie } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import InstallPWA from "./InstallPWA";
 import SocialLinks from "./SocialLinks";
@@ -10,6 +11,7 @@ const linkClass =
 
 export default function Footer() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { siteName, siteTagline, allowRegistrations } = useSiteSettings();
   const reopenCookies = () => {
     window.dispatchEvent(new Event("open-cookie-consent"));
@@ -63,6 +65,14 @@ export default function Footer() {
               <li><Link to="/login" className={linkClass}>{t("footer.login")}</Link></li>
               {allowRegistrations && <li><Link to="/register" className={linkClass}>{t("footer.register")}</Link></li>}
               <li><Link to="/profile" className={linkClass}>{t("footer.profile")}</Link></li>
+              <li><Link to="/favorites" className={linkClass}>{t("nav.favorites")}</Link></li>
+              <li><Link to="/downloads" className={linkClass}>{t("nav.downloads")}</Link></li>
+              {user && !user.email_verified && (
+                <li><Link to="/verify-email" state={{ email: user.email }} className={linkClass}>{t("nav.verifyEmail")}</Link></li>
+              )}
+              {user?.role === "admin" && (
+                <li><Link to="/admin" className={linkClass}>{t("nav.admin")}</Link></li>
+              )}
             </ul>
           </div>
 
