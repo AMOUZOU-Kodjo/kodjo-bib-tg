@@ -1,0 +1,64 @@
+{
+  "nav": {
+    "search": "Search",
+    "login": "Log in",
+    "register": "Sign up",
+    "favorites": "Favorites",
+    "downloads": "Downloads",
+    "profile": "Profile",
+    "admin": "Admin",
+    "publish": "Publish",
+    "logout": "Log out",
+    "library": "Library"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "error": "Something went wrong",
+    "language": "Language"
+  },
+  "home": {
+    "title": "The digital library",
+    "subtitle": "Free and collaborative",
+    "description": "Books, courses and documents shared by the community. Browse, download and contribute — no barriers.",
+    "searchPlaceholder": "Search for a book, author, or topic...",
+    "explore": "Explore the library",
+    "publish": "Publish a document",
+    "readOnline": "Read online",
+    "freeAccess": "Free access",
+    "shareKnowledge": "Share your knowledge",
+    "newArrivals": "New arrivals",
+    "seeAll": "See all",
+    "collection": "The collection",
+    "contributeTitle": "Have a useful document?",
+    "contributeText": "Publish it in seconds and help other readers learn.",
+    "publishNow": "Publish now"
+  },
+  "documents": {
+    "title": "Digital library",
+    "count": "{{count}} book in the library",
+    "count_plural": "{{count}} books in the library",
+    "searchPlaceholder": "Search for a title, author, or keyword...",
+    "aiImprove": "Improve search with AI",
+    "aiImproved": "Search improved with AI",
+    "aiFailed": "Could not improve search",
+    "all": "All",
+    "keywords": "Keywords"
+  },
+  "upload": {
+    "suggestAi": "Suggest with AI",
+    "suggesting": "Suggesting...",
+    "generateAi": "Generate with AI",
+    "generating": "Generating..."
+  },
+  "document": {
+    "aiSummary": "AI summary",
+    "translate": "Translate",
+    "improve": "Improve with AI",
+    "improving": "Improving...",
+    "summaryError": "Could not generate summary",
+    "translateError": "Could not translate"
+  }
+}

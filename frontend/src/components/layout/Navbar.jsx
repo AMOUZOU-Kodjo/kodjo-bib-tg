@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
 import NotificationBell from "../notifications/NotificationBell";
 import {
-  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart, Download
+  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart, Download, Languages
 } from "lucide-react";
 import { Moon, Sun } from "lucide-react";
 
@@ -21,8 +22,10 @@ export default function Navbar() {
   const { user, setUser } = useAuth();
   const { siteName, siteTagline, allowRegistrations } = useSiteSettings();
   const { theme, toggleTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const currentLang = (i18n.resolvedLanguage || i18n.language || "fr").startsWith("en") ? "en" : "fr";
 
   useEffect(() => {
     setMenuOpen(false);
@@ -133,12 +136,22 @@ export default function Navbar() {
               type="button"
               onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
               className="hidden items-center gap-2 rounded-lg border border-white/20 px-2.5 py-1.5 text-xs text-white/80 transition-colors hover:bg-white/10 hover:text-white lg:inline-flex"
-              title="Palette de commandes (Ctrl+K)"
-              aria-label="Ouvrir la palette de commandes"
+              title={t("nav.search")}
+              aria-label={t("nav.search")}
             >
               <Search className="h-4 w-4" />
-              <span>Rechercher</span>
+              <span>{t("nav.search")}</span>
               <kbd className="rounded border border-white/30 px-1 text-[10px] uppercase">⌘K</kbd>
+            </button>
+            <button
+              type="button"
+              onClick={() => i18n.changeLanguage(currentLang === "fr" ? "en" : "fr")}
+              className="inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-lg px-2 text-xs font-semibold text-white/90 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label={t("common.language")}
+              title={t("common.language")}
+            >
+              <Languages className="h-4 w-4" />
+              <span>{currentLang.toUpperCase()}</span>
             </button>
             <button
               type="button"

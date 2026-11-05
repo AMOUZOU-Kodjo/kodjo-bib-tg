@@ -1,0 +1,64 @@
+{
+  "nav": {
+    "search": "Rechercher",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "favorites": "Favoris",
+    "downloads": "Téléchargements",
+    "profile": "Profil",
+    "admin": "Admin",
+    "publish": "Publier",
+    "logout": "Déconnexion",
+    "library": "Bibliothèque"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "error": "Une erreur est survenue",
+    "language": "Langue"
+  },
+  "home": {
+    "title": "La bibliothèque numérique",
+    "subtitle": "Gratuite et collaborative",
+    "description": "Des livres, cours et documents partagés par la communauté. Consultez, téléchargez et contribuez — sans barrière.",
+    "searchPlaceholder": "Rechercher un livre, un auteur, un sujet...",
+    "explore": "Explorer la bibliothèque",
+    "publish": "Publier un document",
+    "readOnline": "Lire en ligne",
+    "freeAccess": "Accès libre",
+    "shareKnowledge": "Partagez vos savoirs",
+    "newArrivals": "Nouveautés",
+    "seeAll": "Tout voir",
+    "collection": "La collection",
+    "contributeTitle": "Vous avez un document utile ?",
+    "contributeText": "Publiez-le en quelques secondes et aidez d'autres lecteurs à apprendre.",
+    "publishNow": "Publier maintenant"
+  },
+  "documents": {
+    "title": "Bibliothèque numérique",
+    "count": "{{count}} livre dans la bibliothèque",
+    "count_plural": "{{count}} livres dans la bibliothèque",
+    "searchPlaceholder": "Rechercher un titre, un auteur, un mot-clé...",
+    "aiImprove": "Améliorer la recherche avec l'IA",
+    "aiImproved": "Recherche améliorée avec l'IA",
+    "aiFailed": "Impossible d'améliorer la recherche",
+    "all": "Tous",
+    "keywords": "Mots-clés"
+  },
+  "upload": {
+    "suggestAi": "Suggérer avec l'IA",
+    "suggesting": "Suggestion...",
+    "generateAi": "Générer avec l'IA",
+    "generating": "Génération..."
+  },
+  "document": {
+    "aiSummary": "Résumé IA",
+    "translate": "Traduire",
+    "improve": "Améliorer avec l'IA",
+    "improving": "Amélioration...",
+    "summaryError": "Impossible de générer le résumé",
+    "translateError": "Impossible de traduire"
+  }
+}
