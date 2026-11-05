@@ -12,7 +12,7 @@ import { getMyDocuments, getMyCredits, getMyFavorites, updateMyProfile, updateNo
 import { getPushConfig, subscribePush, unsubscribePush } from "../api/notifications";
 import {
   updateDocument, deleteDocument, getDocumentShareLink,
-  enableDocumentShare, disableDocumentShare
+  createDocumentShareLink, disableDocumentShare
 } from "../api/documents";
 import { improveDescription } from "../api/ai";
 import { formatDate } from "../utils/format";
