@@ -478,16 +478,16 @@ export default function DocumentDetail() {
             </div>
           </section>
 
-          {(doc.description || summary || summaryLoading) && (
+          {(doc.description || doc.title || summary || summaryLoading || translation) && (
             <section className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">À propos de ce livre</h2>
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-2">
                   {!summary && !summaryLoading && (doc.description || doc.title) && (
                     <button
                       type="button"
                       onClick={handleSummarize}
-                      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/40"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-medium text-teal-800 transition-colors hover:bg-teal-100 dark:border-teal-900/50 dark:bg-teal-950/30 dark:text-teal-200 dark:hover:bg-teal-950/50"
                     >
                       <Sparkles className="h-3.5 w-3.5" />
                       Résumé IA
@@ -499,7 +499,7 @@ export default function DocumentDetail() {
                         type="button"
                         onClick={() => handleTranslate("en")}
                         disabled={translationLoading}
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-700"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                       >
                         {translationLoading && translationLang !== "fr" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Languages className="h-3.5 w-3.5" />}
                         EN
@@ -508,7 +508,7 @@ export default function DocumentDetail() {
                         type="button"
                         onClick={() => handleTranslate("fr")}
                         disabled={translationLoading}
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-700"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                       >
                         {translationLoading && translationLang === "fr" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Languages className="h-3.5 w-3.5" />}
                         FR
@@ -535,9 +535,11 @@ export default function DocumentDetail() {
                   <p className="text-sm leading-relaxed text-gray-800 dark:text-slate-200">{translation}</p>
                 </div>
               )}
-              {doc.description && (
+              {doc.description ? (
                 <p className="text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{doc.description}</p>
-              )}
+              ) : !summary && !summaryLoading ? (
+                <p className="text-sm text-gray-500 dark:text-slate-400">Aucune description. Utilisez le résumé IA pour obtenir un aperçu.</p>
+              ) : null}
             </section>
           )}
 
