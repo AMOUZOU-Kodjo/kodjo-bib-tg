@@ -854,26 +854,26 @@ export default function Profile() {
                 Notifications
               </h2>
               <p className="mt-1 text-xs leading-relaxed text-gray-500 dark:text-slate-400">
-                Choisissez comment vous souhaitez être averti.
+                {t("profile.notifyIntro")}
               </p>
             </div>
             <div className="space-y-2.5">
               <PreferenceToggle
-                label="Recevoir des e-mails"
-                description="{t("profile.notifyAllDesc")}"
+                label={t("profile.receiveEmails")}
+                description={t("profile.notifyAllDesc")}
                 checked={prefs.notify_email}
                 onChange={(value) => setPrefs((current) => ({ ...current, notify_email: value }))}
               />
               <PreferenceToggle
-                label="{t("profile.notifyNewDocs")}"
-                description="{t("profile.notifyNewDocsDesc")}"
+                label={t("profile.notifyNewDocs")}
+                description={t("profile.notifyNewDocsDesc")}
                 checked={prefs.notify_new_documents}
                 disabled={!prefs.notify_email}
                 onChange={(value) => setPrefs((current) => ({ ...current, notify_new_documents: value }))}
               />
               <PreferenceToggle
-                label="{t("profile.notifyPrivate")}"
-                description="{t("profile.notifyPrivateDesc")}"
+                label={t("profile.notifyPrivate")}
+                description={t("profile.notifyPrivateDesc")}
                 checked={prefs.notify_document_updates}
                 disabled={!prefs.notify_email}
                 onChange={(value) => setPrefs((current) => ({ ...current, notify_document_updates: value }))}

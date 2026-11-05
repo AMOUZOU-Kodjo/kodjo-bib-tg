@@ -689,6 +689,8 @@
     "dangerZone": "Zone dangereuse",
     "deleteAccountDesc": "La suppression du compte efface définitivement votre profil, vos documents, vos crédits et vos données associées.",
     "deleting": "Suppression...",
-    "deleteAccount": "Supprimer définitivement mon compte"
+    "deleteAccount": "Supprimer définitivement mon compte",
+    "receiveEmails": "Recevoir des e-mails",
+    "notifyIntro": "Choisissez comment vous souhaitez être averti."
   }
 }

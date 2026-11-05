@@ -689,6 +689,8 @@
     "dangerZone": "Danger zone",
     "deleteAccountDesc": "Deleting your account permanently removes your profile, documents, credits, and associated data.",
     "deleting": "Deleting...",
-    "deleteAccount": "Permanently delete my account"
+    "deleteAccount": "Permanently delete my account",
+    "receiveEmails": "Receive emails",
+    "notifyIntro": "Choose how you want to be notified."
   }
 }
