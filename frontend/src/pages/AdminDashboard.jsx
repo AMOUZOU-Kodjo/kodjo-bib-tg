@@ -120,7 +120,7 @@ export default function AdminDashboard() {
         setSavedSettings(settingsRes.data.settings);
       }
     } catch (err) {
-      toast.error("Erreur de chargement");
+      toast.error(t("admin.loadError"));
     } finally {
       setLoading(false);
       setReportsLoading(false);
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
       await loadData();
       return true;
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Erreur lors de la mise à jour");
+      toast.error(err.response?.data?.error?.message || t("admin.updateError"));
       return false;
     }
   };
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
     if (!editUserId) return;
     const target = users.find((u) => u.id === editUserId);
     if (!target) {
-      toast.error("Utilisateur introuvable");
+      toast.error(t("admin.userNotFound"));
       setEditUserId(null);
       return;
     }
@@ -171,17 +171,17 @@ export default function AdminDashboard() {
 
   const handleDeleteUser = async (target) => {
     if (target.id === currentUser?.id) {
-      toast.error("Vous ne pouvez pas supprimer votre propre compte depuis l'administration");
+      toast.error(t("admin.cannotDeleteSelf"));
       return;
     }
-    if (!confirm(`Supprimer ${target.display_name} ? Ses documents, commentaires et données seront supprimés définitivement.`)) return;
+    if (!confirm(t("admin.deleteUserConfirm", { name: target.display_name }))) return;
     try {
       await deleteUserAdmin(target.id);
       if (editUserId === target.id) setEditUserId(null);
       toast.success(t("admin.userDeleted"));
       await loadData();
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Erreur lors de la suppression");
+      toast.error(err.response?.data?.error?.message || t("admin.deleteError"));
     }
   };
 
@@ -189,9 +189,9 @@ export default function AdminDashboard() {
     try {
       await updateAdminReportStatus(report.id, status);
       setReports((list) => list.map((item) => item.id === report.id ? { ...item, status, resolved_at: status === "pending" ? null : new Date().toISOString() } : item));
-      toast.success(status === "resolved" ? "Signalement traité" : status === "dismissed" ? "Signalement ignoré" : "Signalement réouvert");
+      toast.success(status === "resolved" ? t("admin.reportResolved") : status === "dismissed" ? t("admin.reportDismissed") : t("admin.reportReopened"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de mettre à jour le signalement");
+      toast.error(err.response?.data?.error?.message || t("admin.reportUpdateError"));
     }
   };
 
@@ -214,7 +214,7 @@ export default function AdminDashboard() {
       await refreshSettings();
       toast.success(t("admin.settingsSaved"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Erreur lors de l'enregistrement");
+      toast.error(err.response?.data?.error?.message || t("admin.saveError"));
     } finally {
       setSavingSettings(false);
     }
@@ -237,13 +237,13 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteDoc = async (doc) => {
-    if (!confirm(`Supprimer « ${doc.title} » définitivement ?`)) return;
+    if (!confirm(t("admin.deleteDocConfirm", { title: doc.title }))) return;
     try {
       await deleteDocumentAdmin(doc.id);
       toast.success(t("admin.docDeleted"));
       await loadData();
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Erreur lors de la suppression");
+      toast.error(err.response?.data?.error?.message || t("admin.deleteError"));
     }
   };
 
@@ -256,11 +256,11 @@ export default function AdminDashboard() {
     setBulkBusy(true);
     try {
       const res = await bulkUpdateDocumentsVisibility(selectedDocIds, visibility);
-      toast.success(`${res.data.updated} document(s) ${visibility === "public" ? "rendu(s) public(s)" : "rendu(s) privé(s)"}`);
+      toast.success(t("admin.bulkVisibilityDone", { count: res.data.updated, visibility: visibility === "public" ? t("admin.public") : t("admin.private") }));
       setSelectedDocIds([]);
       await loadData();
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Erreur lors de la mise à jour groupée");
+      toast.error(err.response?.data?.error?.message || t("admin.bulkUpdateError"));
     } finally {
       setBulkBusy(false);
     }
@@ -268,15 +268,15 @@ export default function AdminDashboard() {
 
   const handleBulkDelete = async () => {
     if (selectedDocIds.length === 0) return;
-    if (!confirm(`Supprimer définitivement ${selectedDocIds.length} document(s) sélectionné(s) ?`)) return;
+    if (!confirm(t("admin.bulkDeleteConfirm", { count: selectedDocIds.length }))) return;
     setBulkBusy(true);
     try {
       const res = await bulkDeleteDocuments(selectedDocIds);
-      toast.success(`${res.data.deleted} document(s) supprimé(s)`);
+      toast.success(t("admin.bulkDeleteDone", { count: res.data.deleted }));
       setSelectedDocIds([]);
       await loadData();
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Erreur lors de la suppression groupée");
+      toast.error(err.response?.data?.error?.message || t("admin.bulkDeleteError"));
     } finally {
       setBulkBusy(false);
     }
@@ -293,9 +293,9 @@ export default function AdminDashboard() {
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      toast.success("Export CSV généré");
+      toast.success(t("admin.exportDone"));
     } catch {
-      toast.error("Impossible de générer l'export");
+      toast.error(t("admin.exportError"));
     }
   };
 
@@ -456,7 +456,7 @@ export default function AdminDashboard() {
         <div>
           <div className="mb-2 flex items-center gap-2.5 sm:gap-3">
             <Shield className="h-7 w-7 shrink-0 text-primary-600 dark:text-primary-100 sm:h-8 sm:w-8" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">Administration</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">{t("admin.title")}</h1>
           </div>
           <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">Tableau de bord et gestion de la plateforme</p>
         </div>
@@ -951,7 +951,7 @@ export default function AdminDashboard() {
               </button>
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input placeholder="Rechercher..." value={searchDoc} onChange={(e) => { setSearchDoc(e.target.value); setDocsPage(1); }} className="pl-9" />
+                <Input placeholder={t("admin.search")} value={searchDoc} onChange={(e) => { setSearchDoc(e.target.value); setDocsPage(1); }} className="pl-9" />
               </div>
             </div>
           </div>

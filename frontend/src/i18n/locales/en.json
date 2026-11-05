@@ -28,7 +28,9 @@
     "error": "Something went wrong",
     "language": "Language",
     "seeAll": "See all",
-    "retry": "Retry"
+    "retry": "Retry",
+    "yes": "Yes",
+    "no": "No"
   },
   "home": {
     "title": "The digital library",
@@ -596,7 +598,32 @@
     "selected": "selected",
     "bulkDelete": "Delete selection",
     "bulkPublic": "Make public",
-    "bulkPrivate": "Make private"
+    "bulkPrivate": "Make private",
+    "updateError": "Error while updating",
+    "userNotFound": "User not found",
+    "cannotDeleteSelf": "You cannot delete your own account from administration",
+    "deleteError": "Error while deleting",
+    "saveError": "Error while saving",
+    "bulkUpdateError": "Error during bulk update",
+    "bulkDeleteError": "Error during bulk delete",
+    "reportUpdateError": "Unable to update report",
+    "exportDone": "CSV export generated",
+    "exportError": "Unable to generate export",
+    "reportResolved": "Report resolved",
+    "reportDismissed": "Report dismissed",
+    "reportReopened": "Report reopened",
+    "bulkVisibilityDone": "{{count}} document(s) made {{visibility}}",
+    "bulkDeleteDone": "{{count}} document(s) deleted",
+    "deleteUserConfirm": "Delete {{name}}? Their documents, comments, and data will be permanently deleted.",
+    "deleteDocConfirm": "Permanently delete \"{{title}}\"?",
+    "bulkDeleteConfirm": "Permanently delete {{count}} selected document(s)?",
+    "refresh": "Refresh",
+    "noResults": "No results",
+    "all": "All",
+    "dismissed": "Dismissed",
+    "reopen": "Reopen",
+    "search": "Search...",
+    "contactEmailPlaceholder": "contact@example.com"
   },
   "profile": {
     "notFound": "Document not found",
@@ -691,6 +718,9 @@
     "deleting": "Deleting...",
     "deleteAccount": "Permanently delete my account",
     "receiveEmails": "Receive emails",
-    "notifyIntro": "Choose how you want to be notified."
+    "notifyIntro": "Choose how you want to be notified.",
+    "improveNeedDesc": "Add a description to improve",
+    "improved": "Description improved with AI",
+    "categoryPlaceholder": "Education, Science..."
   }
 }

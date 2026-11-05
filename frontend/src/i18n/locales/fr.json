@@ -28,7 +28,9 @@
     "error": "Une erreur est survenue",
     "language": "Langue",
     "seeAll": "Tout voir",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "yes": "Oui",
+    "no": "Non"
   },
   "home": {
     "title": "La bibliothèque numérique",
@@ -596,7 +598,32 @@
     "selected": "sélectionné(s)",
     "bulkDelete": "Supprimer la sélection",
     "bulkPublic": "Rendre public",
-    "bulkPrivate": "Rendre privé"
+    "bulkPrivate": "Rendre privé",
+    "updateError": "Erreur lors de la mise à jour",
+    "userNotFound": "Utilisateur introuvable",
+    "cannotDeleteSelf": "Vous ne pouvez pas supprimer votre propre compte depuis l'administration",
+    "deleteError": "Erreur lors de la suppression",
+    "saveError": "Erreur lors de l'enregistrement",
+    "bulkUpdateError": "Erreur lors de la mise à jour groupée",
+    "bulkDeleteError": "Erreur lors de la suppression groupée",
+    "reportUpdateError": "Impossible de mettre à jour le signalement",
+    "exportDone": "Export CSV généré",
+    "exportError": "Impossible de générer l'export",
+    "reportResolved": "Signalement traité",
+    "reportDismissed": "Signalement ignoré",
+    "reportReopened": "Signalement réouvert",
+    "bulkVisibilityDone": "{{count}} document(s) rendu(s) {{visibility}}",
+    "bulkDeleteDone": "{{count}} document(s) supprimé(s)",
+    "deleteUserConfirm": "Supprimer {{name}} ? Ses documents, commentaires et données seront supprimés définitivement.",
+    "deleteDocConfirm": "Supprimer « {{title}} » définitivement ?",
+    "bulkDeleteConfirm": "Supprimer définitivement {{count}} document(s) sélectionné(s) ?",
+    "refresh": "Actualiser",
+    "noResults": "Aucun résultat",
+    "all": "Tous",
+    "dismissed": "Ignoré",
+    "reopen": "Réouvrir",
+    "search": "Rechercher...",
+    "contactEmailPlaceholder": "contact@exemple.com"
   },
   "profile": {
     "notFound": "Document introuvable",
@@ -691,6 +718,9 @@
     "deleting": "Suppression...",
     "deleteAccount": "Supprimer définitivement mon compte",
     "receiveEmails": "Recevoir des e-mails",
-    "notifyIntro": "Choisissez comment vous souhaitez être averti."
+    "notifyIntro": "Choisissez comment vous souhaitez être averti.",
+    "improveNeedDesc": "Ajoutez une description à améliorer",
+    "improved": "Description améliorée avec l'IA",
+    "categoryPlaceholder": "Éducation, Science..."
   }
 }

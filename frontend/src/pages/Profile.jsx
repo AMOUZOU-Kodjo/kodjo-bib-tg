@@ -49,7 +49,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
   }, [onClose]);
 
   const handleImproveDescription = async () => {
-    if (!description.trim()) return toast.error("Ajoutez une description à améliorer");
+    if (!description.trim()) return toast.error(t("profile.improveNeedDesc"));
     setImproving(true);
     try {
       const res = await improveDescription({
@@ -58,9 +58,9 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
         category: category.trim() || doc.category
       });
       setDescription(res.data?.description || description);
-      toast.success("Description améliorée avec l'IA");
+      toast.success(t("profile.improved"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || t("document.improveError", "Impossible d'améliorer la description"));
+      toast.error(err.response?.data?.error?.message || t("document.improveError"));
     } finally {
       setImproving(false);
     }
@@ -133,7 +133,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
               onChange={(e) => setCategory(e.target.value)}
               maxLength={80}
               className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
-              placeholder="Éducation, Science..."
+              placeholder={t("profile.categoryPlaceholder")}
             />
           </div>
           <div>
