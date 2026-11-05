@@ -60,30 +60,30 @@ export default function Navbar() {
             {user ? (
               <>
                 {user.role === "admin" && (
-                  <Link to="/admin" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-red-500/10 px-2.5 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20">
+                  <Link to="/admin" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-red-500/10 px-2.5 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20" title="Administration">
                     <Shield className="h-4 w-4 shrink-0" />
-                    <span className="hidden xl:inline">Administration</span>
+                    <span className="hidden 2xl:inline">Administration</span>
                   </Link>
                 )}
                 {user.email_verified ? (
                   <>
-                    <Link to="/upload" className={desktopLink}>
-                      <Upload className="h-4 w-4 shrink-0" />
-                      <span className="hidden xl:inline">Déposer</span>
-                    </Link>
-                    <Link to="/favorites" className={desktopLink} title="Mes favoris">
-                      <Heart className="h-4 w-4 shrink-0" />
-                      <span className="hidden xl:inline">Mes favoris</span>
-                    </Link>
-                    <Link to="/downloads" className={desktopLink} title="Mes téléchargements">
-                      <Download className="h-4 w-4 shrink-0" />
-                      <span className="hidden xl:inline">Mes téléchargements</span>
-                    </Link>
-                    <Link to="/profile" className={desktopLink}>
-                      <User className="h-4 w-4 shrink-0" />
-                      <span className="hidden xl:inline">Mon profil ({user.credits} cr.)</span>
-                      <span className="xl:hidden">Profil</span>
-                    </Link>
+                <Link to="/upload" className={desktopLink} title="Déposer">
+                  <Upload className="h-4 w-4 shrink-0" />
+                  <span className="hidden 2xl:inline">Déposer</span>
+                </Link>
+                <Link to="/favorites" className={desktopLink} title="Mes favoris">
+                  <Heart className="h-4 w-4 shrink-0" />
+                  <span className="hidden 2xl:inline">Mes favoris</span>
+                </Link>
+                <Link to="/downloads" className={desktopLink} title="Mes téléchargements">
+                  <Download className="h-4 w-4 shrink-0" />
+                  <span className="hidden 2xl:inline">Mes téléchargements</span>
+                </Link>
+                <Link to="/profile" className={desktopLink}>
+                  <User className="h-4 w-4 shrink-0" />
+                  <span className="hidden 2xl:inline">Mon profil ({user.credits} cr.)</span>
+                  <span className="2xl:hidden">Profil</span>
+                </Link>
                   </>
                 ) : (
                   <>
@@ -91,24 +91,24 @@ export default function Navbar() {
                       <Mail className="h-4 w-4 shrink-0" />
                       <span className="hidden xl:inline">Vérifier mon email</span>
                     </Link>
-                    <Link to="/favorites" className={desktopLink} title="Mes favoris">
-                      <Heart className="h-4 w-4 shrink-0" />
-                      <span className="hidden xl:inline">Mes favoris</span>
-                    </Link>
-                    <Link to="/downloads" className={desktopLink} title="Mes téléchargements">
-                      <Download className="h-4 w-4 shrink-0" />
-                      <span className="hidden xl:inline">Mes téléchargements</span>
-                    </Link>
-                    <Link to="/profile" className={desktopLink}>
-                      <User className="h-4 w-4 shrink-0" />
-                      <span className="hidden xl:inline">Mon profil</span>
-                      <span className="xl:hidden">Profil</span>
-                    </Link>
+                <Link to="/favorites" className={desktopLink} title="Mes favoris">
+                  <Heart className="h-4 w-4 shrink-0" />
+                  <span className="hidden 2xl:inline">Mes favoris</span>
+                </Link>
+                <Link to="/downloads" className={desktopLink} title="Mes téléchargements">
+                  <Download className="h-4 w-4 shrink-0" />
+                  <span className="hidden 2xl:inline">Mes téléchargements</span>
+                </Link>
+                <Link to="/profile" className={desktopLink}>
+                  <User className="h-4 w-4 shrink-0" />
+                  <span className="hidden 2xl:inline">Mon profil</span>
+                  <span className="2xl:hidden">Profil</span>
+                </Link>
                   </>
                 )}
-                <button onClick={handleLogout} className={desktopLink}>
+                <button onClick={handleLogout} className={desktopLink} title="Déconnexion">
                   <LogOut className="h-4 w-4 shrink-0" />
-                  <span className="hidden xl:inline">Déconnexion</span>
+                  <span className="hidden 2xl:inline">Déconnexion</span>
                 </button>
               </>
             ) : (
