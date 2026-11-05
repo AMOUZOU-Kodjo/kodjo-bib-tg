@@ -31,7 +31,9 @@
     "retry": "Retry",
     "yes": "Yes",
     "no": "No",
-    "download": "Download"
+    "download": "Download",
+    "edit": "Edit",
+    "delete": "Delete"
   },
   "home": {
     "title": "The digital library",
@@ -151,7 +153,26 @@
     "availability": "Availability",
     "previewTitle": "Book preview",
     "insufficientCredits": "Insufficient credits",
-    "sameCategory": "In the same category"
+    "sameCategory": "In the same category",
+    "notFoundToast": "Document not found",
+    "verifyToPreview": "Verify your email to view online",
+    "previewLoadError": "Error loading preview",
+    "downloadCharged": "Download started (-1 credit)",
+    "downloadStarted": "Download started",
+    "downloadError": "Error while downloading",
+    "likeError": "Unable to update like",
+    "favAdded": "Added to your reading list",
+    "favRemoved": "Removed from your reading list",
+    "favError": "Unable to update favorites",
+    "verifyToReport": "Verify your email to report this content",
+    "verifyToShare": "Verify your email to share this document",
+    "verifyToContact": "Verify your email to contact the author",
+    "quickPreview": "Quick preview",
+    "sharePrivateLink": "Share private link",
+    "previewFrameTitle": "Document preview",
+    "previewUnsupported": "This format cannot be previewed online.",
+    "closePreview": "Close preview",
+    "loadingFullPreview": "Loading full preview…"
   },
   "footer": {
     "tagline": "Free collaborative platform for archiving and sharing documents.",
@@ -671,7 +692,9 @@
     "reasonCopyright": "Copyright",
     "reasonMisleading": "Misleading information",
     "reasonOther": "Other",
-    "creditsSummary": "A new user receives {{initial}} credit(s) and earns {{upload}} for each upload."
+    "creditsSummary": "A new user receives {{initial}} credit(s) and earns {{upload}} for each upload.",
+    "auditLoadError": "Error loading audit log",
+    "contactShort": "Contact"
   },
   "profile": {
     "notFound": "Document not found",
@@ -798,7 +821,10 @@
     "login": "Log in",
     "toComment": "to leave a comment.",
     "loading": "Loading...",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "reportComment": "Report comment",
+    "report": "Report",
+    "deleteComment": "Delete comment"
   },
   "contactModal": {
     "aboutSubject": "About \"{{title}}\"",
@@ -859,5 +885,11 @@
     "copyMessage": "Copy message",
     "openChannel": "Open channel",
     "shareVia": "Or share via WhatsApp (contacts and groups)"
+  },
+  "pagination": {
+    "previous": "Previous page",
+    "previousLabel": "Previous",
+    "next": "Next page",
+    "nextLabel": "Next"
   }
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Bell, CheckCheck, Inbox } from "lucide-react";
@@ -6,6 +7,7 @@ import { getNotifications, markAllNotificationsRead, markNotificationRead } from
 import { formatDate } from "../../utils/format";
 
 export default function NotificationBell() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -94,7 +96,7 @@ export default function NotificationBell() {
           if (!open) load();
         }}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl text-white/90 transition-colors hover:bg-white/10 hover:text-white"
-        aria-label="Notifications"
+        aria-label={t("notifications.title")}
         aria-expanded={open}
       >
         <Bell className="h-5 w-5" />

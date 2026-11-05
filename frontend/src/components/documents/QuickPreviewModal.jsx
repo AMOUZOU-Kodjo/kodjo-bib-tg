@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Download, ExternalLink, FileText, Lock, X } from "lucide-react";
@@ -7,8 +8,9 @@ import { formatCategoryName, getCategoryColor } from "../../utils/document";
 import { formatDate, formatSize } from "../../utils/format";
 
 function PreviewContent({ mimeType, url }) {
+  const { t } = useTranslation();
   if (mimeType === "application/pdf") {
-    return <iframe src={`${url}#toolbar=0&navpanes=0`} title="Aperçu du document" className="h-full w-full" />;
+    return <iframe src={`${url}#toolbar=0&navpanes=0`} title={t("document.previewFrameTitle")} className="h-full w-full" />;
   }
   if (mimeType?.startsWith("image/")) {
     return <img src={url} alt="Aperçu du document" className="h-full w-full object-contain" />;
@@ -22,7 +24,7 @@ function PreviewContent({ mimeType, url }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-sm text-gray-500 dark:text-slate-400">
       <FileText className="h-10 w-10" />
-      <p>Ce format ne peut pas être prévisualisé en ligne.</p>
+      <p>{t("document.previewUnsupported")}</p>
     </div>
   );
 }
@@ -93,7 +95,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
     >
       <button
         type="button"
-        aria-label="Fermer l'aperçu"
+        aria-label={t("document.closePreview")}
         onClick={onClose}
         className="absolute inset-0 cursor-default bg-slate-950/70 backdrop-blur-sm"
       />
@@ -122,7 +124,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fermer"
+            aria-label={t("common.close")}
             className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <X className="h-5 w-5" />
@@ -182,7 +184,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
               ) : loading && !slow ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-950/40 backdrop-blur-[1px]">
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
-                  <p className="text-xs text-white/90">Chargement de l’aperçu complet…</p>
+                  <p className="text-xs text-white/90">{t("document.loadingFullPreview")}</p>
                 </div>
               ) : slow || error ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950/70 px-6 text-center backdrop-blur-sm">

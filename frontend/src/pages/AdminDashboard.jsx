@@ -310,7 +310,7 @@ export default function AdminDashboard() {
         setAuditTotal(res.data.total || 0);
       })
       .catch(() => {
-        if (!cancelled) toast.error("Erreur de chargement du journal d'audit");
+        if (!cancelled) toast.error(t("admin.auditLoadError"));
       })
       .finally(() => {
         if (!cancelled) setAuditLoading(false);
@@ -402,7 +402,7 @@ export default function AdminDashboard() {
   };
   const auditDetailLabels = {
     siteName: t("admin.siteNameShort"),
-    contactEmail: t("contact.titleShort", "Contact"),
+    contactEmail: t("admin.contactShort"),
     creditsInitiaux: t("admin.initialCredits"),
     creditsParUpload: t("admin.creditsPerUpload"),
     maxUploadSizeMb: t("admin.maxUploadShort"),

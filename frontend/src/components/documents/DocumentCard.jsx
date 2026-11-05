@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, FileText, Lock, Pencil, Share2, Trash2 } from "lucide-react";
@@ -5,6 +6,7 @@ import { getCategoryColor, formatCategoryName } from "../../utils/document";
 import { useQuickPreview } from "../../context/QuickPreviewContext";
 
 export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false }) {
+  const { t } = useTranslation();
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const { openPreview } = useQuickPreview();
   const isPrivate = doc.visibility === "private";
@@ -65,7 +67,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               openPreview(doc);
             }}
             aria-label={`Aperçu rapide de ${doc.title}`}
-            title="Aperçu rapide"
+            title={t("document.quickPreview")}
             className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
           >
             <Eye className="h-4 w-4" />
@@ -79,7 +81,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
                 onShare(event);
               }}
               aria-label={`Partager ${doc.title}`}
-              title="Partager le lien privé"
+              title={t("document.sharePrivateLink")}
               className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
             >
               <Share2 className="h-4 w-4" />
@@ -94,7 +96,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
                 onEdit(event);
               }}
               aria-label={`Modifier ${doc.title}`}
-              title="Modifier"
+              title={t("common.edit")}
               className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
             >
               <Pencil className="h-4 w-4" />
@@ -110,7 +112,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               }}
               disabled={deleting}
               aria-label={`Supprimer ${doc.title}`}
-              title="Supprimer"
+              title={t("common.delete")}
               className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-red-600 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50"
             >
               <Trash2 className="h-4 w-4" />

@@ -1,7 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { Trash2, MessageSquare, Flag } from "lucide-react";
 import { formatDate } from "../../utils/format";
 
 export default function CommentList({ comments, currentUserId, isOwner, onDelete, deletingId, onReport }) {
+  const { t } = useTranslation();
   if (comments.length === 0) {
     return (
       <div className="text-center text-gray-500 dark:text-slate-400 py-8 flex flex-col items-center gap-2">
@@ -31,8 +33,8 @@ export default function CommentList({ comments, currentUserId, isOwner, onDelete
                     <button
                       onClick={() => onReport(comment)}
                       className="p-1.5 rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
-                      aria-label="Signaler le commentaire"
-                      title="Signaler"
+                      aria-label={t("comments.reportComment")}
+                      title={t("comments.report")}
                     >
                       <Flag className="w-4 h-4" />
                     </button>
@@ -42,8 +44,8 @@ export default function CommentList({ comments, currentUserId, isOwner, onDelete
                       onClick={() => onDelete(comment.id)}
                       disabled={deletingId === comment.id}
                       className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors disabled:opacity-40"
-                      aria-label="Supprimer le commentaire"
-                      title="Supprimer"
+                      aria-label={t("comments.deleteComment")}
+                      title={t("common.delete")}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

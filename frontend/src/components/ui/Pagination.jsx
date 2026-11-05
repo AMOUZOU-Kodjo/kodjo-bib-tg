@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 export function Pagination({ page, totalPages, onPageChange }) {
+  const { t } = useTranslation();
   if (totalPages <= 1) return null;
 
   const currentPage = Math.min(Math.max(1, page), totalPages);
@@ -9,10 +11,10 @@ export function Pagination({ page, totalPages, onPageChange }) {
         type="button"
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage <= 1}
-        aria-label="Page précédente"
+        aria-label={t("pagination.previous")}
         className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
       >
-        « <span className="hidden sm:inline">Précédent</span><span className="sm:hidden">Préc.</span>
+        « <span className="hidden sm:inline">{t("pagination.previousLabel")}</span><span className="sm:hidden">Préc.</span>
       </button>
       {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
         let p;
@@ -42,7 +44,7 @@ export function Pagination({ page, totalPages, onPageChange }) {
         type="button"
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage >= totalPages}
-        aria-label="Page suivante"
+        aria-label={t("pagination.next")}
         className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
       >
         <span className="hidden sm:inline">Suivant</span><span className="sm:hidden">Suiv.</span> »

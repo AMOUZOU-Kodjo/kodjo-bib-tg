@@ -83,7 +83,7 @@ export default function DocumentDetail() {
             .catch(() => setRelated([]));
         }
       })
-      .catch(() => toast.error("Document introuvable"))
+      .catch(() => toast.error(t("document.notFoundToast")))
       .finally(() => setLoading(false));
     viewDocument(id).catch(() => {});
   }, [id]);
@@ -111,7 +111,7 @@ export default function DocumentDetail() {
       return;
     }
     if (!user.email_verified) {
-      toast.error("Vérifiez votre email pour consulter en ligne");
+      toast.error(t("document.verifyToPreview"));
       return;
     }
     if (previewBlobUrl) {
@@ -124,7 +124,7 @@ export default function DocumentDetail() {
       const blobUrl = URL.createObjectURL(res.data);
       setPreviewBlobUrl(blobUrl);
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Erreur lors du chargement de l'aperçu");
+      toast.error(err.response?.data?.error?.message || t("document.previewLoadError"));
       setShowPreview(false);
     } finally {
       setPreviewLoading(false);
@@ -148,12 +148,12 @@ export default function DocumentDetail() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      toast.success(res.data.charged ? "Téléchargement lancé (-1 crédit)" : "Téléchargement lancé");
+      toast.success(res.data.charged ? t("document.downloadCharged") : t("document.downloadStarted"));
     } catch (err) {
       if (err.response?.data?.error?.code === "INSUFFICIENT_CREDITS") {
         setCreditsOpen(true);
       } else {
-        toast.error(err.response?.data?.error?.message || "Erreur lors du téléchargement");
+        toast.error(err.response?.data?.error?.message || t("document.downloadError"));
       }
     }
   };
@@ -171,7 +171,7 @@ export default function DocumentDetail() {
       setDoc((d) => ({ ...d, likedByMe: res.data.liked, like_count: Math.max(0, previous.like_count + (res.data.liked ? 1 : 0) - (previous.likedByMe ? 1 : 0)) }));
     } catch (err) {
       setDoc((d) => ({ ...d, ...previous }));
-      toast.error(err.response?.data?.error?.message || "Impossible de mettre à jour le like");
+      toast.error(err.response?.data?.error?.message || t("document.likeError"));
     }
   };
 
@@ -183,9 +183,9 @@ export default function DocumentDetail() {
     try {
       const res = await toggleFavorite(id);
       setDoc((d) => ({ ...d, favoritedByMe: res.data.favorited }));
-      toast.success(res.data.favorited ? "Ajouté à votre liste de lecture" : "Retiré de votre liste de lecture");
+      toast.success(res.data.favorited ? t("document.favAdded") : t("document.favRemoved"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de mettre à jour les favoris");
+      toast.error(err.response?.data?.error?.message || t("document.favError"));
     }
   };
 
@@ -229,7 +229,7 @@ export default function DocumentDetail() {
       return;
     }
     if (!user.email_verified) {
-      toast.error("Vérifiez votre email pour signaler ce contenu");
+      toast.error(t("document.verifyToReport"));
       return;
     }
     setReportOpen(true);
@@ -239,9 +239,9 @@ export default function DocumentDetail() {
     if (doc.visibility === "public") {
       try {
         await navigator.clipboard.writeText(getPublicShareUrl(doc.id));
-        toast.success("Lien copié");
+        toast.success(t("share.copied"));
       } catch {
-        toast.error("Impossible de copier le lien");
+        toast.error(t("share.copyError"));
       }
       return;
     }
@@ -250,7 +250,7 @@ export default function DocumentDetail() {
       return;
     }
     if (!user.email_verified) {
-      toast.error("Vérifiez votre email pour partager ce document");
+      toast.error(t("document.verifyToShare"));
       return;
     }
     try {
@@ -262,9 +262,9 @@ export default function DocumentDetail() {
         setDoc((current) => ({ ...current, shareEnabled: true }));
       }
       await navigator.clipboard.writeText(shareUrl);
-      toast.success("Lien copié");
+      toast.success(t("share.copied"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de copier le lien");
+      toast.error(err.response?.data?.error?.message || t("share.copyError"));
     }
   };
 
@@ -274,7 +274,7 @@ export default function DocumentDetail() {
       return;
     }
     if (!user.email_verified) {
-      toast.error("Vérifiez votre email pour contacter l'auteur");
+      toast.error(t("document.verifyToContact"));
       return;
     }
     setContactOpen(true);
