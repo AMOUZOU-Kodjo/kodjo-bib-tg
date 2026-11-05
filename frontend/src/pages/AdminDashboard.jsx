@@ -5,6 +5,7 @@ import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Setti
 import { Card, Button, Input, Select, Pagination, Toggle } from "../components/ui";
 import toast from "react-hot-toast";
 import { formatDate, formatSize } from "../utils/format";
+import { useTranslation } from "react-i18next";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useAuth } from "../context/AuthContext";
 import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
@@ -13,7 +14,7 @@ import useSeo from "../hooks/useSeo";
 const AUDIT_PER_PAGE = 30;
 const USERS_PER_PAGE = 10;
 
-const userRoleLabel = (role) => (role === "admin" ? "Administrateur" : "Membre");
+const userRoleLabel = (role, t) => (role === "admin" ? t("admin.adminRole") : t("admin.memberRole"));
 
 const settingsKey = (value) => JSON.stringify({
   siteName: String(value?.siteName ?? "").trim(),
@@ -27,6 +28,7 @@ const settingsKey = (value) => JSON.stringify({
 });
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const { refreshSettings } = useSiteSettings();
   const { user: currentUser } = useAuth();
   const [stats, setStats] = useState({ users: 0, documents: 0, downloads: 0, comments: 0 });
@@ -74,8 +76,8 @@ export default function AdminDashboard() {
   const settingsDirty = savedSettings !== null && settingsKey(settings) !== settingsKey(savedSettings);
 
   useSeo({
-    title: "Administration",
-    description: "Tableau de bord et gestion de la plateforme.",
+    title: t("admin.title"),
+    description: t("admin.desc"),
     noIndex: true
   });
 
@@ -91,7 +93,7 @@ export default function AdminDashboard() {
         if (!cancelled) setAnalytics(res.data.analytics);
       })
       .catch(() => {
-        if (!cancelled) toast.error("Erreur de chargement des statistiques");
+        if (!cancelled) toast.error(t("admin.statsLoadError"));
       })
       .finally(() => {
         if (!cancelled) setAnalyticsLoading(false);
@@ -128,7 +130,7 @@ export default function AdminDashboard() {
   const handleUpdateUser = async (id, data) => {
     try {
       await updateUser(id, data);
-      toast.success("Utilisateur mis à jour");
+      toast.success(t("admin.userUpdated"));
       await loadData();
       return true;
     } catch (err) {
@@ -176,7 +178,7 @@ export default function AdminDashboard() {
     try {
       await deleteUserAdmin(target.id);
       if (editUserId === target.id) setEditUserId(null);
-      toast.success("Utilisateur supprimé");
+      toast.success(t("admin.userDeleted"));
       await loadData();
     } catch (err) {
       toast.error(err.response?.data?.error?.message || "Erreur lors de la suppression");
@@ -210,7 +212,7 @@ export default function AdminDashboard() {
       setSettings(res.data.settings);
       setSavedSettings(res.data.settings);
       await refreshSettings();
-      toast.success("Paramètres enregistrés");
+      toast.success(t("admin.settingsSaved"));
     } catch (err) {
       toast.error(err.response?.data?.error?.message || "Erreur lors de l'enregistrement");
     } finally {
@@ -238,7 +240,7 @@ export default function AdminDashboard() {
     if (!confirm(`Supprimer « ${doc.title} » définitivement ?`)) return;
     try {
       await deleteDocumentAdmin(doc.id);
-      toast.success("Document supprimé");
+      toast.success(t("admin.docDeleted"));
       await loadData();
     } catch (err) {
       toast.error(err.response?.data?.error?.message || "Erreur lors de la suppression");
@@ -336,7 +338,7 @@ export default function AdminDashboard() {
   const userSearchTerm = searchUser.trim().toLowerCase();
   const filteredUsers = users.filter((u) => {
     if (!userSearchTerm) return true;
-    return [u.display_name, u.email, userRoleLabel(u.role)]
+    return [u.display_name, u.email, userRoleLabel(u.role, t)]
       .some((value) => String(value ?? "").toLowerCase().includes(userSearchTerm));
   });
 
@@ -649,7 +651,7 @@ export default function AdminDashboard() {
                       <p className="text-lg font-semibold text-gray-700 dark:text-slate-300">{analytics?.storage?.privateDocuments || 0}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] text-gray-500 dark:text-slate-400">Signalements</p>
+                      <p className="text-[11px] text-gray-500 dark:text-slate-400">{t("admin.reports")}</p>
                       <p className={`text-lg font-semibold ${analytics?.pendingReports > 0 ? "text-red-600" : "text-gray-700 dark:text-slate-300"}`}>
                         {analytics?.pendingReports || 0}
                       </p>
@@ -685,7 +687,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${u.role === "admin" ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-100" : "bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300"}`}>
-                        {userRoleLabel(u.role)}
+                        {userRoleLabel(u.role, t)}
                       </span>
                       <button type="button" onClick={() => { setActiveTab("users"); setEditUserId(u.id); }} className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700" aria-label={`Modifier ${u.display_name}`}>
                         <Pencil className="h-3.5 w-3.5" />
@@ -784,7 +786,7 @@ export default function AdminDashboard() {
                       <td className="px-3 py-3">
                         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${u.role === "admin" ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-100" : "bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-200"}`}>
                           {u.role === "admin" && <Shield className="h-3 w-3" />}
-                          {userRoleLabel(u.role)}
+                          {userRoleLabel(u.role, t)}
                         </span>
                       </td>
                       <td className="px-3 py-3 text-gray-700 dark:text-slate-300">{u.credits}</td>
@@ -832,7 +834,7 @@ export default function AdminDashboard() {
                       <p className="truncate text-xs text-gray-500 dark:text-slate-400">{u.email}</p>
                     </div>
                     <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${u.role === "admin" ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-100" : "bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-200"}`}>
-                      {userRoleLabel(u.role)}
+                      {userRoleLabel(u.role, t)}
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-slate-400">
@@ -920,7 +922,7 @@ export default function AdminDashboard() {
                     </p>
                   )}
                   <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-                    <Button type="button" variant="secondary" onClick={closeEditUser} disabled={editSaving}>Annuler</Button>
+                    <Button type="button" variant="secondary" onClick={closeEditUser} disabled={editSaving}>{t("admin.cancel")}</Button>
                     <Button type="submit" disabled={editSaving || (editUserId === currentUser?.id && editRole !== "admin")}>
                       {editSaving ? "Enregistrement..." : "Enregistrer"}
                     </Button>
@@ -1326,7 +1328,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Nom du site</label>
+                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">{t("admin.siteName")}</label>
                     <Input
                       value={settings.siteName}
                       onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}

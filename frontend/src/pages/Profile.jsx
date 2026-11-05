@@ -69,11 +69,11 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
   const submit = async (e) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("Le titre est requis");
+      toast.error(t("profile.titleRequired"));
       return;
     }
     if (tags.split(",").map((tag) => tag.trim()).filter(Boolean).length > 5) {
-      toast.error("Maximum 5 mots-clés");
+      toast.error(t("profile.maxTags"));
       return;
     }
     setSaving(true);
@@ -85,7 +85,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
         tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
         visibility
       });
-      toast.success("Document mis à jour");
+      toast.success(t("profile.updated"));
       onSaved({
         id: doc.id,
         title: res.data.document.title,
@@ -97,7 +97,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
       });
       onClose();
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de modifier le document");
+      toast.error(err.response?.data?.error?.message || t("profile.updateError"));
     } finally {
       setSaving(false);
     }
@@ -108,8 +108,8 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full sm:max-w-lg bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl p-5 sm:p-6 max-h-[90dvh] overflow-y-auto">
         <div className="flex items-center justify-between gap-3 mb-5">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Modifier le document</h2>
-          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800" aria-label="Fermer">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">{t("profile.editDoc")}</h2>
+          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800" aria-label={t("common.close")}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -202,16 +202,16 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
               rows={5}
               maxLength={2000}
               className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent resize-y"
-              placeholder="Décrivez brièvement le contenu du document"
+              placeholder={t("profile.descPlaceholder")}
             />
           </div>
           <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:items-center sm:justify-end">
             <button type="button" onClick={onClose} className="w-full rounded-lg bg-gray-100 dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 sm:w-auto">
-              Annuler
+              {t("common.cancel")}
             </button>
             <button type="submit" disabled={saving} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-800 disabled:opacity-50 sm:w-auto">
               <Check className="w-4 h-4" />
-              {saving ? "Enregistrement..." : "Enregistrer"}
+              {saving ? t("common.loading") : t("common.save")}
             </button>
           </div>
         </form>
@@ -221,6 +221,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
 }
 
 function ShareDocumentModal({ doc, onClose, onChanged }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [enabled, setEnabled] = useState(Boolean(doc.shareEnabled));
@@ -245,7 +246,7 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
       })
       .catch((err) => {
         if (!active) return;
-        setError(err.response?.data?.error?.message || "Impossible de charger le lien de partage");
+        setError(err.response?.data?.error?.message || t("profile.shareLoadError"));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -256,7 +257,7 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
   }, [doc.id]);
 
   const createLink = async (rotate = false) => {
-    if (rotate && !window.confirm("Régénérer le lien ? L'ancien lien cessera immédiatement de fonctionner.")) return;
+    if (rotate && !window.confirm(t("profile.rotateConfirm"))) return;
     setBusy(true);
     setError("");
     try {
@@ -264,9 +265,9 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
       setEnabled(true);
       setUrl(res.data.url);
       onChanged({ id: doc.id, shareEnabled: true });
-      toast.success(rotate ? "Nouveau lien généré" : "Lien de partage activé");
+      toast.success(rotate ? t("profile.linkRegenerated") : t("profile.linkEnabled"));
     } catch (err) {
-      const message = err.response?.data?.error?.message || "Impossible de générer le lien";
+      const message = err.response?.data?.error?.message || t("profile.linkError");
       setError(message);
       toast.error(message);
     } finally {
@@ -275,7 +276,7 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
   };
 
   const revokeLink = async () => {
-    if (!window.confirm("Désactiver le partage ? Tous les liens existants cesseront de fonctionner.")) return;
+    if (!window.confirm(t("profile.revokeConfirm"))) return;
     setBusy(true);
     setError("");
     try {
@@ -283,9 +284,9 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
       setEnabled(false);
       setUrl("");
       onChanged({ id: doc.id, shareEnabled: false });
-      toast.success("Partage désactivé");
+      toast.success(t("profile.linkRevoked"));
     } catch (err) {
-      const message = err.response?.data?.error?.message || "Impossible de désactiver le partage";
+      const message = err.response?.data?.error?.message || t("profile.revokeError");
       setError(message);
       toast.error(message);
     } finally {
@@ -297,9 +298,9 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Lien copié");
+      toast.success(t("profile.copied"));
     } catch {
-      toast.error("Impossible de copier le lien");
+      toast.error(t("profile.copyError"));
     }
   };
 
@@ -313,20 +314,20 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
               <Share2 className="w-5 h-5 text-teal-700 dark:text-teal-300" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Partager le document</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">{t("profile.shareDoc")}</h2>
               <p className="text-sm text-gray-500 dark:text-slate-400 line-clamp-1">{doc.title}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800" aria-label="Fermer">
+          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800" aria-label={t("common.close")}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-4 mb-5">
           <p className="text-sm text-gray-700 dark:text-slate-300">
-            Toute personne disposant du lien peut consulter et télécharger ce document sans compte.
+            {t("profile.shareWarning1")}
           </p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Le lien expire après 30 jours. La régénération ou la désactivation révoque immédiatement l'accès.</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{t("profile.shareWarning2")}</p>
         </div>
 
         {loading ? (
@@ -341,7 +342,7 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
         ) : enabled && url ? (
           <div className="space-y-4">
             <div>
-              <label htmlFor="share-url" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Lien de partage</label>
+              <label htmlFor="share-url" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t("profile.shareLink")}</label>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <div className="relative min-w-0 flex-1">
                   <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -355,27 +356,27 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
                 </div>
                 <button onClick={copyLink} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-teal-800 sm:w-auto">
                   <Copy className="w-4 h-4" />
-                  Copier
+                  {t("profile.copy")}
                 </button>
               </div>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
               <button onClick={() => createLink(true)} disabled={busy} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 disabled:opacity-50">
                 <RotateCw className="w-4 h-4" />
-                Régénérer
+                {t("profile.regenerate")}
               </button>
               <button onClick={revokeLink} disabled={busy} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-50">
                 <X className="w-4 h-4" />
-                Désactiver le partage
+                {t("profile.disableShare")}
               </button>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600 dark:text-slate-400">Aucun lien actif. Créez un lien pour permettre l'accès à ce document privé.</p>
+            <p className="text-sm text-gray-600 dark:text-slate-400">{t("profile.noActiveLink")}</p>
             <button onClick={() => createLink(false)} disabled={busy} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-teal-700 text-white hover:bg-teal-800 disabled:opacity-50">
               <Share2 className="w-4 h-4" />
-              {busy ? "Création..." : "Créer un lien de partage"}
+              {busy ? t("profile.creating") : t("profile.createLink")}
             </button>
           </div>
         )}
@@ -417,6 +418,7 @@ function PreferenceToggle({ label, description, checked, onChange, disabled = fa
 }
 
 export default function Profile() {
+  const { t } = useTranslation();
   const { user, setUser } = useAuth();
   const { creditsParUpload } = useSiteSettings();
   const navigate = useNavigate();
@@ -449,8 +451,8 @@ export default function Profile() {
   const [deletingAccount, setDeletingAccount] = useState(false);
 
   useSeo({
-    title: "Mon profil",
-    description: "Gérez vos informations, vos documents, vos notifications, votre liste de lecture et vos crédits.",
+    title: t("profile.title"),
+    description: t("profile.seoDesc"),
     noIndex: true
   });
 
@@ -491,7 +493,7 @@ export default function Profile() {
   useEffect(() => {
     getMyDocuments()
       .then((res) => setDocs(res.data.documents || []))
-      .catch(() => toast.error("Impossible de charger vos documents"))
+      .catch(() => toast.error(t("profile.loadDocsError")))
       .finally(() => setDocsLoading(false));
 
     getMyCredits()
@@ -500,7 +502,7 @@ export default function Profile() {
         setHistory(res.data.history || []);
         setUser((current) => (current ? { ...current, credits: res.data.credits || 0 } : current));
       })
-      .catch(() => toast.error("Impossible de charger l'historique de crédits"))
+      .catch(() => toast.error(t("profile.loadCreditsError")))
       .finally(() => setCreditsLoading(false));
   }, [setUser]);
 
@@ -514,7 +516,7 @@ export default function Profile() {
         setFavoritesTotal(res.data.total || 0);
       })
       .catch(() => {
-        if (active) toast.error("Impossible de charger votre liste de lecture");
+        if (active) toast.error(t("profile.loadFavsError"));
       })
       .finally(() => {
         if (active) setFavoritesLoading(false);
@@ -528,7 +530,7 @@ export default function Profile() {
     e.preventDefault();
     const trimmed = name.trim();
     if (trimmed.length < 2) {
-      toast.error("Le nom doit contenir au moins 2 caractères");
+      toast.error(t("profile.nameMin"));
       return;
     }
     setSavingName(true);
@@ -536,9 +538,9 @@ export default function Profile() {
       const res = await updateMyProfile({ displayName: trimmed });
       setUser((current) => (current ? { ...current, display_name: res.data.user.display_name } : current));
       setName(res.data.user.display_name);
-      toast.success("Nom mis à jour");
+      toast.success(t("profile.nameUpdated"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de mettre à jour le nom");
+      toast.error(err.response?.data?.error?.message || t("profile.nameError"));
     } finally {
       setSavingName(false);
     }
@@ -561,9 +563,9 @@ export default function Profile() {
         notify_new_documents: res.data.user.notify_new_documents,
         notify_document_updates: res.data.user.notify_document_updates
       });
-      toast.success("Préférences de notifications enregistrées");
+      toast.success(t("profile.prefsSaved"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible d'enregistrer vos préférences");
+      toast.error(err.response?.data?.error?.message || t("profile.prefsError"));
     } finally {
       setSavingPrefs(false);
     }
@@ -581,17 +583,17 @@ export default function Profile() {
           await subscription.unsubscribe();
         }
         setPushEnabled(false);
-        toast.success("Notifications push désactivées");
+        toast.success(t("profile.pushOff"));
         return;
       }
 
       if (Notification.permission === "denied") {
-        toast.error("Les notifications sont bloquées dans les réglages de votre navigateur");
+        toast.error(t("profile.pushBlocked"));
         return;
       }
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
-        toast.error("Autorisation de notifications refusée");
+        toast.error(t("profile.pushDenied"));
         return;
       }
 
@@ -602,7 +604,7 @@ export default function Profile() {
         setPushConfig(currentConfig);
       }
       if (!currentConfig.enabled || !currentConfig.publicKey) {
-        toast.error("Les notifications push ne sont pas configurées sur ce serveur");
+        toast.error(t("profile.pushNotConfigured"));
         return;
       }
 
@@ -617,23 +619,23 @@ export default function Profile() {
       const raw = subscription.toJSON();
       await subscribePush({ endpoint: raw.endpoint, keys: raw.keys });
       setPushEnabled(true);
-      toast.success("Notifications push activées");
+      toast.success(t("profile.pushOn"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de modifier les notifications push");
+      toast.error(err.response?.data?.error?.message || t("profile.pushError"));
     } finally {
       setPushBusy(false);
     }
   };
 
   const removeDoc = async (doc) => {
-    if (!window.confirm(`Supprimer « ${doc.title} » ? Cette action est irréversible.`)) return;
+    if (!window.confirm(t("profile.deleteConfirm", { title: doc.title }))) return;
     setDeletingId(doc.id);
     try {
       await deleteDocument(doc.id);
       setDocs((list) => list.filter((d) => d.id !== doc.id));
-      toast.success("Document supprimé");
+      toast.success(t("profile.deleted"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de supprimer le document");
+      toast.error(err.response?.data?.error?.message || t("profile.deleteError"));
     } finally {
       setDeletingId(null);
     }
@@ -646,18 +648,18 @@ export default function Profile() {
   const removeAccount = async (e) => {
     e.preventDefault();
     if (!deletePassword) {
-      toast.error("Saisissez votre mot de passe");
+      toast.error(t("profile.passwordRequired"));
       return;
     }
-    if (!window.confirm("Supprimer définitivement votre compte, vos documents et vos données ? Cette action est irréversible.")) return;
+    if (!window.confirm(t("profile.deleteAccountConfirm"))) return;
     setDeletingAccount(true);
     try {
       await deleteMyAccount({ password: deletePassword });
       setUser(null);
-      toast.success("Votre compte a été supprimé");
+      toast.success(t("profile.accountDeleted"));
       navigate("/");
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de supprimer le compte");
+      toast.error(err.response?.data?.error?.message || t("profile.deleteAccountError"));
     } finally {
       setDeletingAccount(false);
     }
@@ -689,7 +691,7 @@ export default function Profile() {
       <div className="max-w-5xl mx-auto">
       <header className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-slate-100 mb-1">Mon profil</h1>
-        <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">Gérez vos informations, vos documents et vos crédits.</p>
+        <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("profile.subtitle")}</p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
@@ -697,12 +699,12 @@ export default function Profile() {
           <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3 mb-5 sm:gap-4">
               <div className="min-w-0">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Mes documents</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">{t("profile.myDocs")}</h2>
                 <p className="text-sm text-gray-500 dark:text-slate-400">{docs.length} document{docs.length > 1 ? "s" : ""} au total</p>
               </div>
               <Link to="/upload" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-teal-700 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800 sm:px-4">
                 <Upload className="w-4 h-4" />
-                Déposer
+                {t("nav.upload")}
               </Link>
             </div>
 
@@ -743,7 +745,7 @@ export default function Profile() {
               <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-slate-100">
                   <Bookmark className="h-4 w-4 text-amber-600" />
-                  Ma liste de lecture
+                  {t("profile.readingList")}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-slate-400">
                   {favoritesTotal} document{favoritesTotal > 1 ? "s" : ""} enregistré{favoritesTotal > 1 ? "s" : ""}
@@ -827,7 +829,7 @@ export default function Profile() {
                   disabled={savingName || name.trim() === user?.display_name}
                   className="shrink-0 rounded-lg bg-teal-700 px-3 py-2 text-sm font-medium text-white hover:bg-teal-800 disabled:opacity-40"
                 >
-                  {savingName ? "..." : "Enregistrer"}
+                  {savingName ? "..." : t("common.save")}
                 </button>
               </div>
             </form>
@@ -836,7 +838,7 @@ export default function Profile() {
               <div className="mt-5 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-100 rounded-xl">
                 <div className="flex items-start gap-2 mb-3">
                   <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-amber-800 dark:text-amber-200">Vérifiez votre e-mail pour déposer des documents et interagir.</p>
+                  <p className="text-sm text-amber-800 dark:text-amber-200">{t("profile.verifyEmailHint")}</p>
                 </div>
                 <Link to="/verify-email" state={{ email: user?.email }} className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-900 dark:text-amber-100 hover:underline">
                   Vérifier mon e-mail
@@ -858,20 +860,20 @@ export default function Profile() {
             <div className="space-y-2.5">
               <PreferenceToggle
                 label="Recevoir des e-mails"
-                description="Active ou désactive toutes les notifications par e-mail."
+                description="{t("profile.notifyAllDesc")}"
                 checked={prefs.notify_email}
                 onChange={(value) => setPrefs((current) => ({ ...current, notify_email: value }))}
               />
               <PreferenceToggle
-                label="Nouveaux documents publics"
-                description="Être averti lorsqu'un document public est publié."
+                label="{t("profile.notifyNewDocs")}"
+                description="{t("profile.notifyNewDocsDesc")}"
                 checked={prefs.notify_new_documents}
                 disabled={!prefs.notify_email}
                 onChange={(value) => setPrefs((current) => ({ ...current, notify_new_documents: value }))}
               />
               <PreferenceToggle
-                label="Confirmation de mes documents privés"
-                description="Recevoir un e-mail après l'ajout de vos propres documents privés."
+                label="{t("profile.notifyPrivate")}"
+                description="{t("profile.notifyPrivateDesc")}"
                 checked={prefs.notify_document_updates}
                 disabled={!prefs.notify_email}
                 onChange={(value) => setPrefs((current) => ({ ...current, notify_document_updates: value }))}
@@ -892,7 +894,7 @@ export default function Profile() {
               disabled={savingPrefs || !prefsChanged}
               className="mt-4 w-full rounded-lg bg-teal-700 px-3 py-2 text-sm font-medium text-white hover:bg-teal-800 disabled:opacity-40"
             >
-              {savingPrefs ? "Enregistrement..." : "Enregistrer les préférences"}
+              {savingPrefs ? t("common.loading") : t("profile.savePrefs")}
             </button>
           </section>
 
@@ -941,10 +943,10 @@ export default function Profile() {
           <section className="rounded-2xl border border-red-100 dark:border-red-900 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
             <h2 className="flex items-center gap-2 font-bold text-red-700 dark:text-red-300">
               <Trash2 className="h-4 w-4" />
-              Zone dangereuse
+              {t("profile.dangerZone")}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-slate-400">
-              La suppression du compte efface définitivement votre profil, vos documents, vos crédits et vos données associées.
+              {t("profile.deleteAccountDesc")}
             </p>
             <form onSubmit={removeAccount} className="mt-4 space-y-3">
               <div>
@@ -967,7 +969,7 @@ export default function Profile() {
                 disabled={deletingAccount || !deletePassword}
                 className="w-full rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-40"
               >
-                {deletingAccount ? "Suppression..." : "Supprimer définitivement mon compte"}
+                {deletingAccount ? t("profile.deleting") : t("profile.deleteAccount")}
               </button>
             </form>
           </section>
