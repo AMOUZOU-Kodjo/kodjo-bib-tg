@@ -299,7 +299,7 @@ export default function DocumentDetail() {
           <>
             <ChevronRight className="w-4 h-4" />
             <Link to={`/documents?category=${encodeURIComponent(doc.category)}`} className="hover:text-teal-700 dark:hover:text-teal-300">
-              {formatCategoryName(doc.category)}
+              {formatCategoryName(doc.category, t)}
             </Link>
           </>
         )}
@@ -417,7 +417,7 @@ export default function DocumentDetail() {
             <div className="flex flex-wrap items-center gap-3">
               {doc.category && (
                 <Link to={`/documents?category=${encodeURIComponent(doc.category)}`} className={`px-3 py-1 rounded-full text-sm text-white ${getCategoryColor(doc.category)}`}>
-                  {formatCategoryName(doc.category)}
+                  {formatCategoryName(doc.category, t)}
                 </Link>
               )}
               {(doc.tags || []).map((tag) => (
@@ -456,7 +456,7 @@ export default function DocumentDetail() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm text-gray-500 dark:text-slate-400">{t("document.category")}</p>
-                  <p className="font-medium text-gray-900 dark:text-slate-100">{doc.category ? formatCategoryName(doc.category) : "-"}</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">{doc.category ? formatCategoryName(doc.category, t) : "-"}</p>
                 </div>
               </div>
               <div className="flex min-w-0 items-center gap-3">

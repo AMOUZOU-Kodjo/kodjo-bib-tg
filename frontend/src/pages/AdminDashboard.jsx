@@ -458,7 +458,7 @@ export default function AdminDashboard() {
             <Shield className="h-7 w-7 shrink-0 text-primary-600 dark:text-primary-100 sm:h-8 sm:w-8" />
             <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">{t("admin.title")}</h1>
           </div>
-          <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">Tableau de bord et gestion de la plateforme</p>
+          <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("admin.subtitle")}</p>
         </div>
         <Button variant="secondary" onClick={() => { loadData(); setAnalyticsRefresh((value) => value + 1); }} disabled={loading || analyticsLoading}>
           <RefreshCw className={`w-4 h-4 ${loading || analyticsLoading ? "animate-spin" : ""}`} />
@@ -545,7 +545,7 @@ export default function AdminDashboard() {
             </div>
 
             {analyticsLoading ? (
-              <div className="flex h-40 items-center justify-center text-sm text-gray-500 dark:text-slate-400">Chargement…</div>
+              <div className="flex h-40 items-center justify-center text-sm text-gray-500 dark:text-slate-400">{t("common.loading")}</div>
             ) : (
               <>
                 <div className="flex h-40 items-end gap-[2px] sm:gap-1">
@@ -595,9 +595,9 @@ export default function AdminDashboard() {
                 Documents les plus actifs
               </h2>
               {analyticsLoading ? (
-                <p className="py-4 text-sm text-gray-500 dark:text-slate-400">Chargement…</p>
+                <p className="py-4 text-sm text-gray-500 dark:text-slate-400">{t("common.loading")}</p>
               ) : (analytics?.topDocuments || []).length === 0 ? (
-                <p className="py-4 text-sm text-gray-500 dark:text-slate-400">Aucun document pour le moment.</p>
+                <p className="py-4 text-sm text-gray-500 dark:text-slate-400">{t("admin.noDocsYet")}</p>
               ) : (
                 <div className="space-y-2">
                   {analytics.topDocuments.map((doc, index) => (
@@ -631,7 +631,7 @@ export default function AdminDashboard() {
                 Stockage et modération
               </h2>
               {analyticsLoading ? (
-                <p className="py-4 text-sm text-gray-500 dark:text-slate-400">Chargement…</p>
+                <p className="py-4 text-sm text-gray-500 dark:text-slate-400">{t("common.loading")}</p>
               ) : (
                 <div className="space-y-4">
                   <div>
@@ -643,7 +643,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="grid grid-cols-3 gap-3 border-t border-gray-100 dark:border-slate-700 pt-4">
                     <div>
-                      <p className="text-[11px] text-gray-500 dark:text-slate-400">Publics</p>
+                      <p className="text-[11px] text-gray-500 dark:text-slate-400">{t("admin.publicPlural")}</p>
                       <p className="text-lg font-semibold text-teal-700 dark:text-teal-300">{analytics?.storage?.publicDocuments || 0}</p>
                     </div>
                     <div>
@@ -665,14 +665,14 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card className="p-5 sm:p-6">
               <div className="mb-4 flex items-center justify-between gap-2">
-                <h2 className="text-lg font-semibold">Derniers utilisateurs</h2>
+                <h2 className="text-lg font-semibold">{t("admin.recentUsers")}</h2>
                 <button type="button" onClick={() => setActiveTab("users")} className="text-xs font-medium text-teal-700 hover:underline dark:text-teal-300">
                   Tout voir
                 </button>
               </div>
               <div className="divide-y divide-gray-50 dark:divide-slate-800">
                 {!loading && users.length === 0 && (
-                  <p className="py-4 text-sm text-gray-500 dark:text-slate-400">Aucun utilisateur pour le moment.</p>
+                  <p className="py-4 text-sm text-gray-500 dark:text-slate-400">{t("admin.noUsersYet")}</p>
                 )}
                 {users.slice(0, 5).map(u => (
                   <div key={u.id} className="flex items-center justify-between gap-3 py-3">
@@ -701,10 +701,10 @@ export default function AdminDashboard() {
               </div>
             </Card>
             <Card className="p-5 sm:p-6">
-              <h2 className="text-lg font-semibold mb-4">Derniers documents</h2>
+              <h2 className="text-lg font-semibold mb-4">{t("admin.recentDocs")}</h2>
               <div className="space-y-3">
                 {!loading && docs.length === 0 && (
-                  <p className="text-sm text-gray-500 dark:text-slate-400 py-4">Aucun document pour le moment.</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 py-4">{t("admin.noDocsYet")}</p>
                 )}
                 {docs.slice(0, 5).map(d => (
                   <div key={d.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
@@ -817,7 +817,7 @@ export default function AdminDashboard() {
                   {pagedUsers.length === 0 && (
                     <tr>
                       <td colSpan={6} className="px-3 py-10 text-center text-sm text-gray-500 dark:text-slate-400">
-                        {users.length === 0 ? "Aucun utilisateur pour le moment." : "Aucun utilisateur ne correspond à votre recherche."}
+                        {users.length === 0 ? t("admin.noUsersYet") : t("admin.noUsersMatch")}
                       </td>
                     </tr>
                   )}
@@ -857,7 +857,7 @@ export default function AdminDashboard() {
               ))}
               {pagedUsers.length === 0 && (
                 <p className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500 dark:border-slate-700 dark:text-slate-400">
-                  {users.length === 0 ? "Aucun utilisateur pour le moment." : "Aucun utilisateur ne correspond à votre recherche."}
+                  {users.length === 0 ? {t("admin.noUsersYet")} : t("admin.noUsersMatch")}
                 </p>
               )}
             </div>
@@ -883,7 +883,7 @@ export default function AdminDashboard() {
               <div className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl dark:bg-slate-800 sm:rounded-2xl sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 id="edit-user-title" className="text-lg font-semibold text-gray-900 dark:text-slate-100">Modifier l'utilisateur</h3>
+                    <h3 id="edit-user-title" className="text-lg font-semibold text-gray-900 dark:text-slate-100">{t("admin.editUser")}</h3>
                     <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">{t("admin.editUserDesc")}</p>
                   </div>
                   <button type="button" onClick={closeEditUser} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700" aria-label={t("common.close")}>
@@ -892,19 +892,19 @@ export default function AdminDashboard() {
                 </div>
                 <form className="mt-5 space-y-4" onSubmit={handleSubmitEditUser}>
                   <div>
-                    <label htmlFor="edit-user-name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Nom complet</label>
+                    <label htmlFor="edit-user-name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">{t("admin.fullName")}</label>
                     <Input id="edit-user-name" value={editDisplayName || ""} onChange={(e) => setEditDisplayName(e.target.value)} minLength={2} maxLength={60} required />
                   </div>
                   <div>
-                    <label htmlFor="edit-user-email" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Adresse e-mail</label>
+                    <label htmlFor="edit-user-email" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">{t("admin.emailAddress")}</label>
                     <Input id="edit-user-email" type="email" value={editEmail || ""} onChange={(e) => setEditEmail(e.target.value)} maxLength={254} required />
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                       <label htmlFor="edit-user-role" className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">{t("admin.role")}</label>
                       <Select id="edit-user-role" value={editRole || "user"} onChange={(e) => setEditRole(e.target.value)}>
-                        <option value="user">Membre</option>
-                        <option value="admin">Administrateur</option>
+                        <option value="user">{t("admin.memberRole")}</option>
+                        <option value="admin">{t("admin.adminRole")}</option>
                       </Select>
                     </div>
                     <div>
@@ -998,7 +998,7 @@ export default function AdminDashboard() {
                 </button>
               </div>
             ) : (
-              <span className="text-xs text-gray-500 dark:text-slate-400">Cochez des documents pour agir en masse.</span>
+              <span className="text-xs text-gray-500 dark:text-slate-400">{t("admin.bulkHint")}</span>
             )}
           </div>
           {filteredDocs.length === 0 ? (
@@ -1059,7 +1059,7 @@ export default function AdminDashboard() {
                     <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]">
                       {canShowViewCount(d) && (
                         <div>
-                          <p className="text-gray-400">Vues</p>
+                          <p className="text-gray-400">{t("admin.views")}</p>
                           <p className="font-semibold text-gray-700 dark:text-slate-300">{d.view_count || 0}</p>
                         </div>
                       )}
@@ -1068,7 +1068,7 @@ export default function AdminDashboard() {
                         <p className="font-semibold text-gray-700 dark:text-slate-300">{d.download_count || 0}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400">Taille</p>
+                        <p className="text-gray-400">{t("admin.size")}</p>
                         <p className="font-semibold text-gray-700 dark:text-slate-300">{d.size_bytes ? formatSize(d.size_bytes) : "-"}</p>
                       </div>
                       <div>
@@ -1129,9 +1129,9 @@ export default function AdminDashboard() {
           </div>
 
           {reportsLoading ? (
-            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">Chargement…</div>
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">{t("common.loading")}</div>
           ) : reports.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">Aucun signalement pour le moment.</div>
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">{t("admin.noReportsYet")}</div>
           ) : (
             <div className="space-y-3">
               {reports.map((report) => {
@@ -1242,7 +1242,7 @@ export default function AdminDashboard() {
           </div>
 
           {auditLoading ? (
-            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">Chargement…</div>
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">{t("common.loading")}</div>
           ) : audit.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">{t("admin.noAuditYet")}</div>
           ) : (
@@ -1338,7 +1338,7 @@ export default function AdminDashboard() {
                     <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{String(settings.siteName || "").length}/60 caractères</p>
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Description courte</label>
+                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">{t("admin.shortDescription")}</label>
                     <Input
                       value={settings.siteTagline || ""}
                       onChange={(e) => setSettings({ ...settings, siteTagline: e.target.value })}
@@ -1348,7 +1348,7 @@ export default function AdminDashboard() {
                     <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{String(settings.siteTagline || "").length}/120 caractères</p>
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Email de contact</label>
+                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">{t("admin.contactEmailLabel")}</label>
                     <Input
                       type="email"
                       value={settings.contactEmail || ""}
@@ -1360,7 +1360,7 @@ export default function AdminDashboard() {
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/40">
                     <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{t("admin.preview")}</p>
                     <p className="mt-1 truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{settings.siteName || "Nom du site"}</p>
-                    <p className="truncate text-xs text-gray-500 dark:text-slate-400">{settings.siteTagline || "Description courte"}</p>
+                    <p className="truncate text-xs text-gray-500 dark:text-slate-400">{settings.siteTagline || {t("admin.shortDescription")}}</p>
                   </div>
                 </div>
               </Card>

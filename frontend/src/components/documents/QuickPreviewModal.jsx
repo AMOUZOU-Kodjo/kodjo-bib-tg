@@ -105,7 +105,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium text-white ${getCategoryColor(doc.category)}`}>
-                {doc.category ? formatCategoryName(doc.category) : "Document"}
+                {doc.category ? formatCategoryName(doc.category, t) : "Document"}
               </span>
               {doc.visibility === "private" && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-gray-900/80 px-2.5 py-0.5 text-[11px] font-medium text-white">

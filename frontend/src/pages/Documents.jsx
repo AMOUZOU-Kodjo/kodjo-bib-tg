@@ -200,7 +200,7 @@ export default function Documents() {
             onClick={() => setCategory(c.category)}
             className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${categoryParam === c.category ? "bg-teal-700 text-white shadow-sm" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"}`}
           >
-            {formatCategoryName(c.category)} {c.count}
+            {formatCategoryName(c.category, t)} {c.count}
           </button>
         ))}
       </nav>
@@ -216,7 +216,7 @@ export default function Documents() {
               onClick={() => setTag("")}
               className="whitespace-nowrap rounded-full border border-teal-200 bg-teal-50 dark:bg-teal-950/40 px-3 py-1.5 text-xs font-medium text-teal-800 dark:text-teal-200"
             >
-              #{formatCategoryName(tagParam)} ×
+              #{formatCategoryName(tagParam, t)} ×
             </button>
           )}
           {tagOptions
@@ -228,7 +228,7 @@ export default function Documents() {
                 className="whitespace-nowrap rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 transition-all hover:bg-gray-200 dark:hover:bg-slate-700"
                 title={t("documents.allKeywords")}
               >
-                #{formatCategoryName(option.tag)} {option.count}
+                #{formatCategoryName(option.tag, t)} {option.count}
               </button>
             ))}
         </nav>

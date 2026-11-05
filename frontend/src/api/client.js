@@ -1,5 +1,6 @@
 import axios from "axios";
 import toast from "react-hot-toast";
+import i18n from "../i18n";
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api",
@@ -25,7 +26,7 @@ client.interceptors.response.use(
 
     if (isNetworkOrTimeout && !wakeUpToastId) {
       wakeUpToastId = "server-wakeup";
-      toast.loading("Le serveur se réveille, patientez quelques secondes...", {
+      toast.loading(i18n.t("common.serverWaking"), {
         id: wakeUpToastId,
         duration: 15000
       });

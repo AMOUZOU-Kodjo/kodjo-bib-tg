@@ -1,3 +1,26 @@
+export const categoryLabels = {
+  "Éducation": "cat.education",
+  "Littérature": "cat.literature",
+  "Science": "cat.science",
+  "Histoire": "cat.history",
+  "physique-chimie": "cat.physicsChemistry",
+  "Art": "cat.art",
+  "Société": "cat.society",
+  "Petite Enfance": "cat.earlyChildhood",
+  "Philosophie": "cat.philosophy",
+  "Géographie": "cat.geography",
+  "Politique": "cat.politics",
+  "Sport": "cat.sport",
+  "Divertissement": "cat.entertainment",
+  "Santé": "cat.health",
+  "Cours": "cat.courses",
+  "TD / TP": "cat.tdTp",
+  "Examens / Annales": "cat.exams",
+  "Rapports / Mémoires": "cat.reports",
+  "Fiches": "cat.sheets",
+  "CV & Lettres": "cat.cvLetters"
+};
+
 const categoryColors = {
   "Éducation": "bg-blue-600",
   "Littérature": "bg-purple-600",
@@ -19,9 +42,12 @@ export function getCategoryColor(category) {
   return categoryColors[category] || "bg-teal-700";
 }
 
-export function formatCategoryName(category) {
-  if (category === "physique-chimie") return "Physique-Chimie";
-  if (category === "littrature") return "Littérature";
+export function formatCategoryName(category, t) {
+  if (!category) return category;
+  const key = categoryLabels[category] || (category === "littrature" ? categoryLabels["Littérature"] : null);
+  if (key && t) return t(key);
+  if (category === "physique-chimie") return t ? t("cat.physicsChemistry") : "Physique-Chimie";
+  if (category === "littrature") return t ? t("cat.literature") : "Littérature";
   return category;
 }
 

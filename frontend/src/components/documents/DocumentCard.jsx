@@ -37,7 +37,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
 
         <div className="doc-overlay absolute left-4 top-4 flex flex-wrap gap-2">
           <span className={`rounded-full px-3 py-1 text-xs font-medium text-white ${getCategoryColor(doc.category)}`}>
-            {doc.category ? formatCategoryName(doc.category) : "Document"}
+            {doc.category ? formatCategoryName(doc.category, t) : t("document.fallback")}
           </span>
           {isPrivate && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gray-900/80 px-3 py-1 text-xs font-medium text-white backdrop-blur">

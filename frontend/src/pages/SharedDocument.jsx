@@ -166,7 +166,7 @@ export default function SharedDocument() {
             <div className="flex flex-wrap items-center gap-3">
               {doc.category && (
                 <span className={`px-3 py-1 rounded-full text-sm text-white ${getCategoryColor(doc.category)}`}>
-                  {formatCategoryName(doc.category)}
+                  {formatCategoryName(doc.category, t)}
                 </span>
               )}
             </div>
