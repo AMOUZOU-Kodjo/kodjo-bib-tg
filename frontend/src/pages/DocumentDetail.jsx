@@ -5,10 +5,10 @@ import {
   getDocumentViewFile, fetchDocumentViewBlob, getDocumentShareLink, createDocumentShareLink,
   toggleFavorite
 } from "../api/documents";
-import { summarizeDocument } from "../api/ai";
+import { summarizeDocument, translateText } from "../api/ai";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { FileText, Heart, Eye, Download, Calendar, User, ChevronRight, Share2, Maximize2, Mail, Lock, Shield, Bookmark, Flag, Sparkles, Loader2 } from "lucide-react";
+import { FileText, Heart, Eye, Download, Calendar, User, ChevronRight, Share2, Maximize2, Mail, Lock, Shield, Bookmark, Flag, Sparkles, Loader2, Languages } from "lucide-react";
 import { formatSize, formatDate } from "../utils/format";
 import { ReadingProgress } from "../components/ui";
 import ContactModal from "../components/contact/ContactModal";
@@ -38,6 +38,9 @@ export default function DocumentDetail() {
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [summary, setSummary] = useState("");
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [translation, setTranslation] = useState("");
+  const [translationLang, setTranslationLang] = useState("");
+  const [translationLoading, setTranslationLoading] = useState(false);
   const { user, setUser } = useAuth();
 
   useSeo({
@@ -59,6 +62,9 @@ export default function DocumentDetail() {
     setCreditsOpen(false);
     setSummary("");
     setSummaryLoading(false);
+    setTranslation("");
+    setTranslationLang("");
+    setTranslationLoading(false);
     if (previewBlobUrl) {
       URL.revokeObjectURL(previewBlobUrl);
       setPreviewBlobUrl(null);
@@ -196,6 +202,22 @@ export default function DocumentDetail() {
       toast.error(err.response?.data?.error?.message || "Impossible de générer le résumé");
     } finally {
       setSummaryLoading(false);
+    }
+  };
+
+  const handleTranslate = async (target) => {
+    const source = summary || doc?.description || doc?.title || "";
+    if (!source.trim()) return;
+    if (translationLoading || (translation && translationLang === target)) return;
+    setTranslationLoading(true);
+    try {
+      const res = await translateText({ text: source, target });
+      setTranslation(res.data?.translation || "");
+      setTranslationLang(target);
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Impossible de traduire");
+    } finally {
+      setTranslationLoading(false);
     }
   };
 
@@ -460,16 +482,40 @@ export default function DocumentDetail() {
             <section className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">À propos de ce livre</h2>
-                {!summary && !summaryLoading && (doc.description || doc.title) && (
-                  <button
-                    type="button"
-                    onClick={handleSummarize}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/40"
-                  >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Résumé IA
-                  </button>
-                )}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {!summary && !summaryLoading && (doc.description || doc.title) && (
+                    <button
+                      type="button"
+                      onClick={handleSummarize}
+                      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/40"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Résumé IA
+                    </button>
+                  )}
+                  {(doc.description || summary || doc.title) && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleTranslate("en")}
+                        disabled={translationLoading}
+                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-700"
+                      >
+                        {translationLoading && translationLang !== "fr" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Languages className="h-3.5 w-3.5" />}
+                        EN
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleTranslate("fr")}
+                        disabled={translationLoading}
+                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-700"
+                      >
+                        {translationLoading && translationLang === "fr" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Languages className="h-3.5 w-3.5" />}
+                        FR
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
               {summaryLoading && (
                 <div className="mb-3 flex items-center gap-2 text-sm text-teal-700 dark:text-teal-300">
@@ -481,6 +527,12 @@ export default function DocumentDetail() {
                 <div className="mb-4 rounded-xl border border-teal-100 bg-teal-50/70 p-4 dark:border-teal-900/40 dark:bg-teal-950/20">
                   <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-300">Résumé IA</p>
                   <p className="text-sm leading-relaxed text-gray-800 dark:text-slate-200">{summary}</p>
+                </div>
+              )}
+              {translation && (
+                <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-900/40">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-slate-400">Traduction ({translationLang.toUpperCase()})</p>
+                  <p className="text-sm leading-relaxed text-gray-800 dark:text-slate-200">{translation}</p>
                 </div>
               )}
               {doc.description && (
