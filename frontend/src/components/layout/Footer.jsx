@@ -6,7 +6,7 @@ import InstallPWA from "./InstallPWA";
 import SocialLinks from "./SocialLinks";
 
 const linkClass =
-  "text-sm text-slate-300 transition-colors duration-200 hover:text-white";
+  "text-sm text-white/80 transition-colors duration-200 hover:text-white";
 
 export default function Footer() {
   const { t } = useTranslation();
@@ -16,7 +16,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="mt-20 border-t border-slate-800/80 bg-gradient-to-b from-blue-950 via-slate-950 to-slate-950 text-slate-200">
+    <footer className="mt-20 border-t border-white/10 bg-gradient-to-b from-teal-700 to-teal-800 text-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-4">
@@ -33,14 +33,14 @@ export default function Footer() {
                 {siteName}
               </span>
             </Link>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/80">
               {siteTagline || t("footer.tagline")}
             </p>
-            <p className="mt-4 flex items-center gap-1.5 text-sm text-slate-400">
-              {t("footer.madeWith")} <Heart className="h-4 w-4 text-rose-400 fill-rose-400/20" /> {t("footer.forCommunity")}
+            <p className="mt-4 flex items-center gap-1.5 text-sm text-white/75">
+              {t("footer.madeWith")} <Heart className="h-4 w-4 text-rose-300 fill-rose-300/30" /> {t("footer.forCommunity")}
             </p>
             <div className="mt-6">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{t("footer.followUs")}</p>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/70">{t("footer.followUs")}</p>
               <SocialLinks />
             </div>
             <div className="mt-4">
@@ -87,14 +87,14 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-6 sm:flex-row">
-          <p className="text-center text-sm text-slate-500 sm:text-left">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/15 pt-6 sm:flex-row">
+          <p className="text-center text-sm text-white/70 sm:text-left">
             © {new Date().getFullYear()} {siteName}. {t("footer.rights")}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
-            <Link to="/confidentialite" className="text-slate-500 transition-colors hover:text-slate-300">{t("footer.privacy")}</Link>
-            <Link to="/cgu" className="text-slate-500 transition-colors hover:text-slate-300">{t("footer.terms")}</Link>
-            <Link to="/contact" className="text-slate-500 transition-colors hover:text-slate-300">{t("footer.contact")}</Link>
+            <Link to="/confidentialite" className="text-white/70 transition-colors hover:text-white">{t("footer.privacy")}</Link>
+            <Link to="/cgu" className="text-white/70 transition-colors hover:text-white">{t("footer.terms")}</Link>
+            <Link to="/contact" className="text-white/70 transition-colors hover:text-white">{t("footer.contact")}</Link>
           </div>
         </div>
       </div>
