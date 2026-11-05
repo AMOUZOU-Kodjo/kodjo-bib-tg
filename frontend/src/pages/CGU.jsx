@@ -1,130 +1,75 @@
+import { Trans, useTranslation } from "react-i18next";
 import LegalPage, { LegalSection } from "../components/layout/LegalPage";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 
 export default function CGU() {
+  const { t } = useTranslation();
   const { contactEmail, creditsParUpload, siteName } = useSiteSettings();
   return (
-    <LegalPage title="Conditions générales d'utilisation">
-      <LegalSection title="Objet">
-        <p>
-          Les présentes conditions générales d'utilisation (CGU) encadrent l'accès et l'utilisation de
-          la plateforme {siteName}, service gratuit de dépôt, de consultation et de partage de documents.
-          En créant un compte, vous acceptez sans réserve les présentes CGU.
-        </p>
+    <LegalPage title={t("legal.cguTitle")}>
+      <LegalSection title={t("legal.cgu_s1t")}>
+        <p>{t("legal.cgu_s1", { siteName })}</p>
       </LegalSection>
-
-      <LegalSection title="Accès au service">
-        <p>
-          La consultation du catalogue et des pages de documents est ouverte à tous. Le dépôt,
-          le téléchargement, les likes, les commentaires et le contact d'un auteur nécessitent
-          un compte dont l'adresse e-mail a été vérifiée.
-        </p>
-        <p>
-          Le service est fourni « en l'état », sans garantie de disponibilité continue. Des interruptions
-          pour maintenance peuvent survenir.
-        </p>
+      <LegalSection title={t("legal.cgu_s2t")}>
+        <p>{t("legal.cgu_s2a")}</p>
+        <p>{t("legal.cgu_s2b")}</p>
       </LegalSection>
-
-      <LegalSection title="Compte utilisateur">
+      <LegalSection title={t("legal.cgu_s3t")}>
         <ul className="list-disc pl-5 space-y-1">
-          <li>Vous vous engagez à fournir des informations exactes et à les tenir à jour.</li>
-          <li>Vos identifiants sont personnels : vous êtes responsable de leur confidentialité.</li>
-          <li>Un seul compte par personne est autorisé. Les comptes frauduleux peuvent être suspendus.</li>
-          <li>Vous pouvez supprimer votre compte à tout moment depuis votre profil ou en nous écrivant.</li>
+          <li>{t("legal.cgu_s3a")}</li>
+          <li>{t("legal.cgu_s3b")}</li>
+          <li>{t("legal.cgu_s3c")}</li>
+          <li>{t("legal.cgu_s3d")}</li>
         </ul>
       </LegalSection>
-
-      <LegalSection title="Règles de dépôt">
-        <p>En déposant un document, vous certifiez :</p>
+      <LegalSection title={t("legal.cgu_s4t")}>
+        <p>{t("legal.cgu_s4a")}</p>
         <ul className="list-disc pl-5 space-y-1">
-          <li>disposer des droits nécessaires pour le partager publiquement ;</li>
-          <li>que le document ne contient aucun contenu illicite, haineux, diffamatoire, violent ou pornographique ;</li>
-          <li>qu'il ne porte pas atteinte à la vie privée, au secret professionnel ou aux droits de tiers ;</li>
-          <li>qu'il ne contient pas de logiciel malveillant.</li>
+          <li>{t("legal.cgu_s4b")}</li>
+          <li>{t("legal.cgu_s4c")}</li>
+          <li>{t("legal.cgu_s4d")}</li>
+          <li>{t("legal.cgu_s4e")}</li>
         </ul>
-        <p>
-          Les formats et tailles acceptés sont indiqués sur la page de dépôt. La modération peut
-          refuser ou retirer tout contenu non conforme, sans préavis.
-        </p>
+        <p>{t("legal.cgu_s4f")}</p>
       </LegalSection>
-
-      <LegalSection title="Crédits et téléchargements">
+      <LegalSection title={t("legal.cgu_s5t")}>
         <p>
-          Chaque document déposé et accepté rapporte{" "}
-          <strong>{creditsParUpload} crédit{creditsParUpload > 1 ? "s" : ""}</strong>. Un téléchargement
-          coûte <strong>1 crédit</strong>, sauf pour vos propres documents et pour un document déjà
-          téléchargé. Les crédits sont attribués à titre personnel, n'ont aucune valeur monétaire
-          et ne sont ni échangeables ni transférables.
+          {t("legal.cgu_s5a")}{" "}
+          <strong>{creditsParUpload} {creditsParUpload > 1 ? t("legal.cgu_s5credits") : t("legal.cgu_s5credit")}</strong>.{" "}
+          {t("legal.cgu_s5b")} <strong>1 {t("legal.cgu_s5credit")}</strong>, {t("legal.cgu_s5c")}
         </p>
-        <p>
-          Toute tentative de contournement du système de crédits (comptes multiples, fichiers vides,
-          contenus dupliqués) peut entraîner la suspension du compte.
-        </p>
+        <p>{t("legal.cgu_s5d")}</p>
       </LegalSection>
-
-      <LegalSection title="Propriété intellectuelle et licence">
-        <p>
-          Vous conservez la propriété intellectuelle de vos documents. En les publiant, vous accordez
-          à {siteName} une licence mondiale, non exclusive et gratuite pour héberger, afficher et
-          distribuer ces documents aux utilisateurs de la plateforme, pour la durée de leur publication.
-        </p>
-        <p>
-          Cette licence prend fin lors de la suppression du document, sans remettre en cause les
-          téléchargements déjà effectués par des tiers.
-        </p>
+      <LegalSection title={t("legal.cgu_s6t")}>
+        <p>{t("legal.cgu_s6a", { siteName })}</p>
+        <p>{t("legal.cgu_s6b")}</p>
       </LegalSection>
-
-      <LegalSection title="Modération et signalement">
+      <LegalSection title={t("legal.cgu_s7t")}>
         <p>
-          L'équipe peut examiner, masquer ou supprimer tout document ou message signalé comme
-          non conforme. Pour signaler un contenu,{" "}
+          {t("legal.cgu_s7a")}{" "}
           {contactEmail ? (
-            <>écrivez à <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>{" "}</>
+            <>{t("legal.cgu_s7write")} <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>{" "}</>
           ) : (
-            "utilisez le formulaire de contact "
+            <>{t("legal.cgu_s7form")} </>
           )}
-          en précisant le lien concerné et le motif.
+          {t("legal.cgu_s7b")}
         </p>
       </LegalSection>
-
-      <LegalSection title="Responsabilité">
-        <p>
-          Les documents sont publiés sous la responsabilité de leurs auteurs. {siteName} ne garantit
-          ni leur exactitude, ni leur qualité, ni leur conformité à un usage particulier. L'utilisateur
-          utilise les documents téléchargés sous sa propre responsabilité.
-        </p>
-        <p>
-          L'éditeur ne pourra être tenu responsable des dommages indirects, pertes de données ou
-          préjudices résultant de l'utilisation ou de l'indisponibilité du service.
-        </p>
+      <LegalSection title={t("legal.cgu_s8t")}>
+        <p>{t("legal.cgu_s8a", { siteName })}</p>
+        <p>{t("legal.cgu_s8b")}</p>
       </LegalSection>
-
-      <LegalSection title="Suspension et résiliation">
+      <LegalSection title={t("legal.cgu_s9t")}><p>{t("legal.cgu_s9")}</p></LegalSection>
+      <LegalSection title={t("legal.cgu_s10t")}><p>{t("legal.cgu_s10")}</p></LegalSection>
+      <LegalSection title={t("legal.cgu_s11t")}>
         <p>
-          En cas de manquement aux présentes CGU, le compte peut être suspendu ou supprimé.
-          Vous pouvez résilier votre compte à tout moment ; les documents publiés seront supprimés
-          avec lui, sous réserve des obligations légales de conservation.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Modification des CGU">
-        <p>
-          Les CGU peuvent être modifiées pour s'adapter à l'évolution du service ou de la réglementation.
-          La date de mise à jour figure en haut de cette page. L'utilisation du service après une
-          modification vaut acceptation des nouvelles conditions.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Droit applicable et litiges">
-        <p>
-          Les présentes CGU sont soumises au droit français. En cas de litige, une solution amiable
-          sera recherchée en priorité{" "}
+          {t("legal.cgu_s11a")}{" "}
           {contactEmail ? (
-            <>via <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>{" "}</>
+            <>{t("legal.cgu_s11via")} <a href={`mailto:${contactEmail}`} className="text-teal-700 dark:text-teal-300 hover:underline">{contactEmail}</a>{" "}</>
           ) : (
-            "via le formulaire de contact "
+            <>{t("legal.cgu_s11via")} {t("legal.cgu_s7form")} </>
           )}
-          avant toute action judiciaire devant les juridictions compétentes.
+          {t("legal.cgu_s11b")}
         </p>
       </LegalSection>
     </LegalPage>
