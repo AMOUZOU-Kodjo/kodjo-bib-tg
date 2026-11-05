@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { getDocuments, getDocumentCategories } from "../api/documents";
+import { enhanceSearch } from "../api/ai";
 import { DocumentCard } from "../components/documents/DocumentCard";
-import { Search, FileText, Tag } from "lucide-react";
+import { Search, FileText, Tag, Sparkles, Loader2 } from "lucide-react";
 import { Input, SkeletonCard, EmptyState, Pagination, Reveal } from "../components/ui";
 import { formatCategoryName } from "../utils/document";
 import useSeo from "../hooks/useSeo";
@@ -26,6 +28,7 @@ export default function Documents() {
   const [tagOptions, setTagOptions] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(pageParam);
+  const [enhancing, setEnhancing] = useState(false);
 
   useSeo({
     title: "Bibliothèque numérique",
@@ -80,6 +83,28 @@ export default function Documents() {
     setPage(1);
   };
 
+  const handleEnhanceSearch = async () => {
+    if (!search.trim() || enhancing) return;
+    setEnhancing(true);
+    try {
+      const res = await enhanceSearch({ q: search.trim() });
+      const improved = res.data?.query?.trim();
+      if (improved) {
+        setSearch(improved);
+        const next = new URLSearchParams(searchParams);
+        next.set("q", improved);
+        next.set("page", "1");
+        setSearchParams(next);
+        setPage(1);
+        toast.success("Recherche améliorée avec l'IA");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Impossible d'améliorer la recherche");
+    } finally {
+      setEnhancing(false);
+    }
+  };
+
   const setCategory = (cat) => {
     const next = new URLSearchParams(searchParams);
     if (cat) next.set("category", cat);
@@ -116,9 +141,9 @@ export default function Documents() {
       <section className="mb-8">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-slate-100 mb-2">Bibliothèque numérique</h1>
         <p className="text-sm text-gray-600 dark:text-slate-400 mb-4 sm:text-base">{total} livre{total > 1 ? "s" : ""} dans la bibliothèque</p>
-        <form onSubmit={handleSearchSubmit} className="mb-4">
-          <div className="relative max-w-xl">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <form onSubmit={handleSearchSubmit} className="mb-4 flex max-w-xl items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
               placeholder="Rechercher un titre, un auteur, un mot-clé..."
               value={search}
@@ -126,6 +151,16 @@ export default function Documents() {
               className="pl-10"
             />
           </div>
+          <button
+            type="button"
+            onClick={handleEnhanceSearch}
+            disabled={!search.trim() || enhancing}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2.5 text-sm font-medium text-teal-800 transition-colors hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-teal-900/50 dark:bg-teal-950/30 dark:text-teal-200 dark:hover:bg-teal-950/50"
+            title="Améliorer la recherche avec l'IA"
+          >
+            {enhancing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            <span className="hidden sm:inline">IA</span>
+          </button>
         </form>
         <div className="text-xs text-gray-600 dark:text-slate-400 sm:text-sm">
           {total} livres · {categories.length} catégories
