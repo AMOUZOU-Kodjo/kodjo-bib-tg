@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ChevronRight, Mail, Send, CheckCircle, Clock, ShieldCheck, FileText,
   LifeBuoy, Flag, Lock, ArrowRight, AlertCircle
@@ -11,12 +12,6 @@ import { sendSupportMessage } from "../api/contact";
 
 const initialForm = { name: "", email: "", subject: "", message: "" };
 
-const topics = [
-  { label: "Support technique", icon: LifeBuoy },
-  { label: "Signaler un contenu", icon: Flag },
-  { label: "Données personnelles", icon: Lock }
-];
-
 const inputClass =
   "w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50/70 dark:bg-slate-900/70 px-4 py-3 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 transition focus:border-transparent focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-600";
 const labelClass = "mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500 dark:text-slate-400";
@@ -24,10 +19,17 @@ const labelClass = "mb-1.5 block text-[11px] font-semibold uppercase tracking-[0
 export default function Contact() {
   const { user } = useAuth();
   const { contactEmail, siteName } = useSiteSettings();
+  const { t } = useTranslation();
   const [form, setForm] = useState(initialForm);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+
+  const topics = [
+    { key: "support", label: t("contact.topics.support"), icon: LifeBuoy },
+    { key: "report", label: t("contact.topics.report"), icon: Flag },
+    { key: "data", label: t("contact.topics.data"), icon: Lock }
+  ];
 
   useEffect(() => {
     if (!user) return;
@@ -51,7 +53,7 @@ export default function Contact() {
   const submit = async (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.subject.trim() || !form.message.trim()) {
-      setError("Merci de remplir tous les champs.");
+      setError(t("contact.fillAll"));
       return;
     }
     setSending(true);
@@ -64,9 +66,9 @@ export default function Contact() {
         message: form.message.trim()
       });
       setSent(true);
-      toast.success("Message envoyé");
+      toast.success(t("contact.sentToast"));
     } catch (err) {
-      const message = err.response?.data?.error?.message || "Impossible d'envoyer le message. Réessayez plus tard.";
+      const message = err.response?.data?.error?.message || t("contact.sendError");
       setError(message);
       toast.error(message);
     } finally {
@@ -87,9 +89,9 @@ export default function Contact() {
   return (
     <div className="font-ui max-w-6xl mx-auto">
       <nav className="mb-5 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
-        <Link to="/" className="hover:text-teal-700 dark:hover:text-teal-300">Accueil</Link>
+        <Link to="/" className="hover:text-teal-700 dark:hover:text-teal-300">{t("contact.breadcrumbHome")}</Link>
         <ChevronRight className="w-4 h-4" />
-        <span className="text-gray-900 dark:text-slate-100">Contact</span>
+        <span className="text-gray-900 dark:text-slate-100">{t("contact.breadcrumb")}</span>
       </nav>
 
       <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-950 via-teal-950 to-emerald-950 shadow-2xl sm:rounded-[28px]">
@@ -101,16 +103,15 @@ export default function Contact() {
           <div className="flex flex-col p-5 sm:p-10 lg:p-12">
             <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-200 backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-teal-300" />
-              Contact
+              {t("contact.badge")}
             </span>
 
             <h1 className="font-display mt-5 text-3xl sm:text-4xl lg:text-[42px] font-semibold leading-tight text-white">
-              Une question, une remarque ?<br />
-              <span className="text-teal-300">Nous vous lisons.</span>
+              {t("contact.title")}<br />
+              <span className="text-teal-300">{t("contact.titleAccent")}</span>
             </h1>
             <p className="mt-4 max-w-lg text-sm sm:text-base leading-relaxed text-gray-300">
-              Support technique, signalement de contenu ou demande liée à vos données :
-              écrivez-nous, un membre de l'équipe vous répond personnellement.
+              {t("contact.desc")}
             </p>
 
             <ul className="mt-8 space-y-4 text-sm">
@@ -120,7 +121,7 @@ export default function Contact() {
                     <Mail className="h-4 w-4 text-teal-300" />
                   </span>
                   <div className="min-w-0">
-                    <p className="font-semibold text-white">Par e-mail</p>
+                    <p className="font-semibold text-white">{t("contact.byEmail")}</p>
                     <a href={`mailto:${contactEmail}`} className="break-all text-teal-200 hover:text-teal-100 hover:underline">
                       {contactEmail}
                     </a>
@@ -132,8 +133,8 @@ export default function Contact() {
                   <Clock className="h-4 w-4 text-teal-300" />
                 </span>
                 <div>
-                  <p className="font-semibold text-white">Délai de réponse</p>
-                  <p className="text-gray-300">Sous 48 à 72 heures ouvrées</p>
+                  <p className="font-semibold text-white">{t("contact.delay")}</p>
+                  <p className="text-gray-300">{t("contact.delayValue")}</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -141,16 +142,16 @@ export default function Contact() {
                   <ShieldCheck className="h-4 w-4 text-teal-300" />
                 </span>
                 <div>
-                  <p className="font-semibold text-white">Confidentialité</p>
-                  <p className="text-gray-300">Votre adresse n'est jamais publiée ni revendue.</p>
+                  <p className="font-semibold text-white">{t("contact.confidentiality")}</p>
+                  <p className="text-gray-300">{t("contact.confidentialityValue")}</p>
                 </div>
               </li>
             </ul>
 
             <div className="mt-auto pt-10">
-              <p className="text-xs uppercase tracking-[0.18em] text-gray-400">Bien à vous,</p>
-              <p className="font-signature mt-1 text-3xl sm:text-4xl text-teal-200">L'équipe {siteName}</p>
-              <p className="mt-1 text-xs text-gray-400">Plateforme de partage de documents</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-gray-400">{t("contact.signoff")}</p>
+              <p className="font-signature mt-1 text-3xl sm:text-4xl text-teal-200">{t("contact.team", { site: siteName })}</p>
+              <p className="mt-1 text-xs text-gray-400">{t("contact.platform")}</p>
             </div>
           </div>
 
@@ -161,37 +162,36 @@ export default function Contact() {
                   <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/40 ring-8 ring-teal-50/50">
                     <CheckCircle className="h-8 w-8 text-teal-700 dark:text-teal-300" />
                   </div>
-                  <h2 className="font-display text-2xl font-semibold text-gray-900 dark:text-slate-100">Message bien envoyé</h2>
+                  <h2 className="font-display text-2xl font-semibold text-gray-900 dark:text-slate-100">{t("contact.sentTitle")}</h2>
                   <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-gray-600 dark:text-slate-400">
-                    Merci, votre message a été transmis à l'équipe. Une réponse vous sera adressée
-                    à l'adresse indiquée.
+                    {t("contact.sentDesc")}
                   </p>
-                  <p className="font-signature mt-6 text-3xl text-teal-700 dark:text-teal-300">L'équipe {siteName}</p>
+                  <p className="font-signature mt-6 text-3xl text-teal-700 dark:text-teal-300">{t("contact.team", { site: siteName })}</p>
                   <button
                     onClick={reset}
                     className="mt-6 inline-flex items-center gap-2 rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800"
                   >
                     <Send className="h-4 w-4" />
-                    Envoyer un autre message
+                    {t("contact.sendAnother")}
                   </button>
                 </div>
               ) : (
                 <>
                   <div className="mb-6 flex items-start justify-between gap-3">
                     <div>
-                      <h2 className="font-display text-2xl font-semibold text-gray-900 dark:text-slate-100">Écrivez-nous</h2>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Tous les champs sont requis.</p>
+                      <h2 className="font-display text-2xl font-semibold text-gray-900 dark:text-slate-100">{t("contact.formTitle")}</h2>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{t("contact.formRequired")}</p>
                     </div>
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
                       <Lock className="h-3 w-3" />
-                      Sécurisé
+                      {t("contact.secure")}
                     </span>
                   </div>
 
                   <form onSubmit={submit} className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="contact-name" className={labelClass}>Nom</label>
+                        <label htmlFor="contact-name" className={labelClass}>{t("contact.name")}</label>
                         <input
                           id="contact-name"
                           value={form.name}
@@ -199,12 +199,12 @@ export default function Contact() {
                           maxLength={80}
                           autoComplete="name"
                           className={inputClass}
-                          placeholder="Votre nom"
+                          placeholder={t("contact.namePlaceholder")}
                           required
                         />
                       </div>
                       <div>
-                        <label htmlFor="contact-email" className={labelClass}>E-mail</label>
+                        <label htmlFor="contact-email" className={labelClass}>{t("contact.email")}</label>
                         <input
                           id="contact-email"
                           type="email"
@@ -213,14 +213,14 @@ export default function Contact() {
                           maxLength={160}
                           autoComplete="email"
                           className={inputClass}
-                          placeholder="vous@exemple.com"
+                          placeholder={t("contact.emailPlaceholder")}
                           required
                         />
                       </div>
                     </div>
 
                     <div>
-                      <span className={labelClass}>Motif</span>
+                      <span className={labelClass}>{t("contact.topic")}</span>
                       <div className="flex flex-wrap gap-2">
                         {topics.map(({ label, icon: Icon }) => {
                           const active = form.subject === label;
@@ -244,20 +244,20 @@ export default function Contact() {
                     </div>
 
                     <div>
-                      <label htmlFor="contact-subject" className={labelClass}>Sujet</label>
+                      <label htmlFor="contact-subject" className={labelClass}>{t("contact.subject")}</label>
                       <input
                         id="contact-subject"
                         value={form.subject}
                         onChange={update("subject")}
                         maxLength={150}
                         className={inputClass}
-                        placeholder="En quelques mots..."
+                        placeholder={t("contact.subjectPlaceholder")}
                         required
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="contact-message" className={labelClass}>Message</label>
+                      <label htmlFor="contact-message" className={labelClass}>{t("contact.message")}</label>
                       <textarea
                         id="contact-message"
                         value={form.message}
@@ -265,7 +265,7 @@ export default function Contact() {
                         rows={6}
                         maxLength={3000}
                         className={`${inputClass} resize-y`}
-                        placeholder="Décrivez votre demande avec le plus de détails possible..."
+                        placeholder={t("contact.messagePlaceholder")}
                         required
                       />
                       <p className="mt-1 text-right text-[11px] text-gray-400">{form.message.length}/3000</p>
@@ -284,13 +284,13 @@ export default function Contact() {
                       className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-700 to-emerald-700 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-teal-900/20 transition hover:from-teal-800 hover:to-emerald-800 disabled:opacity-50"
                     >
                       <Send className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
-                      {sending ? "Envoi en cours..." : "Envoyer le message"}
+                      {sending ? t("contact.sending") : t("contact.send")}
                     </button>
 
                     <p className="text-center text-[11px] leading-relaxed text-gray-400">
-                      En envoyant ce message, vous acceptez notre{" "}
+                      {t("contact.privacyNote")}{" "}
                       <Link to="/confidentialite" className="font-medium text-teal-700 dark:text-teal-300 hover:underline">
-                        politique de confidentialité
+                        {t("contact.privacyLink")}
                       </Link>.
                     </p>
                   </form>
@@ -306,12 +306,12 @@ export default function Contact() {
           <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/40">
             <FileText className="h-5 w-5 text-teal-700 dark:text-teal-300" />
           </div>
-          <h2 className="font-semibold text-gray-900 dark:text-slate-100">Contacter un auteur</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100">{t("contact.cardAuthorTitle")}</h2>
           <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
-            Ouvrez un document et utilisez le bouton « Contacter l'auteur ». Son e-mail reste privé.
+            {t("contact.cardAuthorDesc")}
           </p>
           <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-300">
-            Parcourir le catalogue <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            {t("contact.cardAuthorCta")} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </Link>
 
@@ -319,12 +319,12 @@ export default function Contact() {
           <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40">
             <ShieldCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
           </div>
-          <h2 className="font-semibold text-gray-900 dark:text-slate-100">Vos données</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100">{t("contact.cardDataTitle")}</h2>
           <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
-            Accès, rectification, suppression : consultez la politique de confidentialité et exercez vos droits.
+            {t("contact.cardDataDesc")}
           </p>
           <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-300">
-            Politique de confidentialité <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            {t("contact.cardDataCta")} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </Link>
 
@@ -332,12 +332,12 @@ export default function Contact() {
           <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800">
             <FileText className="h-5 w-5 text-slate-700 dark:text-slate-300" />
           </div>
-          <h2 className="font-semibold text-gray-900 dark:text-slate-100">Règles de la plateforme</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100">{t("contact.cardRulesTitle")}</h2>
           <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
-            Dépôt, crédits, droits d'auteur et modération : tout est détaillé dans les CGU.
+            {t("contact.cardRulesDesc")}
           </p>
           <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-300">
-            Lire les conditions <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            {t("contact.cardRulesCta")} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </Link>
       </section>

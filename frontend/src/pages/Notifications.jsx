@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { Bell, CheckCheck, FileText, MessageCircle, UserPlus, Flag, Inbox, ChevronRight } from "lucide-react";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../api/notifications";
@@ -17,6 +18,7 @@ const TYPE_ICONS = {
 const PAGE_SIZE = 20;
 
 export default function Notifications() {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [total, setTotal] = useState(0);
   const [unread, setUnread] = useState(0);
@@ -24,8 +26,8 @@ export default function Notifications() {
   const [loading, setLoading] = useState(true);
 
   useSeo({
-    title: "Notifications",
-    description: "Vos notifications sur la plateforme.",
+    title: t("notifications.title"),
+    description: t("notifications.seoDesc"),
     noIndex: true
   });
 
@@ -40,7 +42,7 @@ export default function Notifications() {
         setUnread(res.data.unread || 0);
       })
       .catch(() => {
-        if (active) toast.error("Impossible de charger vos notifications");
+        if (active) toast.error(t("notifications.loadError"));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -48,7 +50,7 @@ export default function Notifications() {
     return () => {
       active = false;
     };
-  }, [page]);
+  }, [page, t]);
 
   const openNotification = async (notification) => {
     if (!notification.read_at) {
@@ -64,7 +66,7 @@ export default function Notifications() {
       setUnread(0);
       setNotifications((list) => list.map((item) => ({ ...item, read_at: item.read_at || new Date().toISOString() })));
     } catch {
-      toast.error("Impossible de marquer les notifications comme lues");
+      toast.error(t("notifications.markError"));
     }
   };
 
@@ -76,10 +78,10 @@ export default function Notifications() {
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">
             <Bell className="h-6 w-6 text-teal-700 dark:text-teal-300" />
-            Notifications
+            {t("notifications.title")}
           </h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
-            {unread > 0 ? `${unread} notification${unread > 1 ? "s" : ""} non lue${unread > 1 ? "s" : ""}` : "Tout est à jour."}
+            {unread > 0 ? t("notifications.unread", { count: unread }) : t("notifications.allRead")}
           </p>
         </div>
         {unread > 0 && (
@@ -88,7 +90,7 @@ export default function Notifications() {
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900"
           >
             <CheckCheck className="h-4 w-4" />
-            Tout marquer comme lu
+            {t("notifications.markAll")}
           </button>
         )}
       </header>
@@ -96,7 +98,7 @@ export default function Notifications() {
       {loading ? (
         <div className="flex justify-center py-12"><Spinner size="lg" /></div>
       ) : notifications.length === 0 ? (
-        <EmptyState message="Aucune notification pour le moment" icon={Inbox} />
+        <EmptyState message={t("notifications.empty")} icon={Inbox} />
       ) : (
         <div className="space-y-2">
           {notifications.map((notification) => {

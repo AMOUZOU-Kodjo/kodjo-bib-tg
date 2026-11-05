@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
   Bell,
@@ -21,6 +22,7 @@ import { useAuth } from "../../context/AuthContext";
 export default function CommandPalette({ open, onClose }) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -29,23 +31,23 @@ export default function CommandPalette({ open, onClose }) {
 
   const navItems = useMemo(() => {
     const items = [
-      { label: "Accueil", to: "/", icon: Home },
-      { label: "Bibliothèque", to: "/documents", icon: BookOpen },
-      { label: "À propos", to: "/a-propos", icon: Info },
-      { label: "Contact", to: "/contact", icon: Mail }
+      { label: t("palette.home"), to: "/", icon: Home },
+      { label: t("palette.library"), to: "/documents", icon: BookOpen },
+      { label: t("palette.about"), to: "/a-propos", icon: Info },
+      { label: t("palette.contact"), to: "/contact", icon: Mail }
     ];
     if (user) {
-      items.splice(2, 0, { label: "Notifications", to: "/notifications", icon: Bell });
-      items.splice(2, 0, { label: "Mon profil", to: "/profile", icon: User });
+      items.splice(2, 0, { label: t("palette.notifications"), to: "/notifications", icon: Bell });
+      items.splice(2, 0, { label: t("palette.profile"), to: "/profile", icon: User });
       if (user.email_verified) {
-        items.splice(2, 0, { label: "Déposer un document", to: "/upload", icon: Upload });
+        items.splice(2, 0, { label: t("palette.upload"), to: "/upload", icon: Upload });
       }
       if (user.role === "admin") {
-        items.push({ label: "Administration", to: "/admin", icon: Shield });
+        items.push({ label: t("palette.admin"), to: "/admin", icon: Shield });
       }
     }
     return items;
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     if (!open) return;
@@ -141,11 +143,11 @@ export default function CommandPalette({ open, onClose }) {
       className="fixed inset-0 z-[80] flex items-start justify-center px-3 pt-[12vh] sm:pt-[15vh]"
       role="dialog"
       aria-modal="true"
-      aria-label="Palette de commandes"
+      aria-label={t("palette.aria")}
     >
       <button
         type="button"
-        aria-label="Fermer la palette"
+        aria-label={t("palette.close")}
         onClick={onClose}
         className="absolute inset-0 cursor-default bg-slate-950/60 backdrop-blur-sm"
       />
@@ -158,14 +160,14 @@ export default function CommandPalette({ open, onClose }) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Rechercher un document ou naviguer…"
+            placeholder={t("palette.placeholder")}
             className="h-14 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-slate-100"
           />
           {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-gray-400" />}
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fermer"
+            aria-label={t("common.close")}
             className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <X className="h-4 w-4" />
@@ -175,7 +177,7 @@ export default function CommandPalette({ open, onClose }) {
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {results.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-gray-500 dark:text-slate-400">
-              {query.trim().length > 0 ? "Aucun résultat" : "Commencez à taper pour rechercher…"}
+              {query.trim().length > 0 ? t("palette.noResults") : t("palette.startTyping")}
             </p>
           ) : (
             results.map((item, index) => {
@@ -210,8 +212,8 @@ export default function CommandPalette({ open, onClose }) {
         </div>
 
         <div className="flex items-center justify-between border-t border-gray-100 px-4 py-2 text-[11px] text-gray-400 dark:border-slate-700 dark:text-slate-500">
-          <span>↑ ↓ naviguer · ↵ ouvrir</span>
-          <span className="rounded border border-gray-200 px-1.5 py-0.5 dark:border-slate-700">Échap</span>
+          <span>{t("palette.navigate")}</span>
+          <span className="rounded border border-gray-200 px-1.5 py-0.5 dark:border-slate-700">{t("palette.escape")}</span>
         </div>
       </div>
     </div>

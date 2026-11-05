@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Download, Share2, Smartphone, X } from "lucide-react";
 
 function isStandalone() {
@@ -16,6 +17,7 @@ const REMIND_DAYS = 7;
 
 export default function InstallBanner() {
   const location = useLocation();
+  const { t } = useTranslation();
   const [promptEvent, setPromptEvent] = useState(null);
   const [installed, setInstalled] = useState(isStandalone);
   const [dismissed, setDismissed] = useState(() => {
@@ -117,10 +119,10 @@ export default function InstallBanner() {
               </div>
               <div>
                 <p className="text-sm font-semibold leading-tight">
-                  Installer Archives de Documents
+                  {t("install.title")}
                 </p>
                 <p className="text-xs text-white/80">
-                  Accès plus rapide, hors-ligne et depuis votre écran d'accueil
+                  {t("install.desc")}
                 </p>
               </div>
             </div>
@@ -131,12 +133,12 @@ export default function InstallBanner() {
                 className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-teal-700 transition-colors hover:bg-white/90 dark:text-teal-800"
               >
                 <Download className="h-4 w-4" />
-                Installer
+                {t("install.install")}
               </button>
               <button
                 type="button"
                 onClick={dismiss}
-                aria-label="Masquer cette bannière pour 7 jours"
+                aria-label={t("install.hideAria")}
                 className="rounded-lg p-1.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
               >
                 <X className="h-4 w-4" />
@@ -160,12 +162,12 @@ export default function InstallBanner() {
           >
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-slate-700">
               <h2 id="install-banner-title" className="font-semibold text-gray-900 dark:text-slate-100">
-                Installer l'application
+                {t("install.modalTitle")}
               </h2>
               <button
                 type="button"
                 onClick={() => setHelpOpen(false)}
-                aria-label="Fermer"
+                aria-label={t("install.close")}
                 className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300"
               >
                 <X className="h-5 w-5" />
@@ -176,28 +178,28 @@ export default function InstallBanner() {
                 <>
                   <p className="flex items-center gap-2 font-medium text-gray-800 dark:text-slate-200">
                     <Share2 className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-                    Sur iPhone ou iPad (Safari)
+                    {t("install.iosTitle")}
                   </p>
                   <ol className="list-decimal space-y-1.5 pl-5">
-                    <li>Ouvre ce site dans Safari.</li>
-                    <li>Touche le bouton Partager.</li>
-                    <li>Choisis « Sur l'écran d'accueil ».</li>
-                    <li>Valide avec « Ajouter ».</li>
+                    <li>{t("install.ios1")}</li>
+                    <li>{t("install.ios2")}</li>
+                    <li>{t("install.ios3")}</li>
+                    <li>{t("install.ios4")}</li>
                   </ol>
                 </>
               ) : (
                 <>
                   <p className="flex items-center gap-2 font-medium text-gray-800 dark:text-slate-200">
                     <Smartphone className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-                    Depuis ton navigateur
+                    {t("install.browserTitle")}
                   </p>
                   <ol className="list-decimal space-y-1.5 pl-5">
-                    <li>Ouvre le menu du navigateur (les trois points).</li>
-                    <li>Choisis « Installer l'application » ou « Ajouter à l'écran d'accueil ».</li>
-                    <li>Confirme l'installation.</li>
+                    <li>{t("install.browser1")}</li>
+                    <li>{t("install.browser2")}</li>
+                    <li>{t("install.browser3")}</li>
                   </ol>
                   <p className="text-xs text-gray-500 dark:text-slate-400">
-                    Sur ordinateur, l'icône d'installation apparaît aussi dans la barre d'adresse.
+                    {t("install.desktopNote")}
                   </p>
                 </>
               )}

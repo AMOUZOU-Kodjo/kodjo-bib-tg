@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { BookOpen, Calendar, FileText, UserCheck, UserPlus } from "lucide-react";
 import { getAuthor, getAuthorDocuments, toggleFollow } from "../api/users";
@@ -13,6 +14,7 @@ import useSeo from "../hooks/useSeo";
 export default function Author() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [author, setAuthor] = useState(null);
   const [docs, setDocs] = useState([]);
   const [total, setTotal] = useState(0);
@@ -22,10 +24,8 @@ export default function Author() {
   const [followingBusy, setFollowingBusy] = useState(false);
 
   useSeo({
-    title: author ? `${author.display_name} — Auteur` : "Auteur",
-    description: author
-      ? `Découvrez les ${author.document_count} document${author.document_count > 1 ? "s" : ""} public${author.document_count > 1 ? "s" : ""} publiés par ${author.display_name}.`
-      : "Découvrez les publications d'un auteur de la bibliothèque.",
+    title: author ? t("author.seoTitle", { name: author.display_name }) : "Author",
+    description: author ? t("author.seoDesc", { name: author.display_name }) : "",
     url: `${window.location.origin}/authors/${id}`
   });
 
@@ -35,10 +35,10 @@ export default function Author() {
     getAuthor(id)
       .then((res) => setAuthor(res.data.author))
       .catch((err) => {
-        toast.error(err.response?.data?.error?.message || "Auteur introuvable");
+        toast.error(err.response?.data?.error?.message || t("author.notFoundToast"));
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     let active = true;
@@ -63,7 +63,7 @@ export default function Author() {
   const follow = async () => {
     if (!user) return;
     if (!user.email_verified) {
-      toast.error("Vérifiez votre email pour suivre cet auteur");
+      toast.error(t("author.verifyToFollow"));
       return;
     }
     setFollowingBusy(true);
@@ -74,9 +74,9 @@ export default function Author() {
         is_following: res.data.following,
         follower_count: res.data.follower_count
       }));
-      toast.success(res.data.following ? "Vous suivez cet auteur" : "Vous ne suivez plus cet auteur");
+      toast.success(res.data.following ? t("author.followed") : t("author.unfollowed"));
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || "Impossible de suivre cet auteur");
+      toast.error(err.response?.data?.error?.message || t("author.followError"));
     } finally {
       setFollowingBusy(false);
     }
@@ -92,7 +92,7 @@ export default function Author() {
     return <div className="flex justify-center py-16"><Spinner size="lg" /></div>;
   }
   if (!author) {
-    return <EmptyState message="Auteur introuvable" icon={FileText} />;
+    return <EmptyState message={t("author.notFound")} icon={FileText} />;
   }
 
   return (
@@ -109,14 +109,14 @@ export default function Author() {
                 <h1 className="truncate text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">{author.display_name}</h1>
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
                   <Calendar className="h-3.5 w-3.5" />
-                  Membre depuis {formatDate(author.created_at)}
+                  {t("author.memberSince", { date: formatDate(author.created_at) })}
                 </p>
               </div>
             </div>
 
             {author.is_self ? (
               <Link to="/profile" className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900 sm:w-auto">
-                Mon profil
+                {t("author.myProfile")}
               </Link>
             ) : user ? (
               <button
@@ -129,12 +129,12 @@ export default function Author() {
                 }`}
               >
                 {author.is_following ? <UserCheck className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-                {author.is_following ? "Abonné" : "Suivre"}
+                {author.is_following ? t("author.following") : t("author.follow")}
               </button>
             ) : (
               <Link to="/login" className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-800 sm:w-auto">
                 <UserPlus className="h-4 w-4" />
-                Se connecter pour suivre
+                {t("author.loginToFollow")}
               </Link>
             )}
           </div>
@@ -142,24 +142,24 @@ export default function Author() {
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-gray-100 dark:border-slate-700 pt-4 text-sm">
             <span className="inline-flex items-center gap-1.5 text-gray-600 dark:text-slate-400">
               <BookOpen className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-              <strong className="text-gray-900 dark:text-slate-100">{author.document_count}</strong> document{author.document_count > 1 ? "s" : ""} public{author.document_count > 1 ? "s" : ""}
+              <strong className="text-gray-900 dark:text-slate-100">{author.document_count}</strong> {t(author.document_count > 1 ? "author.docCount_plural" : "author.docCount")}
             </span>
             <span className="text-gray-600 dark:text-slate-400">
-              <strong className="text-gray-900 dark:text-slate-100">{author.follower_count}</strong> abonné{author.follower_count > 1 ? "s" : ""}
+              <strong className="text-gray-900 dark:text-slate-100">{author.follower_count}</strong> {t(author.follower_count > 1 ? "author.followers_plural" : "author.followers")}
             </span>
           </div>
         </div>
       </section>
 
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Publications</h2>
-        <span className="text-sm text-gray-500 dark:text-slate-400">{total} document{total > 1 ? "s" : ""}</span>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">{t("author.publications")}</h2>
+        <span className="text-sm text-gray-500 dark:text-slate-400">{total}</span>
       </div>
 
       {docsLoading ? (
         <div className="flex justify-center py-12"><Spinner size="lg" /></div>
       ) : docs.length === 0 ? (
-        <EmptyState message="Cet auteur n'a publié aucun document public" icon={FileText} />
+        <EmptyState message={t("author.noPublicDocs")} icon={FileText} />
       ) : (
         <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
           {docs.map((doc) => (
