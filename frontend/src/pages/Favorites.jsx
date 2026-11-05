@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Heart } from "lucide-react";
 import { getMyFavorites } from "../api/users";
 import { DocumentCard } from "../components/documents/DocumentCard";
@@ -8,13 +9,14 @@ import { SkeletonCard } from "../components/ui";
 
 export default function Favorites() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useSeo({
-    title: "Mes favoris",
-    description: "Retrouvez tous vos documents mis en favoris sur Archives de Documents.",
+    title: t("favorites.title"),
+    description: t("favorites.seoDesc"),
     url: `${window.location.origin}/favorites`
   });
 
@@ -35,7 +37,7 @@ export default function Favorites() {
           navigate("/login?next=/favorites");
           return;
         }
-        setError(err.response?.data?.error?.message || "Impossible de charger vos favoris");
+        setError(err.response?.data?.error?.message || t("favorites.error"));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -44,17 +46,17 @@ export default function Favorites() {
     return () => {
       active = false;
     };
-  }, [navigate]);
+  }, [navigate, t]);
 
   return (
     <div className="space-y-6">
       <header className="space-y-2">
         <div className="flex items-center gap-2">
           <Heart className="h-5 w-5 text-rose-500" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">Mes favoris</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">{t("favorites.title")}</h1>
         </div>
         <p className="text-sm text-gray-600 dark:text-slate-400">
-          Retrouvez tous les documents que vous avez ajoutés à vos favoris.
+          {t("favorites.desc")}
         </p>
       </header>
 
@@ -73,9 +75,9 @@ export default function Favorites() {
       ) : favorites.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-900">
           <Heart className="mb-3 h-10 w-10 text-gray-400 dark:text-slate-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Aucun favori pour le moment</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{t("favorites.emptyTitle")}</h2>
           <p className="mt-1 max-w-md text-sm text-gray-600 dark:text-slate-400">
-            Parcourez les documents et cliquez sur le cœur pour les ajouter à vos favoris.
+            {t("favorites.emptyDesc")}
           </p>
         </div>
       ) : (

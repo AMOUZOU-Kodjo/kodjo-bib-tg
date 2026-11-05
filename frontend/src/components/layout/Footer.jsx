@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Heart, Mail, Cookie } from "lucide-react";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import InstallPWA from "./InstallPWA";
 import SocialLinks from "./SocialLinks";
 
 export default function Footer() {
+  const { t } = useTranslation();
   const { siteName, siteTagline, allowRegistrations } = useSiteSettings();
   const reopenCookies = () => {
     window.dispatchEvent(new Event("open-cookie-consent"));
@@ -29,13 +31,13 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-white/80 leading-relaxed mb-5 max-w-lg">
-              {siteTagline || "Plateforme collaborative gratuite d'archivage et de partage de documents."}
+              {siteTagline || t("footer.tagline")}
             </p>
             <p className="text-sm text-white/70 flex items-center gap-1.5">
-              Fait avec <Heart className="w-4 h-4 text-rose-400 fill-rose-400/20" /> pour la communauté
+              {t("footer.madeWith")} <Heart className="w-4 h-4 text-rose-400 fill-rose-400/20" /> {t("footer.forCommunity")}
             </p>
             <div className="mt-5">
-              <p className="mb-3 text-sm font-semibold text-white/90">Suivez-nous</p>
+              <p className="mb-3 text-sm font-semibold text-white/90">{t("footer.followUs")}</p>
               <SocialLinks />
             </div>
             <div className="mt-4">
@@ -44,70 +46,70 @@ export default function Footer() {
           </div>
 
           <div className="col-span-1 min-w-0 lg:col-span-2">
-            <h3 className="mb-3 text-base font-semibold tracking-wide text-white lg:mb-4">Navigation</h3>
+            <h3 className="mb-3 text-base font-semibold tracking-wide text-white lg:mb-4">{t("footer.navigation")}</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link to="/" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  Accueil
+                  {t("footer.home")}
                 </Link>
               </li>
               <li>
                 <Link to="/documents" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  Catalogue
+                  {t("footer.catalog")}
                 </Link>
               </li>
               <li>
                 <Link to="/upload" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  Déposer un document
+                  {t("footer.upload")}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div className="col-span-1 min-w-0 lg:col-span-2">
-            <h3 className="mb-3 text-base font-semibold tracking-wide text-white lg:mb-4">Compte</h3>
+            <h3 className="mb-3 text-base font-semibold tracking-wide text-white lg:mb-4">{t("footer.account")}</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link to="/login" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  Connexion
+                  {t("footer.login")}
                 </Link>
               </li>
               {allowRegistrations && (
                 <li>
                   <Link to="/register" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                    Inscription
+                    {t("footer.register")}
                   </Link>
                 </li>
               )}
               <li>
                 <Link to="/profile" className="inline-flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:w-auto lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  Mon profil
+                  {t("footer.profile")}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div className="col-span-2 lg:col-span-3">
-            <h3 className="mb-3 text-center text-base font-semibold tracking-wide text-white lg:mb-4 lg:text-left">Informations légales</h3>
+            <h3 className="mb-3 text-center text-base font-semibold tracking-wide text-white lg:mb-4 lg:text-left">{t("footer.legal")}</h3>
             <ul className="flex flex-wrap justify-center gap-2 lg:block lg:space-y-2.5">
               <li>
                 <Link to="/a-propos" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  À propos
+                  {t("footer.about")}
                 </Link>
               </li>
               <li>
                 <Link to="/mentions-legales" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  Mentions légales
+                  {t("footer.legalNotice")}
                 </Link>
               </li>
               <li>
                 <Link to="/confidentialite" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  Confidentialité
+                  {t("footer.privacy")}
                 </Link>
               </li>
               <li>
                 <Link to="/cgu" className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent">
-                  Conditions d'utilisation
+                  {t("footer.terms")}
                 </Link>
               </li>
               <li>
@@ -116,7 +118,7 @@ export default function Footer() {
                   className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent"
                 >
                   <Mail className="w-3.5 h-3.5" />
-                  Nous contacter
+                  {t("footer.contact")}
                 </Link>
               </li>
               <li>
@@ -125,7 +127,7 @@ export default function Footer() {
                   className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-white/80 transition-colors duration-200 hover:bg-white/20 hover:text-white lg:bg-transparent lg:px-0 lg:py-0 lg:hover:bg-transparent"
                 >
                   <Cookie className="w-3.5 h-3.5" />
-                  Gérer les cookies
+                  {t("footer.cookies")}
                 </button>
               </li>
             </ul>
@@ -134,7 +136,7 @@ export default function Footer() {
 
         <div className="border-t border-white/15 mt-10 pt-6">
           <p className="text-center text-sm text-white/60">
-            © {new Date().getFullYear()} {siteName}. Tous droits réservés.
+            © {new Date().getFullYear()} {siteName}. {t("footer.rights")}
           </p>
         </div>
       </div>

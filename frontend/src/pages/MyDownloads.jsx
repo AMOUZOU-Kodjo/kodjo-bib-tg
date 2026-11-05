@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Download } from "lucide-react";
 import { getMyDownloads } from "../api/users";
 import { DocumentCard } from "../components/documents/DocumentCard";
@@ -8,13 +9,14 @@ import { SkeletonCard } from "../components/ui";
 
 export default function MyDownloads() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [downloads, setDownloads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useSeo({
-    title: "Mes téléchargements",
-    description: "Retrouvez l'historique de vos téléchargements sur Archives de Documents.",
+    title: t("downloads.title"),
+    description: t("downloads.seoDesc"),
     url: `${window.location.origin}/downloads`
   });
 
@@ -35,7 +37,7 @@ export default function MyDownloads() {
           navigate("/login?next=/downloads");
           return;
         }
-        setError(err.response?.data?.error?.message || "Impossible de charger vos téléchargements");
+        setError(err.response?.data?.error?.message || t("downloads.error"));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -44,17 +46,17 @@ export default function MyDownloads() {
     return () => {
       active = false;
     };
-  }, [navigate]);
+  }, [navigate, t]);
 
   return (
     <div className="space-y-6">
       <header className="space-y-2">
         <div className="flex items-center gap-2">
           <Download className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">Mes téléchargements</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">{t("downloads.title")}</h1>
         </div>
         <p className="text-sm text-gray-600 dark:text-slate-400">
-          Retrouvez tous les documents que vous avez téléchargés.
+          {t("downloads.desc")}
         </p>
       </header>
 
@@ -73,9 +75,9 @@ export default function MyDownloads() {
       ) : downloads.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-900">
           <Download className="mb-3 h-10 w-10 text-gray-400 dark:text-slate-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Aucun téléchargement</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{t("downloads.emptyTitle")}</h2>
           <p className="mt-1 max-w-md text-sm text-gray-600 dark:text-slate-400">
-            Parcourez la bibliothèque et téléchargez des documents pour les retrouver ici.
+            {t("downloads.emptyDesc")}
           </p>
         </div>
       ) : (
