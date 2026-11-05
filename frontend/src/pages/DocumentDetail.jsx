@@ -5,9 +5,10 @@ import {
   getDocumentViewFile, fetchDocumentViewBlob, getDocumentShareLink, createDocumentShareLink,
   toggleFavorite
 } from "../api/documents";
+import { summarizeDocument } from "../api/ai";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { FileText, Heart, Eye, Download, Calendar, User, ChevronRight, Share2, Maximize2, Mail, Lock, Shield, Bookmark, Flag } from "lucide-react";
+import { FileText, Heart, Eye, Download, Calendar, User, ChevronRight, Share2, Maximize2, Mail, Lock, Shield, Bookmark, Flag, Sparkles, Loader2 } from "lucide-react";
 import { formatSize, formatDate } from "../utils/format";
 import { ReadingProgress } from "../components/ui";
 import ContactModal from "../components/contact/ContactModal";
@@ -35,6 +36,8 @@ export default function DocumentDetail() {
   const [shareOpen, setShareOpen] = useState(false);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [creditsOpen, setCreditsOpen] = useState(false);
+  const [summary, setSummary] = useState("");
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const { user, setUser } = useAuth();
 
   useSeo({
@@ -54,6 +57,8 @@ export default function DocumentDetail() {
     setShareOpen(false);
     setReportOpen(false);
     setCreditsOpen(false);
+    setSummary("");
+    setSummaryLoading(false);
     if (previewBlobUrl) {
       URL.revokeObjectURL(previewBlobUrl);
       setPreviewBlobUrl(null);
@@ -173,6 +178,24 @@ export default function DocumentDetail() {
       toast.success(res.data.favorited ? "Ajouté à votre liste de lecture" : "Retiré de votre liste de lecture");
     } catch (err) {
       toast.error(err.response?.data?.error?.message || "Impossible de mettre à jour les favoris");
+    }
+  };
+
+  const handleSummarize = async () => {
+    if (summary || summaryLoading) return;
+    setSummaryLoading(true);
+    try {
+      const res = await summarizeDocument({
+        title: doc?.title,
+        description: doc?.description,
+        category: doc?.category,
+        filename: doc?.filename
+      });
+      setSummary(res.data?.summary || "");
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || "Impossible de générer le résumé");
+    } finally {
+      setSummaryLoading(false);
     }
   };
 
@@ -433,10 +456,36 @@ export default function DocumentDetail() {
             </div>
           </section>
 
-          {doc.description && (
+          {(doc.description || summary || summaryLoading) && (
             <section className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
-              <h2 className="mb-3 text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">À propos de ce livre</h2>
-              <p className="text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{doc.description}</p>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">À propos de ce livre</h2>
+                {!summary && !summaryLoading && (doc.description || doc.title) && (
+                  <button
+                    type="button"
+                    onClick={handleSummarize}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/40"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Résumé IA
+                  </button>
+                )}
+              </div>
+              {summaryLoading && (
+                <div className="mb-3 flex items-center gap-2 text-sm text-teal-700 dark:text-teal-300">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Génération du résumé...
+                </div>
+              )}
+              {summary && (
+                <div className="mb-4 rounded-xl border border-teal-100 bg-teal-50/70 p-4 dark:border-teal-900/40 dark:bg-teal-950/20">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-300">Résumé IA</p>
+                  <p className="text-sm leading-relaxed text-gray-800 dark:text-slate-200">{summary}</p>
+                </div>
+              )}
+              {doc.description && (
+                <p className="text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{doc.description}</p>
+              )}
             </section>
           )}
 
