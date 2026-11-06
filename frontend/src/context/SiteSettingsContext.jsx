@@ -30,7 +30,13 @@ export function SiteSettingsProvider({ children }) {
   }, [refreshSettings]);
 
   useEffect(() => {
-    document.title = settings.siteName === "Archives" ? "Archives de Documents" : settings.siteName;
+    const baseTitle = settings.siteName === "Archives" ? "Archives de Documents" : settings.siteName;
+    if (!baseTitle) return;
+    const current = document.title;
+    const isBaseTitle = !current || current === "Archives" ||
+      current === "Archives de Documents" ||
+      current === "Archives de Documents — Partage et archivage collaboratif";
+    if (isBaseTitle) document.title = baseTitle;
   }, [settings.siteName]);
 
   return (

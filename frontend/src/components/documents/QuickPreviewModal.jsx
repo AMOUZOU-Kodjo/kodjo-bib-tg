@@ -30,6 +30,7 @@ function PreviewContent({ mimeType, url }) {
 }
 
 export default function QuickPreviewModal({ doc, onClose }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [blobUrl, setBlobUrl] = useState(null);
   const [loading, setLoading] = useState(false);

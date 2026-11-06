@@ -29,6 +29,7 @@ export default function Documents() {
   const [categories, setCategories] = useState([]);
   const [tagOptions, setTagOptions] = useState([]);
   const [total, setTotal] = useState(0);
+  const [catalogTotal, setCatalogTotal] = useState(0);
   const [page, setPage] = useState(pageParam);
   const [enhancing, setEnhancing] = useState(false);
 
@@ -43,12 +44,12 @@ export default function Documents() {
       .then((res) => {
         setCategories(res.data.categories || []);
         setTagOptions(res.data.tags || []);
-        setTotal(res.data.total || 0);
+        setCatalogTotal(res.data.total || 0);
       })
       .catch(() => {
         setCategories([]);
         setTagOptions([]);
-        setTotal(0);
+        setCatalogTotal(0);
       });
   }, []);
 
@@ -66,20 +67,25 @@ export default function Documents() {
 
   useEffect(() => {
     setLoading(true);
-    getDocuments({ q: search, category: categoryParam || undefined, tag: tagParam || undefined, sort, page, limit: CATALOG_DOCUMENTS_PER_PAGE })
+    getDocuments({ q: qParam || undefined, category: categoryParam || undefined, tag: tagParam || undefined, sort, page, limit: CATALOG_DOCUMENTS_PER_PAGE })
       .then((res) => {
         setDocs(res.data.documents || []);
         if (res.data.total !== undefined) setTotal(res.data.total);
       })
       .catch(() => setDocs([]))
       .finally(() => setLoading(false));
-  }, [search, categoryParam, tagParam, sort, page]);
+  }, [qParam, categoryParam, tagParam, sort, page]);
+
+  const applySearchParam = (next) => {
+    const trimmed = search.trim();
+    if (trimmed) next.set("q", trimmed);
+    else next.delete("q");
+    return next;
+  };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    const next = new URLSearchParams(searchParams);
-    if (search.trim()) next.set("q", search.trim());
-    else next.delete("q");
+    const next = applySearchParam(new URLSearchParams(searchParams));
     next.set("page", "1");
     setSearchParams(next);
     setPage(1);
@@ -108,7 +114,7 @@ export default function Documents() {
   };
 
   const setCategory = (cat) => {
-    const next = new URLSearchParams(searchParams);
+    const next = applySearchParam(new URLSearchParams(searchParams));
     if (cat) next.set("category", cat);
     else next.delete("category");
     next.set("page", "1");
@@ -117,7 +123,7 @@ export default function Documents() {
   };
 
   const setTag = (tag) => {
-    const next = new URLSearchParams(searchParams);
+    const next = applySearchParam(new URLSearchParams(searchParams));
     if (tag) next.set("tag", tag);
     else next.delete("tag");
     next.set("page", "1");
@@ -133,8 +139,9 @@ export default function Documents() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const featured = useMemo(() => docs.slice(0, 5), [docs]);
-  const list = useMemo(() => (docs.length > 5 ? docs.slice(5) : []), [docs]);
+  const featured = useMemo(() => (page === 1 ? docs.slice(0, 5) : []), [docs, page]);
+  const list = useMemo(() => (page === 1 ? docs.slice(5) : docs), [docs, page]);
+  const totalPages = Math.max(1, Math.ceil(total / CATALOG_DOCUMENTS_PER_PAGE));
 
   const sortOptions = [
     { value: "recent", label: t("documents.sortRecent") },
@@ -174,10 +181,11 @@ export default function Documents() {
               key={opt.value}
               type="button"
               onClick={() => {
-                const next = new URLSearchParams(searchParams);
+                const next = applySearchParam(new URLSearchParams(searchParams));
                 next.set("sort", opt.value);
                 next.set("page", "1");
                 setSearchParams(next);
+                setPage(1);
               }}
               className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${sort === opt.value ? "bg-teal-700 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"}`}
             >
@@ -192,7 +200,7 @@ export default function Documents() {
           onClick={() => setCategory("")}
           className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${!categoryParam ? "bg-teal-700 text-white shadow-sm" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"}`}
         >
-          {t("documents.all")} {total}
+          {t("documents.all")} {catalogTotal || total}
         </button>
         {categories.map((c) => (
           <button
@@ -266,7 +274,7 @@ export default function Documents() {
             </section>
           )}
 
-          <Pagination page={page} total={total} perPage={CATALOG_DOCUMENTS_PER_PAGE} onPageChange={goToPage} />
+          <Pagination page={page} totalPages={totalPages} onPageChange={goToPage} />
         </>
       )}
     </div>

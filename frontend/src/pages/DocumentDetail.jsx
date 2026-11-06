@@ -197,7 +197,7 @@ export default function DocumentDetail() {
         title: doc?.title,
         description: doc?.description,
         category: doc?.category,
-        filename: doc?.filename
+        filename: doc?.original_filename
       });
       setSummary(res.data?.summary || "");
     } catch (err) {
@@ -653,21 +653,21 @@ export default function DocumentDetail() {
             </div>
             <h2 id="credits-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-slate-100">{t("document.insufficientCredits")}</h2>
             <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-slate-400">
-              Chaque document déposé vous offre 2 téléchargements gratuits. Déposez un document pour continuer à télécharger.
+              {t("document.creditsInfo")}
             </p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row-reverse">
               <Link
                 to="/upload"
                 className="inline-flex flex-1 items-center justify-center rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-800"
               >
-                Déposer un document
+                {t("document.uploadDocument")}
               </Link>
               <button
                 type="button"
                 onClick={() => setCreditsOpen(false)}
                 className="inline-flex flex-1 items-center justify-center rounded-xl border border-gray-200 dark:border-slate-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors hover:bg-gray-50 dark:hover:bg-slate-900"
               >
-                Fermer
+                {t("common.close")}
               </button>
             </div>
           </div>

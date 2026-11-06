@@ -310,7 +310,9 @@ router.post("/:id/follow", authRequired, requireVerified, async (req, res, next)
 router.get("/me/downloads", authRequired, async (req, res, next) => {
   try {
     const { rows } = await query(
-      `SELECT d.id, d.title, d.description, d.category, d.tags, d.original_filename, d.mime_type, d.preview_public_id, d.size_bytes, d.view_count, d.download_count, d.created_at,
+      `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type,
+              d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.view_count, d.download_count,
+              d.like_count, d.comment_count, d.created_at,
               u.display_name as author_name, u.id as owner_id,
               dl.created_at as downloaded_at
        FROM downloads dl
@@ -320,7 +322,7 @@ router.get("/me/downloads", authRequired, async (req, res, next) => {
        ORDER BY dl.created_at DESC`,
       [req.user.id]
     );
-    res.json({ downloads: rows });
+    res.json({ downloads: rows.map(mapDocumentRow) });
   } catch (error) {
     next(error);
   }

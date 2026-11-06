@@ -45,8 +45,8 @@ function formatFileSize(bytes) {
 }
 
 export default function Upload() {
-  const { maxUploadSizeMb, publicationCreditsReward } = useSiteSettings();
-  const { user } = useAuth();
+  const { maxUploadSizeMb } = useSiteSettings();
+  const { setUser } = useAuth();
   const { t } = useTranslation();
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");

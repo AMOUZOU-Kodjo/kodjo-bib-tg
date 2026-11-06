@@ -147,11 +147,12 @@ export function BackToTop() {
   );
 }
 
-export function EmptyState({ message, icon: Icon }) {
+export function EmptyState({ message, title, description, icon: Icon }) {
   return (
     <div className="flex flex-col items-center gap-3 px-4 py-10 text-center text-gray-500 dark:text-slate-400 sm:py-12">
       {Icon && <Icon className="w-12 h-12 text-gray-400" />}
-      <p className="text-base sm:text-lg">{message}</p>
+      {(title || message) && <p className="text-base font-medium text-gray-900 dark:text-slate-100 sm:text-lg">{title || message}</p>}
+      {description && <p className="max-w-md text-sm sm:text-base">{description}</p>}
     </div>
   );
 }

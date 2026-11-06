@@ -22,13 +22,6 @@ import { DocumentCard } from "../components/documents/DocumentCard";
 import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 import useSeo from "../hooks/useSeo";
 
-const reasonLabels = {
-  initial: "Crédits de bienvenue",
-  upload: "Dépôt d'un document",
-  download: "Téléchargement",
-  admin: "Ajustement administrateur"
-};
-
 function EditDocumentModal({ doc, onClose, onSaved }) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(doc.title || "");
@@ -556,7 +549,11 @@ export default function Profile() {
   const savePreferences = async () => {
     setSavingPrefs(true);
     try {
-      const res = await updateNotificationPreferences(prefs);
+      const res = await updateNotificationPreferences({
+        notifyEmail: prefs.notify_email,
+        notifyNewDocuments: prefs.notify_new_documents,
+        notifyDocumentUpdates: prefs.notify_document_updates
+      });
       setUser((current) => (current ? { ...current, ...res.data.user } : current));
       setPrefs({
         notify_email: res.data.user.notify_email,
@@ -919,7 +916,7 @@ export default function Profile() {
                 {history.map((item) => (
                   <li key={item.id} className="flex items-start justify-between gap-3 py-2.5 border-b border-gray-50 dark:border-slate-800 last:border-0">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{reasonLabels[item.reason] || item.reason}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{t(`profile.reason.${item.reason}`, { defaultValue: item.reason })}</p>
                       {item.document_title && (
                         item.document_id ? (
                           <Link to={`/documents/${item.document_id}`} className="text-xs text-teal-700 dark:text-teal-300 hover:underline line-clamp-1">
