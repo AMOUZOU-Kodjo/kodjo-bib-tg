@@ -5,12 +5,15 @@ import { Download } from "lucide-react";
 import { getMyDownloads } from "../api/users";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import useSeo from "../hooks/useSeo";
-import { SkeletonCard } from "../components/ui";
+import { SkeletonCard, Pagination } from "../components/ui";
+import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 
 export default function MyDownloads() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [downloads, setDownloads] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -25,11 +28,12 @@ export default function MyDownloads() {
     setLoading(true);
     setError("");
 
-    getMyDownloads()
+    getMyDownloads({ page, limit: DOCUMENTS_PER_PAGE })
       .then((res) => {
         if (!active) return;
         const data = res.data?.downloads || [];
         setDownloads(Array.isArray(data) ? data : []);
+        setTotal(res.data?.total ?? (Array.isArray(data) ? data.length : 0));
       })
       .catch((err) => {
         if (!active) return;
@@ -46,7 +50,13 @@ export default function MyDownloads() {
     return () => {
       active = false;
     };
-  }, [navigate, t]);
+  }, [navigate, t, page]);
+
+  const totalPages = Math.max(1, Math.ceil(total / DOCUMENTS_PER_PAGE));
+  const goToPage = (nextPage) => {
+    setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="space-y-6">
@@ -85,6 +95,12 @@ export default function MyDownloads() {
           {downloads.map((doc) => (
             <DocumentCard key={doc.id} doc={doc} />
           ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination page={page} totalPages={totalPages} onPageChange={goToPage} />
         </div>
       )}
     </div>

@@ -309,6 +309,10 @@ router.post("/:id/follow", authRequired, requireVerified, async (req, res, next)
 
 router.get("/me/downloads", authRequired, async (req, res, next) => {
   try {
+    const pageNum = Math.max(1, Number(req.query.page) || 1);
+    const limitNum = Math.min(Math.max(1, Number(req.query.limit) || 12), 50);
+    const offset = (pageNum - 1) * limitNum;
+    const totalRes = await query("SELECT COUNT(*)::int AS total FROM downloads WHERE user_id = $1", [req.user.id]);
     const { rows } = await query(
       `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type,
               d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.view_count, d.download_count,
@@ -319,10 +323,11 @@ router.get("/me/downloads", authRequired, async (req, res, next) => {
        JOIN documents d ON d.id = dl.document_id
        LEFT JOIN users u ON u.id = d.owner_id
        WHERE dl.user_id = $1
-       ORDER BY dl.created_at DESC`,
-      [req.user.id]
+       ORDER BY dl.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [req.user.id, limitNum, offset]
     );
-    res.json({ downloads: rows.map(mapDocumentRow) });
+    res.json({ downloads: rows.map(mapDocumentRow), total: totalRes.rows[0].total, page: pageNum, limit: limitNum });
   } catch (error) {
     next(error);
   }

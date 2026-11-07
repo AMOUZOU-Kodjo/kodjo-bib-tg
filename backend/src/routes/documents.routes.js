@@ -563,6 +563,10 @@ router.post("/:id/download", authRequired, requireVerified, async (req, res, nex
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     }
     if (doc.owner_id === req.user.id || req.user.role === "admin") {
+      await client.query(
+        "INSERT INTO downloads (user_id, document_id) VALUES ($1, $2) ON CONFLICT (user_id, document_id) DO NOTHING",
+        [req.user.id, req.params.id]
+      );
       const url = getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
       await client.query("COMMIT");
       return res.json({ url, credits: userRes.rows[0].credits, charged: false });
