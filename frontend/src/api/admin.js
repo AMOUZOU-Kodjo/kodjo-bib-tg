@@ -14,4 +14,6 @@ export const updateAdminSettings = (data) => client.put("/admin/settings", data)
 export const getAdminReports = (params) => client.get("/admin/reports", { params });
 export const updateAdminReportStatus = (id, status) => client.patch(`/admin/reports/${id}`, { status });
 export const getAdminAudit = (params) => client.get("/admin/audit", { params });
+export const getAdminCreditOrders = (params) => client.get("/admin/credit-orders", { params });
+export const reviewAdminCreditOrder = (id, data) => client.patch(`/admin/credit-orders/${id}`, data);
 export const exportAdminData = (type) => client.get(`/admin/export/${type}`, { responseType: "blob" });

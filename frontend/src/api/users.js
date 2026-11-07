@@ -2,6 +2,10 @@ import client from "./client";
 
 export const getMyDocuments = () => client.get("/users/me/documents");
 export const getMyCredits = () => client.get("/users/me/credits");
+export const getMyCreditOrders = () => client.get("/users/me/credit-orders");
+export const createCreditOrder = (data) => client.post("/users/me/credit-orders", data);
+export const submitCreditOrder = (id, data) => client.patch(`/users/me/credit-orders/${id}`, data);
+export const cancelCreditOrder = (id) => client.delete(`/users/me/credit-orders/${id}`);
 export const getMyFavorites = (params) => client.get("/users/me/favorites", { params });
 export const getMyDownloads = (params) => client.get("/users/me/downloads", { params });
 export const getAuthor = (id) => client.get(`/users/${id}/public`);

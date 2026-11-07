@@ -30,7 +30,8 @@ export const config = {
   },
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN,
-    channelId: process.env.TELEGRAM_CHANNEL_ID || "@kodjobibtg"
+    channelId: process.env.TELEGRAM_CHANNEL_ID || "@kodjobibtg",
+    adminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID || null
   },
   push: {
     publicKey: process.env.VAPID_PUBLIC_KEY,

@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Bell,
   BookOpen,
+  Coins,
   FileText,
   Home,
   Info,
@@ -38,6 +39,7 @@ export default function CommandPalette({ open, onClose }) {
     ];
     if (user) {
       items.splice(2, 0, { label: t("palette.notifications"), to: "/notifications", icon: Bell });
+      items.splice(2, 0, { label: t("nav.buyCredits"), to: "/credits", icon: Coins });
       items.splice(2, 0, { label: t("palette.profile"), to: "/profile", icon: User });
       if (user.email_verified) {
         items.splice(2, 0, { label: t("palette.upload"), to: "/upload", icon: Upload });

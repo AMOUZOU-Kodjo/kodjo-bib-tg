@@ -107,10 +107,34 @@ CREATE TABLE credit_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   delta INTEGER NOT NULL,
-  reason TEXT NOT NULL CHECK (reason IN ('initial','upload','download','admin')),
+  reason TEXT NOT NULL CHECK (reason IN ('initial','upload','download','admin','purchase')),
   document_id UUID,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS credit_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  reference TEXT NOT NULL UNIQUE,
+  pack_id TEXT NOT NULL,
+  pack_label TEXT,
+  credits INTEGER NOT NULL CHECK (credits > 0),
+  amount INTEGER NOT NULL CHECK (amount >= 0),
+  currency TEXT NOT NULL DEFAULT 'XOF',
+  operator TEXT NOT NULL CHECK (operator IN ('tmoney','moov')),
+  payer_name TEXT,
+  transaction_id TEXT,
+  status TEXT NOT NULL DEFAULT 'awaiting_payment' CHECK (status IN ('awaiting_payment','pending','approved','rejected','cancelled')),
+  admin_note TEXT,
+  reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_at TIMESTAMPTZ,
+  submitted_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (operator, transaction_id)
+);
+CREATE INDEX IF NOT EXISTS idx_credit_orders_status_created ON credit_orders (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_credit_orders_user_created ON credit_orders (user_id, created_at DESC);
+ALTER TABLE credit_transactions ADD COLUMN IF NOT EXISTS order_id UUID REFERENCES credit_orders(id) ON DELETE SET NULL;
 
 CREATE TABLE site_settings (
   key TEXT PRIMARY KEY,

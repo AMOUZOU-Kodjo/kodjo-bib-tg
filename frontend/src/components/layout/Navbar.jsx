@@ -7,7 +7,7 @@ import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
 import NotificationBell from "../notifications/NotificationBell";
 import {
-  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart, Download, Languages
+  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart, Download, Languages, Coins
 } from "lucide-react";
 import { Moon, Sun } from "lucide-react";
 
@@ -213,6 +213,10 @@ export default function Navbar() {
                           {t("nav.credits", { count: user.credits })}
                         </span>
                       </Link>
+                      <Link to="/credits" onClick={closeMenu} className={mobileLink}>
+                        <Coins className="h-4 w-4 shrink-0" />
+                        {t("nav.buyCredits")}
+                      </Link>
                     </>
                   ) : (
                     <>
@@ -231,6 +235,10 @@ export default function Navbar() {
                       <Link to="/profile" onClick={closeMenu} className={mobileLink}>
                         <User className="h-4 w-4 shrink-0" />
                         {t("nav.myProfile")}
+                      </Link>
+                      <Link to="/credits" onClick={closeMenu} className={mobileLink}>
+                        <Coins className="h-4 w-4 shrink-0" />
+                        {t("nav.buyCredits")}
                       </Link>
                     </>
                   )}

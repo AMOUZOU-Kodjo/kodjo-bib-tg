@@ -90,6 +90,7 @@ Voir `backend/.env.example`.
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Utilisés uniquement par `npm run seed:admin` |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Push PWA optionnel |
 | `TELEGRAM_*` | Publication Telegram optionnelle |
+| `TELEGRAM_ADMIN_CHAT_ID` | Chat privé ou groupe recevant les nouvelles commandes de crédits |
 
 ### Frontend
 
@@ -128,6 +129,18 @@ node -e "console.log(require('web-push').generateVAPIDKeys())"
 
 Copier les clés dans `backend/.env`. Sans clés, le reste des notifications continue de fonctionner ; seul le push est désactivé. Le service worker n'est enregistré qu'en production.
 
+### Achat de crédits Mobile Money
+
+Les administrateurs configurent dans **Administration → Paramètres** les numéros T-Money et Moov, le nom du bénéficiaire et les packs de crédits (nom, crédits, prix en FCFA).
+
+Parcours utilisateur : choix d'un pack → génération d'une référence → paiement manuel vers le numéro affiché → saisie de l'identifiant de transaction → validation par un administrateur.
+
+- L'utilisateur peut annuler une commande tant qu'elle est en attente de paiement.
+- Trois commandes actives maximum par utilisateur.
+- Un identifiant de transaction ne peut être utilisé qu'une seule fois par opérateur.
+- L'approbation ajoute les crédits et crée une transaction de type `purchase`.
+- `TELEGRAM_ADMIN_CHAT_ID` reçoit une alerte privée à chaque nouvelle commande ; sans cette variable, seules les notifications in-app sont créées.
+
 ## Base de données
 
 Appliquer ou mettre à jour le schéma :
@@ -139,7 +152,7 @@ npm run db:init
 
 Le schéma est additif et peut être rejoué : les colonnes, index et tables récents sont créés avec `IF NOT EXISTS` ou des migrations idempotentes dans `backend/src/config/db.js`.
 
-Tables principales : `users`, `documents`, `comments`, `likes`, `views`, `downloads`, `credit_transactions`, `favorites`, `follows`, `reports`, `notifications`, `push_subscriptions`, `admin_audit_log`.
+Tables principales : `users`, `documents`, `comments`, `likes`, `views`, `downloads`, `credit_transactions`, `credit_orders`, `favorites`, `follows`, `reports`, `notifications`, `push_subscriptions`, `admin_audit_log`.
 
 ## Déploiement
 

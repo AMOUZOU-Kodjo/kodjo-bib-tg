@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getStats, getAdminAnalytics, getUsers, updateUser, deleteUserAdmin, getAllDocuments, deleteDocumentAdmin, bulkDeleteDocuments, bulkUpdateDocumentsVisibility, getAdminSettings, updateAdminSettings, getAdminReports, updateAdminReportStatus, getAdminAudit, exportAdminData } from "../api/admin";
-import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil, Coins, Save, RotateCcw } from "lucide-react";
+import { getStats, getAdminAnalytics, getUsers, updateUser, deleteUserAdmin, getAllDocuments, deleteDocumentAdmin, bulkDeleteDocuments, bulkUpdateDocumentsVisibility, getAdminSettings, updateAdminSettings, getAdminReports, updateAdminReportStatus, getAdminAudit, exportAdminData, getAdminCreditOrders, reviewAdminCreditOrder } from "../api/admin";
+import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil, Coins, Save, RotateCcw, Wallet, Plus, Smartphone } from "lucide-react";
 import { Card, Button, Input, Select, Pagination, Toggle } from "../components/ui";
 import toast from "react-hot-toast";
 import { formatDate, formatSize } from "../utils/format";
@@ -24,7 +24,11 @@ const settingsKey = (value) => JSON.stringify({
   creditsParUpload: Number(value?.creditsParUpload) || 0,
   maxUploadSizeMb: Number(value?.maxUploadSizeMb) || 0,
   allowRegistrations: Boolean(value?.allowRegistrations),
-  publicBrowsing: Boolean(value?.publicBrowsing)
+  publicBrowsing: Boolean(value?.publicBrowsing),
+  creditPacks: Array.isArray(value?.creditPacks) ? value.creditPacks : [],
+  tMoneyNumber: String(value?.tMoneyNumber ?? "").trim(),
+  moovNumber: String(value?.moovNumber ?? "").trim(),
+  beneficiaryName: String(value?.beneficiaryName ?? "").trim()
 });
 
 export default function AdminDashboard() {
@@ -42,6 +46,10 @@ export default function AdminDashboard() {
   const [docs, setDocs] = useState([]);
   const [reports, setReports] = useState([]);
   const [reportsLoading, setReportsLoading] = useState(true);
+  const [creditOrders, setCreditOrders] = useState([]);
+  const [creditOrdersLoading, setCreditOrdersLoading] = useState(false);
+  const [creditOrdersFilter, setCreditOrdersFilter] = useState("pending");
+  const [reviewingOrderId, setReviewingOrderId] = useState(null);
   const [docsPage, setDocsPage] = useState(1);
   const [selectedDocIds, setSelectedDocIds] = useState([]);
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -69,7 +77,11 @@ export default function AdminDashboard() {
     creditsParUpload: 2,
     maxUploadSizeMb: 10,
     allowRegistrations: true,
-    publicBrowsing: true
+    publicBrowsing: true,
+    creditPacks: [],
+    tMoneyNumber: "",
+    moovNumber: "",
+    beneficiaryName: ""
   });
   const [savedSettings, setSavedSettings] = useState(null);
   const [savingSettings, setSavingSettings] = useState(false);
@@ -103,18 +115,21 @@ export default function AdminDashboard() {
 
   const loadData = async () => {
     setLoading(true);
+    setCreditOrdersLoading(true);
     try {
-      const [statsRes, usersRes, docsRes, settingsRes, reportsRes] = await Promise.all([
+      const [statsRes, usersRes, docsRes, settingsRes, reportsRes, ordersRes] = await Promise.all([
         getStats(),
         getUsers(),
         getAllDocuments(),
         getAdminSettings().catch(() => null),
-        getAdminReports().catch(() => null)
+        getAdminReports().catch(() => null),
+        getAdminCreditOrders().catch(() => null)
       ]);
       setStats(statsRes.data.stats);
       setUsers(usersRes.data.users || []);
       setDocs(docsRes.data.documents || []);
       setReports(reportsRes?.data?.reports || []);
+      setCreditOrders(ordersRes?.data?.orders || []);
       if (settingsRes?.data?.settings) {
         setSettings(settingsRes.data.settings);
         setSavedSettings(settingsRes.data.settings);
@@ -124,6 +139,7 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
       setReportsLoading(false);
+      setCreditOrdersLoading(false);
     }
   };
 
@@ -195,6 +211,26 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleReviewCreditOrder = async (order, status) => {
+    let note = "";
+    if (status === "rejected") {
+      note = window.prompt(t("admin.orderRejectPrompt"), "");
+      if (note === null) return;
+    } else if (!window.confirm(t("admin.orderApproveConfirm", { reference: order.reference, credits: order.credits }))) {
+      return;
+    }
+    setReviewingOrderId(order.id);
+    try {
+      await reviewAdminCreditOrder(order.id, { status, note });
+      toast.success(status === "approved" ? t("admin.orderApproved") : t("admin.orderRejected"));
+      await loadData();
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || t("admin.orderReviewError"));
+    } finally {
+      setReviewingOrderId(null);
+    }
+  };
+
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     setSavingSettings(true);
@@ -207,7 +243,11 @@ export default function AdminDashboard() {
         creditsParUpload: Number(settings.creditsParUpload),
         maxUploadSizeMb: Number(settings.maxUploadSizeMb),
         allowRegistrations: Boolean(settings.allowRegistrations),
-        publicBrowsing: Boolean(settings.publicBrowsing)
+        publicBrowsing: Boolean(settings.publicBrowsing),
+        creditPacks: settings.creditPacks,
+        tMoneyNumber: settings.tMoneyNumber,
+        moovNumber: settings.moovNumber,
+        beneficiaryName: settings.beneficiaryName
       });
       setSettings(res.data.settings);
       setSavedSettings(res.data.settings);
@@ -231,9 +271,44 @@ export default function AdminDashboard() {
         creditsParUpload: 2,
         maxUploadSizeMb: 10,
         allowRegistrations: true,
-        publicBrowsing: true
+        publicBrowsing: true,
+        creditPacks: [],
+        tMoneyNumber: "",
+        moovNumber: "",
+        beneficiaryName: ""
       });
     }
+  };
+
+  const updateCreditPack = (index, field, value) => {
+    setSettings((current) => ({
+      ...current,
+      creditPacks: (current.creditPacks || []).map((pack, packIndex) => (
+        packIndex === index ? { ...pack, [field]: value } : pack
+      ))
+    }));
+  };
+
+  const addCreditPack = () => {
+    setSettings((current) => ({
+      ...current,
+      creditPacks: [
+        ...(current.creditPacks || []),
+        {
+          id: `pack-${Date.now().toString(36)}`,
+          label: t("admin.defaultPackLabel"),
+          credits: 10,
+          price: 500
+        }
+      ]
+    }));
+  };
+
+  const removeCreditPack = (index) => {
+    setSettings((current) => ({
+      ...current,
+      creditPacks: (current.creditPacks || []).filter((_, packIndex) => packIndex !== index)
+    }));
   };
 
   const handleDeleteDoc = async (doc) => {
@@ -384,6 +459,10 @@ export default function AdminDashboard() {
   };
 
   const pendingReports = reports.filter((report) => report.status === "pending").length;
+  const pendingCreditOrders = creditOrders.filter((order) => order.status === "pending").length;
+  const visibleCreditOrders = creditOrdersFilter === "all"
+    ? creditOrders
+    : creditOrders.filter((order) => order.status === creditOrdersFilter);
   const reportReasonLabels = {
     spam: t("admin.reasonSpam"),
     inappropriate: t("admin.reasonInappropriate"),
@@ -398,7 +477,9 @@ export default function AdminDashboard() {
     "document.delete": t("admin.auditDocDelete"),
     "document.bulk_delete": t("admin.auditBulkDelete"),
     "document.bulk_visibility": t("admin.auditBulkVisibility"),
-    "report.update": t("admin.auditReportUpdate")
+    "report.update": t("admin.auditReportUpdate"),
+    "credit_order.approve": t("admin.auditOrderApprove"),
+    "credit_order.reject": t("admin.auditOrderReject")
   };
   const auditDetailLabels = {
     siteName: t("admin.siteNameShort"),
@@ -413,7 +494,12 @@ export default function AdminDashboard() {
     status: t("admin.status"),
     visibility: t("admin.visibility"),
     count: t("admin.count"),
-    titles: t("admin.documents")
+    titles: t("admin.documents"),
+    reference: t("admin.reference"),
+    amount: t("admin.amount"),
+    operator: t("admin.operator"),
+    note: t("admin.note"),
+    user_email: t("admin.email")
   };
   const formatAuditDetails = (details) => {
     if (!details || typeof details !== "object") return "";
@@ -446,6 +532,7 @@ export default function AdminDashboard() {
     { id: "users", label: t("admin.users"), icon: Users },
     { id: "documents", label: t("admin.documents"), icon: BookOpen },
     { id: "reports", label: t("admin.reports"), icon: Flag },
+    { id: "orders", label: t("admin.orders"), icon: Wallet },
     { id: "audit", label: t("admin.audit"), icon: History },
     { id: "settings", label: t("admin.settings"), icon: Settings },
   ];
@@ -479,9 +566,9 @@ export default function AdminDashboard() {
           >
             <tab.icon className="w-4 h-4" />
             {tab.label}
-            {tab.id === "reports" && pendingReports > 0 && (
+            {((tab.id === "reports" && pendingReports > 0) || (tab.id === "orders" && pendingCreditOrders > 0)) && (
               <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                {pendingReports}
+                {tab.id === "reports" ? pendingReports : pendingCreditOrders}
               </span>
             )}
           </button>
@@ -1216,6 +1303,107 @@ export default function AdminDashboard() {
         </Card>
       )}
 
+      {activeTab === "orders" && (
+        <Card className="p-4 sm:p-6">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
+                <Wallet className="h-5 w-5 text-teal-700 dark:text-teal-300" />
+                {t("admin.creditOrdersTitle", { count: pendingCreditOrders })}
+              </h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">{t("admin.creditOrdersSubtitle")}</p>
+            </div>
+            <Button variant="secondary" onClick={loadData} disabled={loading || creditOrdersLoading}>
+              <RefreshCw className={`h-4 w-4 ${loading || creditOrdersLoading ? "animate-spin" : ""}`} />
+              {t("admin.refresh")}
+            </Button>
+          </div>
+
+          <div className="mb-4 flex flex-wrap gap-2">
+            {["pending", "approved", "rejected", "awaiting_payment", "all"].map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setCreditOrdersFilter(value)}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${creditOrdersFilter === value
+                  ? "bg-teal-700 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"}`}
+              >
+                {t(`admin.orderFilter.${value}`)}
+              </button>
+            ))}
+          </div>
+
+          {loading ? (
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">{t("common.loading")}</div>
+          ) : visibleCreditOrders.length === 0 ? (
+            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">{t("admin.noCreditOrders")}</div>
+          ) : (
+            <div className="space-y-3">
+              {visibleCreditOrders.map((order) => {
+                const statusTone = order.status === "approved"
+                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                  : order.status === "rejected"
+                    ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300"
+                    : order.status === "pending"
+                      ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
+                      : "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-300";
+                return (
+                  <article key={order.id} className="rounded-xl border border-gray-100 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusTone}`}>
+                            {t(`creditsPage.status.${order.status}`, { defaultValue: order.status })}
+                          </span>
+                          <code className="text-xs text-gray-500 dark:text-slate-400">{order.reference}</code>
+                          <span className="text-xs text-gray-400">{formatDate(order.created_at)}</span>
+                        </div>
+                        <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
+                          {order.pack_label} · {order.credits} {t("admin.credits")} · {new Intl.NumberFormat("fr-FR").format(order.amount)} FCFA
+                        </p>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                          {order.user_name} ({order.user_email}) · {order.operator === "tmoney" ? "T-Money" : "Moov Money"}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-slate-400">
+                          <span>{t("admin.orderTransaction")} : <span className="font-mono font-medium text-gray-800 dark:text-slate-200">{order.transaction_id || "—"}</span></span>
+                          {order.payer_name && <span>{t("admin.orderPayer")} : {order.payer_name}</span>}
+                          {order.reviewer_name && <span>{t("admin.orderReviewedBy", { name: order.reviewer_name })}</span>}
+                        </div>
+                        {order.admin_note && <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">{order.admin_note}</p>}
+                      </div>
+
+                      {order.status === "pending" && (
+                        <div className="flex shrink-0 flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleReviewCreditOrder(order, "approved")}
+                            disabled={reviewingOrderId === order.id}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            {t("admin.orderApprove")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleReviewCreditOrder(order, "rejected")}
+                            disabled={reviewingOrderId === order.id}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                            {t("admin.orderReject")}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+      )}
+
       {activeTab === "audit" && (
         <Card className="p-4 sm:p-6">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1434,6 +1622,125 @@ export default function AdminDashboard() {
                 </div>
                 <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/60 p-3 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
                   {t("admin.creditsSummary", { initial: Number(settings.creditsInitiaux) || 0, upload: Number(settings.creditsParUpload) || 0 })}
+                </div>
+              </Card>
+
+              <Card className="p-4 sm:p-6 xl:col-span-2">
+                <div className="mb-5 flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">
+                    <Wallet className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900 dark:text-slate-100">{t("admin.mobileMoneySection")}</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{t("admin.mobileMoneySectionDesc")}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div>
+                    <label className="mb-1 flex items-center gap-1.5 text-sm text-gray-600 dark:text-slate-400">
+                      <Smartphone className="h-3.5 w-3.5" />
+                      {t("admin.tMoneyNumber")}
+                    </label>
+                    <Input
+                      value={settings.tMoneyNumber || ""}
+                      onChange={(e) => setSettings({ ...settings, tMoneyNumber: e.target.value })}
+                      placeholder={t("admin.mobileMoneyPlaceholder")}
+                      maxLength={30}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 flex items-center gap-1.5 text-sm text-gray-600 dark:text-slate-400">
+                      <Smartphone className="h-3.5 w-3.5" />
+                      {t("admin.moovNumber")}
+                    </label>
+                    <Input
+                      value={settings.moovNumber || ""}
+                      onChange={(e) => setSettings({ ...settings, moovNumber: e.target.value })}
+                      placeholder={t("admin.mobileMoneyPlaceholder")}
+                      maxLength={30}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">{t("admin.beneficiaryName")}</label>
+                    <Input
+                      value={settings.beneficiaryName || ""}
+                      onChange={(e) => setSettings({ ...settings, beneficiaryName: e.target.value })}
+                      placeholder={t("admin.beneficiaryPlaceholder")}
+                      maxLength={80}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-col gap-2 border-t border-gray-100 pt-5 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{t("admin.creditPacks")}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{t("admin.creditPacksDesc")}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addCreditPack}
+                    disabled={(settings.creditPacks || []).length >= 8}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-teal-200 px-3 py-2 text-xs font-medium text-teal-700 hover:bg-teal-50 disabled:opacity-40 dark:border-teal-800 dark:text-teal-300 dark:hover:bg-teal-500/10"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    {t("admin.addCreditPack")}
+                  </button>
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  {(settings.creditPacks || []).length === 0 ? (
+                    <p className="rounded-xl border border-dashed border-gray-200 px-3 py-4 text-center text-sm text-gray-500 dark:border-slate-700 dark:text-slate-400">
+                      {t("admin.noCreditPacks")}
+                    </p>
+                  ) : (
+                    (settings.creditPacks || []).map((pack, index) => (
+                      <div key={`${pack.id}-${index}`} className="grid grid-cols-1 gap-2 rounded-xl border border-gray-100 p-3 dark:border-slate-700 sm:grid-cols-[1.4fr_0.7fr_0.9fr_auto] sm:items-end">
+                        <div>
+                          <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{t("admin.packLabel")}</label>
+                          <Input
+                            value={pack.label || ""}
+                            onChange={(e) => updateCreditPack(index, "label", e.target.value)}
+                            maxLength={40}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{t("admin.packCredits")}</label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max="100000"
+                            step="1"
+                            value={pack.credits}
+                            onChange={(e) => updateCreditPack(index, "credits", e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{t("admin.packPrice")}</label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100000000"
+                            step="1"
+                            value={pack.price}
+                            onChange={(e) => updateCreditPack(index, "price", e.target.value)}
+                            required
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCreditPack(index)}
+                          className="inline-flex h-[42px] items-center justify-center rounded-lg px-3 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                          title={t("admin.removeCreditPack")}
+                          aria-label={t("admin.removeCreditPack")}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))
+                  )}
                 </div>
               </Card>
 

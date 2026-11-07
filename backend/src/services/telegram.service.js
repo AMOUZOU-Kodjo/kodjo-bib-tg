@@ -48,6 +48,33 @@ export function isTelegramConfigured() {
   return Boolean(config.telegram.botToken && config.telegram.channelId);
 }
 
+export async function notifyTelegramCreditOrder({ order, userName, userEmail }) {
+  if (!config.telegram.botToken || !config.telegram.adminChatId) {
+    return { skipped: true };
+  }
+  const operatorLabel = order.operator === "tmoney" ? "T-Money" : "Moov Money";
+  const lines = [
+    "<b>Nouvelle demande de crédits</b>",
+    "",
+    `Référence : <code>${escapeHtml(order.reference)}</code>`,
+    `Utilisateur : ${escapeHtml(userName)} (${escapeHtml(userEmail)})`,
+    `Pack : ${escapeHtml(order.pack_label || order.pack_id)} — ${order.credits} crédits`,
+    `Montant : ${order.amount} ${escapeHtml(order.currency || "XOF")}`,
+    `Opérateur : ${escapeHtml(operatorLabel)}`,
+    `Transaction : <code>${escapeHtml(order.transaction_id)}</code>`,
+    order.payer_name ? `Nom du payeur : ${escapeHtml(order.payer_name)}` : null,
+    "",
+    "Validez ou rejetez la commande depuis l'administration."
+  ].filter(Boolean);
+  await callTelegram("sendMessage", {
+    chat_id: config.telegram.adminChatId,
+    parse_mode: "HTML",
+    text: lines.join("\n"),
+    disable_web_page_preview: true
+  });
+  return { ok: true };
+}
+
 export async function notifyTelegramDocument({
   title,
   description,

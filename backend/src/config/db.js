@@ -35,7 +35,7 @@ export function ensureSecuritySchema() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_new_documents BOOLEAN NOT NULL DEFAULT true;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_document_updates BOOLEAN NOT NULL DEFAULT true;
       ALTER TABLE credit_transactions DROP CONSTRAINT IF EXISTS credit_transactions_reason_check;
-      ALTER TABLE credit_transactions ADD CONSTRAINT credit_transactions_reason_check CHECK (reason IN ('initial','upload','download','admin'));
+      ALTER TABLE credit_transactions ADD CONSTRAINT credit_transactions_reason_check CHECK (reason IN ('initial','upload','download','admin','purchase'));
     `).catch((err) => {
       securitySchemaReady = null;
       throw err;
@@ -50,6 +50,31 @@ export function ensureFeatureSchema() {
   if (!featureSchemaReady) {
     featureSchemaReady = query(`
       CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+      CREATE TABLE IF NOT EXISTS credit_orders (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        reference TEXT NOT NULL UNIQUE,
+        pack_id TEXT NOT NULL,
+        pack_label TEXT,
+        credits INTEGER NOT NULL CHECK (credits > 0),
+        amount INTEGER NOT NULL CHECK (amount >= 0),
+        currency TEXT NOT NULL DEFAULT 'XOF',
+        operator TEXT NOT NULL CHECK (operator IN ('tmoney','moov')),
+        payer_name TEXT,
+        transaction_id TEXT,
+        status TEXT NOT NULL DEFAULT 'awaiting_payment' CHECK (status IN ('awaiting_payment','pending','approved','rejected','cancelled')),
+        admin_note TEXT,
+        reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+        reviewed_at TIMESTAMPTZ,
+        submitted_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        UNIQUE (operator, transaction_id)
+      );
+      ALTER TABLE credit_orders ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ;
+      CREATE INDEX IF NOT EXISTS idx_credit_orders_status_created ON credit_orders (status, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_credit_orders_user_created ON credit_orders (user_id, created_at DESC);
+      ALTER TABLE credit_transactions ADD COLUMN IF NOT EXISTS order_id UUID REFERENCES credit_orders(id) ON DELETE SET NULL;
 
       CREATE TABLE IF NOT EXISTS favorites (
         user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

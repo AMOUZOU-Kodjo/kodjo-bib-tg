@@ -906,6 +906,13 @@ export default function Profile() {
             <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
               {t("profile.creditsSummary", { count: creditsParUpload })}
             </p>
+            <Link
+              to="/credits"
+              className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-800"
+            >
+              <Coins className="h-4 w-4" />
+              {t("profile.buyCredits")}
+            </Link>
 
             {creditsLoading ? (
               <div className="flex justify-center py-6"><Spinner /></div>

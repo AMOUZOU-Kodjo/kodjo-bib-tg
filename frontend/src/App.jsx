@@ -17,6 +17,7 @@ const Author = lazy(() => import("./pages/Author"));
 const SharedDocument = lazy(() => import("./pages/SharedDocument"));
 const Upload = lazy(() => import("./pages/Upload"));
 const Profile = lazy(() => import("./pages/Profile"));
+const BuyCredits = lazy(() => import("./pages/BuyCredits"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const MyDownloads = lazy(() => import("./pages/MyDownloads"));
 const Notifications = lazy(() => import("./pages/Notifications"));
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/upload" element={<ProtectedRoute requireVerified={false}><Upload /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute requireVerified={false}><Profile /></ProtectedRoute>} />
+          <Route path="/credits" element={<ProtectedRoute requireVerified={false}><BuyCredits /></ProtectedRoute>} />
           <Route path="/favorites" element={<ProtectedRoute requireVerified={false}><Favorites /></ProtectedRoute>} />
           <Route path="/downloads" element={<ProtectedRoute requireVerified={false}><MyDownloads /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute requireVerified={false}><Notifications /></ProtectedRoute>} />

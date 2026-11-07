@@ -13,7 +13,11 @@ router.get("/", async (req, res, next) => {
       creditsParUpload: settings.creditsParUpload,
       maxUploadSizeMb: settings.maxUploadSizeMb,
       allowRegistrations: settings.allowRegistrations,
-      publicBrowsing: settings.publicBrowsing
+      publicBrowsing: settings.publicBrowsing,
+      creditPacks: settings.creditPacks,
+      tMoneyNumber: settings.tMoneyNumber,
+      moovNumber: settings.moovNumber,
+      beneficiaryName: settings.beneficiaryName
     });
   } catch (err) {
     next(err);

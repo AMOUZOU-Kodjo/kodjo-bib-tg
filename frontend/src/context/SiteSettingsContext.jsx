@@ -8,7 +8,11 @@ const DEFAULTS = {
   creditsParUpload: 2,
   maxUploadSizeMb: 10,
   allowRegistrations: true,
-  publicBrowsing: true
+  publicBrowsing: true,
+  creditPacks: [],
+  tMoneyNumber: "",
+  moovNumber: "",
+  beneficiaryName: ""
 };
 
 const SiteSettingsContext = createContext({ ...DEFAULTS, refreshSettings: async () => {} });

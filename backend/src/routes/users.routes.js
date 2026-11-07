@@ -7,7 +7,15 @@ import { authLimiter } from "../middlewares/rateLimit.js";
 import { deletePreview, deleteRaw, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
 import { config } from "../config/env.js";
 import { getSettings } from "../services/settings.service.js";
-import { notifyNewFollower } from "../services/notificationCenter.service.js";
+import { createNotification, notifyNewFollower } from "../services/notificationCenter.service.js";
+import { notifyTelegramCreditOrder } from "../services/telegram.service.js";
+import {
+  cancelCreditOrder,
+  createCreditOrder,
+  getCreditOrderSummary,
+  normalizeOperator,
+  submitCreditOrder
+} from "../services/creditOrders.service.js";
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -106,6 +114,121 @@ router.get("/me/credits", authRequired, async (req, res, next) => {
       [req.user.id]
     );
     res.json({ credits: userRes.rows[0]?.credits || 0, history: hist.rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/me/credit-orders", authRequired, async (req, res, next) => {
+  try {
+    await ensureFeatureSchema();
+    const ordersRes = await query(
+      `SELECT id, reference, pack_id, pack_label, credits, amount, currency, operator,
+              payer_name, transaction_id, status, admin_note, created_at, submitted_at, reviewed_at
+       FROM credit_orders
+       WHERE user_id = $1
+       ORDER BY created_at DESC
+       LIMIT 50`,
+      [req.user.id]
+    );
+    const summary = await getCreditOrderSummary(req.user.id);
+    res.json({ orders: ordersRes.rows, summary });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/me/credit-orders", authRequired, async (req, res, next) => {
+  try {
+    await ensureFeatureSchema();
+    const operator = normalizeOperator(req.body.operator);
+    if (!operator) {
+      return res.status(400).json({ error: { code: "INVALID_OPERATOR", message: "Opérateur Mobile Money invalide" } });
+    }
+    const { creditPacks = [], tMoneyNumber, moovNumber } = await getSettings();
+    const pack = creditPacks.find((item) => item.id === String(req.body.packId ?? ""));
+    if (!pack) {
+      return res.status(400).json({ error: { code: "INVALID_PACK", message: "Pack de crédits introuvable" } });
+    }
+    const number = operator === "tmoney" ? tMoneyNumber : moovNumber;
+    if (!number) {
+      return res.status(400).json({ error: { code: "MOBILE_MONEY_UNAVAILABLE", message: "Cet opérateur n'est pas configuré" } });
+    }
+
+    const activeRes = await query(
+      `SELECT COUNT(*)::int AS total FROM credit_orders
+       WHERE user_id = $1 AND status IN ('awaiting_payment','pending')`,
+      [req.user.id]
+    );
+    if (activeRes.rows[0].total >= 3) {
+      return res.status(429).json({ error: { code: "TOO_MANY_ORDERS", message: "Vous avez déjà plusieurs commandes en cours" } });
+    }
+
+    const order = await createCreditOrder({ userId: req.user.id, pack, operator });
+    res.status(201).json({ order });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/me/credit-orders/:id", authRequired, async (req, res, next) => {
+  try {
+    await ensureFeatureSchema();
+    const payerName = String(req.body.payerName ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
+    const result = await submitCreditOrder({
+      userId: req.user.id,
+      orderId: req.params.id,
+      transactionId: req.body.transactionId,
+      payerName
+    });
+
+    if (result.error === "INVALID_TRANSACTION") {
+      return res.status(400).json({ error: { code: "INVALID_TRANSACTION", message: "Identifiant de transaction invalide (4 à 80 caractères alphanumériques)" } });
+    }
+    if (result.error === "NOT_FOUND") {
+      return res.status(404).json({ error: { code: "NOT_FOUND", message: "Commande introuvable" } });
+    }
+    if (result.error === "ALREADY_SUBMITTED") {
+      return res.status(409).json({ error: { code: "ALREADY_SUBMITTED", message: "Cette commande a déjà été envoyée" } });
+    }
+
+    const order = result.order;
+    const admins = await query("SELECT id FROM users WHERE role = 'admin'");
+    await Promise.allSettled(admins.rows.map((admin) => createNotification({
+      userId: admin.id,
+      type: "credit_order",
+      title: "Nouvelle demande de crédits",
+      message: `${req.user.displayName || req.user.email} a soumis la commande ${order.reference}`,
+      link: "/admin"
+    })));
+    notifyTelegramCreditOrder({
+      order,
+      userName: req.user.displayName || "Utilisateur",
+      userEmail: req.user.email
+    }).catch((err) => {
+      console.error("Échec de la notification Telegram de commande:", err.message);
+    });
+
+    res.json({ order });
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(409).json({ error: { code: "TRANSACTION_EXISTS", message: "Cet identifiant de transaction a déjà été utilisé" } });
+    }
+    next(err);
+  }
+});
+
+router.delete("/me/credit-orders/:id", authRequired, async (req, res, next) => {
+  try {
+    await ensureFeatureSchema();
+    const result = await cancelCreditOrder({ userId: req.user.id, orderId: req.params.id });
+    if (result.error === "NOT_FOUND") {
+      return res.status(404).json({ error: { code: "NOT_FOUND", message: "Commande introuvable" } });
+    }
+    if (result.error === "INVALID_STATUS") {
+      return res.status(409).json({ error: { code: "INVALID_STATUS", message: "Cette commande ne peut plus être annulée" } });
+    }
+    res.json({ order: result.order });
   } catch (err) {
     next(err);
   }

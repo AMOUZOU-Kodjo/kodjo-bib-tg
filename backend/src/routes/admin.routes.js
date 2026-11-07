@@ -1,10 +1,11 @@
 import express from "express";
 import { ensureFeatureSchema, pool, query } from "../config/db.js";
-import { notifyReportUpdate } from "../services/notificationCenter.service.js";
+import { createNotification, notifyReportUpdate } from "../services/notificationCenter.service.js";
 import { authRequired } from "../middlewares/auth.js";
 import { requireAdmin } from "../middlewares/admin.js";
-import { getSettings, saveSettings } from "../services/settings.service.js";
+import { getSettings, normalizeCreditPacks, saveSettings } from "../services/settings.service.js";
 import { deleteRaw, deletePreview, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
+import { reviewCreditOrder } from "../services/creditOrders.service.js";
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -46,6 +47,10 @@ router.put("/settings", async (req, res, next) => {
     const creditsParUpload = Number(req.body.creditsParUpload);
     const maxUploadSizeMb = Number(req.body.maxUploadSizeMb);
     const { allowRegistrations, publicBrowsing } = req.body;
+    const tMoneyNumber = String(req.body.tMoneyNumber ?? "").replace(/\s+/g, " ").trim();
+    const moovNumber = String(req.body.moovNumber ?? "").replace(/\s+/g, " ").trim();
+    const beneficiaryName = String(req.body.beneficiaryName ?? "").replace(/\s+/g, " ").trim();
+    const creditPacks = req.body.creditPacks === undefined ? undefined : normalizeCreditPacks(req.body.creditPacks);
 
     if (siteName.length < 1 || siteName.length > 60) {
       return res.status(400).json({ error: { code: "INVALID_SITE_NAME", message: "Le nom du site doit contenir entre 1 et 60 caractères" } });
@@ -71,10 +76,129 @@ router.put("/settings", async (req, res, next) => {
     if (publicBrowsing !== undefined && typeof publicBrowsing !== "boolean") {
       return res.status(400).json({ error: { code: "INVALID_PUBLIC_BROWSING", message: "Valeur invalide pour la navigation publique" } });
     }
+    if (creditPacks === null) {
+      return res.status(400).json({ error: { code: "INVALID_CREDIT_PACKS", message: "Les packs de crédits sont invalides (1 à 8 packs, crédits et prix entiers positifs)" } });
+    }
+    if (!/^[0-9+() .-]{0,30}$/.test(tMoneyNumber) || !/^[0-9+() .-]{0,30}$/.test(moovNumber)) {
+      return res.status(400).json({ error: { code: "INVALID_MOBILE_MONEY_NUMBER", message: "Numéro Mobile Money invalide" } });
+    }
+    if (beneficiaryName.length > 80) {
+      return res.status(400).json({ error: { code: "INVALID_BENEFICIARY", message: "Le nom du bénéficiaire ne doit pas dépasser 80 caractères" } });
+    }
 
-    const settings = await saveSettings({ siteName, siteTagline, contactEmail, creditsInitiaux, creditsParUpload, maxUploadSizeMb, allowRegistrations, publicBrowsing });
-    await audit(req, "settings.update", "settings", null, { siteName, siteTagline, contactEmail, creditsInitiaux, creditsParUpload, maxUploadSizeMb, allowRegistrations, publicBrowsing });
+    const settings = await saveSettings({
+      siteName,
+      siteTagline,
+      contactEmail,
+      creditsInitiaux,
+      creditsParUpload,
+      maxUploadSizeMb,
+      allowRegistrations,
+      publicBrowsing,
+      creditPacks,
+      tMoneyNumber,
+      moovNumber,
+      beneficiaryName
+    });
+    await audit(req, "settings.update", "settings", null, {
+      siteName,
+      siteTagline,
+      contactEmail,
+      creditsInitiaux,
+      creditsParUpload,
+      maxUploadSizeMb,
+      allowRegistrations,
+      publicBrowsing,
+      creditPacks,
+      tMoneyNumber,
+      moovNumber,
+      beneficiaryName
+    });
     res.json({ settings });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Credit orders
+router.get("/credit-orders", async (req, res, next) => {
+  try {
+    await ensureFeatureSchema();
+    const allowed = ["awaiting_payment", "pending", "approved", "rejected", "cancelled"];
+    const status = allowed.includes(req.query.status) ? req.query.status : null;
+    const params = [];
+    let where = "";
+    if (status) {
+      params.push(status);
+      where = "WHERE o.status = $1";
+    }
+    const ordersRes = await query(
+      `SELECT o.id, o.reference, o.pack_id, o.pack_label, o.credits, o.amount, o.currency,
+              o.operator, o.payer_name, o.transaction_id, o.status, o.admin_note,
+              o.created_at, o.submitted_at, o.reviewed_at,
+              u.id AS user_id, u.display_name AS user_name, u.email AS user_email,
+              r.display_name AS reviewer_name
+       FROM credit_orders o
+       JOIN users u ON u.id = o.user_id
+       LEFT JOIN users r ON r.id = o.reviewed_by
+       ${where}
+       ORDER BY o.created_at DESC
+       LIMIT 200`,
+      params
+    );
+    const pendingRes = await query("SELECT COUNT(*)::int AS total FROM credit_orders WHERE status = 'pending'");
+    res.json({ orders: ordersRes.rows, pendingCount: pendingRes.rows[0].total });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/credit-orders/:id", async (req, res, next) => {
+  try {
+    await ensureFeatureSchema();
+    if (!UUID_RE.test(req.params.id)) {
+      return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant de commande invalide" } });
+    }
+    const status = req.body.status;
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ error: { code: "INVALID_STATUS", message: "Statut invalide" } });
+    }
+    const note = String(req.body.note ?? "").replace(/\s+/g, " ").trim().slice(0, 500);
+    const result = await reviewCreditOrder({
+      orderId: req.params.id,
+      adminId: req.user.id,
+      status,
+      note
+    });
+    if (result.error === "NOT_FOUND") {
+      return res.status(404).json({ error: { code: "NOT_FOUND", message: "Commande introuvable" } });
+    }
+    if (result.error === "INVALID_STATUS") {
+      return res.status(409).json({ error: { code: "INVALID_STATUS", message: "Cette commande a déjà été traitée" } });
+    }
+
+    const order = result.order;
+    const approved = status === "approved";
+    await createNotification({
+      userId: order.user_id,
+      type: "credit_order_update",
+      title: approved ? "Crédits ajoutés" : "Commande de crédits refusée",
+      message: approved
+        ? `${order.credits} crédits ont été ajoutés à votre compte (commande ${order.reference}).`
+        : `Votre commande ${order.reference} a été refusée${note ? ` : ${note}` : "."}`,
+      link: "/credits"
+    }).catch((err) => {
+      console.error("Échec de la notification de commande:", err.message);
+    });
+    await audit(req, approved ? "credit_order.approve" : "credit_order.reject", "credit_order", order.id, {
+      reference: order.reference,
+      credits: order.credits,
+      amount: order.amount,
+      operator: order.operator,
+      user_email: order.user_email,
+      note
+    });
+    res.json({ order });
   } catch (err) {
     next(err);
   }
