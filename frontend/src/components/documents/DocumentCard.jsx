@@ -42,7 +42,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
           {isPrivate && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gray-900/80 px-3 py-1 text-xs font-medium text-white backdrop-blur">
               <Lock className="h-3 w-3" />
-              Privé
+              {t("common.private")}
             </span>
           )}
         </div>
@@ -66,7 +66,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               event.stopPropagation();
               openPreview(doc);
             }}
-            aria-label={`Aperçu rapide de ${doc.title}`}
+            aria-label={t("document.quickPreviewAria", { title: doc.title })}
             title={t("document.quickPreview")}
             className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
           >
@@ -80,7 +80,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
                 event.stopPropagation();
                 onShare(event);
               }}
-              aria-label={`Partager ${doc.title}`}
+              aria-label={t("document.shareAria", { title: doc.title })}
               title={t("document.sharePrivateLink")}
               className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
             >
@@ -95,7 +95,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
                 event.stopPropagation();
                 onEdit(event);
               }}
-              aria-label={`Modifier ${doc.title}`}
+              aria-label={t("document.editAria", { title: doc.title })}
               title={t("common.edit")}
               className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-gray-700 dark:text-slate-300 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-teal-700 dark:hover:text-teal-300"
             >
@@ -111,7 +111,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
                 onDelete(event);
               }}
               disabled={deleting}
-              aria-label={`Supprimer ${doc.title}`}
+              aria-label={t("document.deleteAria", { title: doc.title })}
               title={t("common.delete")}
               className="rounded-lg bg-white/95 dark:bg-slate-800/95 p-2 text-red-600 shadow-sm ring-1 ring-black/5 backdrop-blur transition-colors hover:bg-white dark:hover:bg-slate-800 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50"
             >

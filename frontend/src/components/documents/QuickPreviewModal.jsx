@@ -13,7 +13,7 @@ function PreviewContent({ mimeType, url }) {
     return <iframe src={`${url}#toolbar=0&navpanes=0`} title={t("document.previewFrameTitle")} className="h-full w-full" />;
   }
   if (mimeType?.startsWith("image/")) {
-    return <img src={url} alt="Aperçu du document" className="h-full w-full object-contain" />;
+    return <img src={url} alt={t("document.previewFrameTitle")} className="h-full w-full object-contain" />;
   }
   if (mimeType?.startsWith("video/")) {
     return <video src={url} controls className="h-full w-full object-contain" />;
@@ -92,7 +92,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
       className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label={`Aperçu rapide de ${doc.title}`}
+      aria-label={t("document.quickPreviewAria", { title: doc.title })}
     >
       <button
         type="button"
@@ -106,12 +106,12 @@ export default function QuickPreviewModal({ doc, onClose }) {
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium text-white ${getCategoryColor(doc.category)}`}>
-                {doc.category ? formatCategoryName(doc.category, t) : "Document"}
+                {doc.category ? formatCategoryName(doc.category, t) : t("document.fallback")}
               </span>
               {doc.visibility === "private" && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-gray-900/80 px-2.5 py-0.5 text-[11px] font-medium text-white">
                   <Lock className="h-3 w-3" />
-                  Privé
+                  {t("common.private")}
                 </span>
               )}
             </div>
@@ -153,15 +153,15 @@ export default function QuickPreviewModal({ doc, onClose }) {
                     <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm text-white/90">
                         {doc.thumbnail
-                          ? "Aperçu de la première page. Connectez-vous pour consulter le document complet."
-                          : "Connectez-vous pour consulter l’aperçu de ce document."}
+                          ? t("document.previewFirstPageLogin")
+                          : t("document.previewLogin")}
                       </p>
                       <Link
                         to={user ? "/verify-email" : "/login"}
                         onClick={onClose}
                         className="shrink-0 rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-600"
                       >
-                        {user ? "Vérifier mon e-mail" : "Se connecter"}
+                        {user ? t("document.verifyEmailBtn") : t("common.login")}
                       </Link>
                     </div>
                   </div>
@@ -170,15 +170,15 @@ export default function QuickPreviewModal({ doc, onClose }) {
                     <Lock className="h-8 w-8 text-white/80" />
                     <p className="max-w-sm text-sm text-white/90">
                       {user
-                        ? "Vérifiez votre adresse e-mail pour consulter l’aperçu en ligne."
-                        : "Connectez-vous avec un e-mail vérifié pour consulter l’aperçu en ligne."}
+                        ? t("document.verifyEmailToPreview")
+                        : t("document.loginVerifiedToPreview")}
                     </p>
                     <Link
                       to={user ? "/verify-email" : "/login"}
                       onClick={onClose}
                       className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-600"
                     >
-                      {user ? "Vérifier mon e-mail" : "Se connecter"}
+                      {user ? t("document.verifyEmailBtn") : t("common.login")}
                     </Link>
                   </div>
                 )
@@ -192,15 +192,15 @@ export default function QuickPreviewModal({ doc, onClose }) {
                   <FileText className="h-8 w-8 text-white/80" />
                   <p className="max-w-sm text-sm text-white/90">
                     {slow
-                      ? "L’aperçu complet met trop de temps à charger. La première page est affichée."
-                      : "Impossible de charger l’aperçu complet. La première page est affichée."}
+                      ? t("document.previewSlow")
+                      : t("document.previewError")}
                   </p>
                   <Link
                     to={`/documents/${doc.id}`}
                     onClick={onClose}
                     className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-600"
                   >
-                    Ouvrir la fiche
+                    {t("document.openDocument")}
                   </Link>
                 </div>
               ) : null}
@@ -210,7 +210,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
 
         <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 px-4 py-3 dark:border-slate-700 sm:px-5">
           <p className="truncate text-xs text-gray-500 dark:text-slate-400">
-            {doc.description || "Aucune description fournie."}
+            {doc.description || t("document.noDescriptionProvided")}
           </p>
           <div className="flex shrink-0 items-center gap-2">
             <Link
@@ -219,7 +219,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <ExternalLink className="h-4 w-4" />
-              Fiche complète
+              {t("document.fullDetails")}
             </Link>
             <Link
               to={`/documents/${doc.id}`}
@@ -227,7 +227,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
               className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
             >
               <Download className="h-4 w-4" />
-              Ouvrir
+              {t("common.open")}
             </Link>
           </div>
         </footer>

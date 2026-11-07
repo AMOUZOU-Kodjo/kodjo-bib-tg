@@ -110,22 +110,22 @@ export default function NotificationBell() {
       {open && (
         <div className="fixed inset-x-3 top-[4.5rem] z-[70] overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80">
           <div className="flex items-center justify-between gap-3 border-b border-gray-100 dark:border-slate-700 px-4 py-3">
-            <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">Notifications</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{t("notifications.title")}</p>
             {unread > 0 && (
               <button onClick={readAll} className="inline-flex items-center gap-1 text-xs font-medium text-teal-700 dark:text-teal-300 hover:underline">
                 <CheckCheck className="h-3.5 w-3.5" />
-                Tout lire
+                {t("notifications.readAll")}
               </button>
             )}
           </div>
 
           <div className="max-h-[70vh] overflow-y-auto">
             {loading && notifications.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-gray-500 dark:text-slate-400">Chargement...</p>
+              <p className="px-4 py-8 text-center text-sm text-gray-500 dark:text-slate-400">{t("common.loading")}</p>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center px-4 py-8 text-center">
                 <Inbox className="mb-2 h-8 w-8 text-gray-300" />
-                <p className="text-sm text-gray-500 dark:text-slate-400">Aucune notification pour le moment.</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">{t("notifications.empty")}</p>
               </div>
             ) : (
               <ul className="divide-y divide-gray-50 dark:divide-slate-800">

@@ -8,7 +8,7 @@ export default function CommentList({ comments, currentUserId, isOwner, onDelete
     return (
       <div className="text-center text-gray-500 dark:text-slate-400 py-8 flex flex-col items-center gap-2">
         <MessageSquare className="w-8 h-8 text-gray-300" />
-        <p className="text-sm">Aucun commentaire pour le moment. Soyez le premier !</p>
+        <p className="text-sm">{t("comments.empty")}</p>
       </div>
     );
   }

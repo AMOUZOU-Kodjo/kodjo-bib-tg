@@ -10,6 +10,7 @@ import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useAuth } from "../context/AuthContext";
 import WhatsAppPublishButton from "../components/documents/WhatsAppPublishButton";
 import { TELEGRAM_CHANNEL_URL } from "../config/links";
+import { formatCategoryName } from "../utils/document";
 
 const ALLOWED_EXTENSIONS = new Set([".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt"]);
 const ALLOWED_ACCEPT = Array.from(ALLOWED_EXTENSIONS).join(",");
@@ -37,11 +38,11 @@ const CATEGORIES = [
   "CV & Lettres"
 ];
 
-function formatFileSize(bytes) {
+function formatFileSize(bytes, t) {
   if (!bytes) return "";
   const kb = bytes / 1024;
-  if (kb < 1024) return `${kb.toFixed(1)} Ko`;
-  return `${(kb / 1024).toFixed(1)} Mo`;
+  if (kb < 1024) return t("upload.sizeKb", { value: kb.toFixed(1) });
+  return t("upload.sizeMb", { value: (kb / 1024).toFixed(1) });
 }
 
 export default function Upload() {
@@ -193,7 +194,7 @@ export default function Upload() {
         visibility === "private"
           ? t("upload.toastPrivateDone")
           : savedBytes > 0
-          ? t("upload.toastSaved", { size: formatFileSize(savedBytes) })
+          ? t("upload.toastSaved", { size: formatFileSize(savedBytes, t) })
           : t("upload.toastDone")
       );
       setCreatedDoc(data.document || null);
@@ -251,8 +252,8 @@ export default function Upload() {
           </div>
           <p className="mt-3 text-xs text-teal-700 dark:text-teal-300">
             {createdDoc.visibility === "public"
-              ? "Ce document public est publié automatiquement sur la chaîne Telegram."
-              : "Ce document privé n'est pas publié sur la chaîne Telegram."}
+              ? t("upload.publicTelegram")
+              : t("upload.privateTelegram")}
           </p>
           <a
             href={TELEGRAM_CHANNEL_URL}
@@ -299,7 +300,7 @@ export default function Upload() {
                     <div className="min-w-0">
                       <p className="truncate font-medium text-gray-900 dark:text-slate-100">{file.name}</p>
                       <p className="text-sm text-gray-500 dark:text-slate-400">
-                        {formatFileSize(file.size)}
+                        {formatFileSize(file.size, t)}
                         {file.type && ` • ${file.type.split("/")[1]?.toUpperCase()}`}
                       </p>
                     </div>
@@ -369,7 +370,7 @@ export default function Upload() {
                 <option value="">{t("upload.selectCategory")}</option>
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
-                    {cat === "physique-chimie" ? "Physique-Chimie" : cat}
+                    {formatCategoryName(cat, t)}
                   </option>
                 ))}
               </select>

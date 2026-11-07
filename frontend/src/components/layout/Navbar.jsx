@@ -157,8 +157,8 @@ export default function Navbar() {
               type="button"
               onClick={toggleTheme}
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
-              aria-label={theme === "dark" ? "Activer le thème clair" : "Activer le thème sombre"}
-              title={theme === "dark" ? "Thème clair" : "Thème sombre"}
+              aria-label={theme === "dark" ? t("common.activateLightTheme") : t("common.activateDarkTheme")}
+              title={theme === "dark" ? t("common.lightTheme") : t("common.darkTheme")}
             >
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>

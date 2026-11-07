@@ -135,7 +135,7 @@ export default function InstallPWA({ className = "" }) {
                     <li>{t("install.browser3")}</li>
                   </ol>
                   <p className="text-xs text-gray-500 dark:text-slate-400">
-                    {t("install.desktopHint")}
+                    {t("install.desktopNote")}
                   </p>
                 </>
               )}

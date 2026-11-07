@@ -319,17 +319,17 @@ export default function AdminDashboard() {
   }, [activeTab, auditPage, auditRefresh]);
 
   const cards = [
-    { title: "Utilisateurs", value: stats.users, icon: Users, color: "text-blue-600 bg-blue-100" },
-    { title: "Documents", value: stats.documents, icon: FileText, color: "text-green-600 bg-green-100" },
-    { title: "Téléchargements", value: stats.downloads, icon: Download, color: "text-purple-600 bg-purple-100" },
-    { title: "Commentaires", value: stats.comments, icon: MessageCircle, color: "text-orange-600 bg-orange-100" },
+    { title: t("admin.statsUsers"), value: stats.users, icon: Users, color: "text-blue-600 bg-blue-100" },
+    { title: t("admin.statsDocs"), value: stats.documents, icon: FileText, color: "text-green-600 bg-green-100" },
+    { title: t("admin.statsDownloads"), value: stats.downloads, icon: Download, color: "text-purple-600 bg-purple-100" },
+    { title: t("admin.statsComments"), value: stats.comments, icon: MessageCircle, color: "text-orange-600 bg-orange-100" },
   ];
 
   const activityMetrics = [
-    { id: "documents", label: "Documents", color: "bg-emerald-500" },
-    { id: "users", label: "Utilisateurs", color: "bg-blue-500" },
-    { id: "downloads", label: "Téléchargements", color: "bg-purple-500" },
-    { id: "comments", label: "Commentaires", color: "bg-orange-500" }
+    { id: "documents", label: t("admin.statsDocs"), color: "bg-emerald-500" },
+    { id: "users", label: t("admin.statsUsers"), color: "bg-blue-500" },
+    { id: "downloads", label: t("admin.statsDownloads"), color: "bg-purple-500" },
+    { id: "comments", label: t("admin.statsComments"), color: "bg-orange-500" }
   ];
   const activeMetric = activityMetrics.find((metric) => metric.id === activityMetric) || activityMetrics[0];
   const activityMax = Math.max(1, ...(analytics?.series || []).map((point) => Number(point[activeMetric.id]) || 0));
@@ -413,7 +413,7 @@ export default function AdminDashboard() {
     status: t("admin.status"),
     visibility: t("admin.visibility"),
     count: t("admin.count"),
-    titles: "Documents"
+    titles: t("admin.documents")
   };
   const formatAuditDetails = (details) => {
     if (!details || typeof details !== "object") return "";
@@ -421,9 +421,9 @@ export default function AdminDashboard() {
       .filter(([, value]) => value !== undefined && value !== null && value !== "")
       .map(([key, value]) => {
         const label = auditDetailLabels[key] || key;
-        if (Array.isArray(value)) return `${label} : ${value.join(", ")}`;
-        if (typeof value === "object") return `${label} : ${JSON.stringify(value)}`;
-        return `${label} : ${value}`;
+        if (Array.isArray(value)) return `${label}${t("admin.detailSeparator")}${value.join(", ")}`;
+        if (typeof value === "object") return `${label}${t("admin.detailSeparator")}${JSON.stringify(value)}`;
+        return `${label}${t("admin.detailSeparator")}${value}`;
       })
       .join(" · ");
   };
@@ -442,12 +442,12 @@ export default function AdminDashboard() {
   }, [editUserId]);
 
   const tabs = [
-    { id: "overview", label: "Vue d'ensemble", icon: Shield },
-    { id: "users", label: "Utilisateurs", icon: Users },
-    { id: "documents", label: "Documents", icon: BookOpen },
-    { id: "reports", label: "Signalements", icon: Flag },
-    { id: "audit", label: "Journal", icon: History },
-    { id: "settings", label: "Paramètres", icon: Settings },
+    { id: "overview", label: t("admin.overview"), icon: Shield },
+    { id: "users", label: t("admin.users"), icon: Users },
+    { id: "documents", label: t("admin.documents"), icon: BookOpen },
+    { id: "reports", label: t("admin.reports"), icon: Flag },
+    { id: "audit", label: t("admin.audit"), icon: History },
+    { id: "settings", label: t("admin.settings"), icon: Settings },
   ];
 
   return (
@@ -462,7 +462,7 @@ export default function AdminDashboard() {
         </div>
         <Button variant="secondary" onClick={() => { loadData(); setAnalyticsRefresh((value) => value + 1); }} disabled={loading || analyticsLoading}>
           <RefreshCw className={`w-4 h-4 ${loading || analyticsLoading ? "animate-spin" : ""}`} />
-          Actualiser
+          {t("admin.refresh")}
         </Button>
       </div>
 
@@ -510,7 +510,7 @@ export default function AdminDashboard() {
               <div>
                 <h2 className="flex items-center gap-2 text-lg font-semibold">
                   <BarChart3 className="h-5 w-5 text-primary-600 dark:text-primary-100" />
-                  Activité récente
+                  {t("admin.recent")}
                 </h2>
                 <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">{t("admin.analyticsSubtitle")}</p>
               </div>
@@ -523,7 +523,7 @@ export default function AdminDashboard() {
                       analyticsDays === days ? "bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 shadow-sm" : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100"
                     }`}
                   >
-                    {days} j
+                    {days} {t("admin.daysShort")}
                   </button>
                 ))}
               </div>
@@ -555,7 +555,7 @@ export default function AdminDashboard() {
                     return (
                       <div
                         key={point.date}
-                        title={`${formatDate(point.date)} : ${value} ${activeMetric.label.toLowerCase()}`}
+                        title={`${formatDate(point.date)}${t("admin.detailSeparator")}${value} ${activeMetric.label.toLowerCase()}`}
                         className="group flex h-full min-w-0 flex-1 items-end"
                       >
                         <div
@@ -575,10 +575,10 @@ export default function AdminDashboard() {
 
             <div className="mt-5 grid grid-cols-2 gap-3 border-t border-gray-100 dark:border-slate-700 pt-4 sm:grid-cols-4">
               {[
-                { label: "Nouveaux utilisateurs", value: activityTotal.users, color: "text-blue-600" },
-                { label: "Nouveaux documents", value: activityTotal.documents, color: "text-emerald-600" },
-                { label: "Téléchargements", value: activityTotal.downloads, color: "text-purple-600" },
-                { label: "Commentaires", value: activityTotal.comments, color: "text-orange-600" }
+                { label: t("admin.newUsers"), value: activityTotal.users, color: "text-blue-600" },
+                { label: t("admin.newDocs"), value: activityTotal.documents, color: "text-emerald-600" },
+                { label: t("admin.statsDownloads"), value: activityTotal.downloads, color: "text-purple-600" },
+                { label: t("admin.statsComments"), value: activityTotal.comments, color: "text-orange-600" }
               ].map((item) => (
                 <div key={item.label}>
                   <p className="text-[11px] text-gray-500 dark:text-slate-400">{item.label}</p>
@@ -592,7 +592,7 @@ export default function AdminDashboard() {
             <Card className="p-5 sm:p-6">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                 <BarChart3 className="h-5 w-5 text-primary-600 dark:text-primary-100" />
-                Documents les plus actifs
+                {t("admin.topDocs")}
               </h2>
               {analyticsLoading ? (
                 <p className="py-4 text-sm text-gray-500 dark:text-slate-400">{t("common.loading")}</p>
@@ -616,8 +616,8 @@ export default function AdminDashboard() {
                         <p className="truncate text-xs text-gray-500 dark:text-slate-400">{doc.author_name}</p>
                       </div>
                       <div className="shrink-0 text-right text-[11px] text-gray-500 dark:text-slate-400">
-                        <p>{doc.view_count || 0} vues</p>
-                        <p>{doc.download_count || 0} téléch.</p>
+                        <p>{doc.view_count || 0} {t("admin.viewsShort")}</p>
+                        <p>{doc.download_count || 0} {t("admin.downloadsShort")}</p>
                       </div>
                     </Link>
                   ))}
@@ -628,7 +628,7 @@ export default function AdminDashboard() {
             <Card className="p-5 sm:p-6">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                 <HardDrive className="h-5 w-5 text-primary-600 dark:text-primary-100" />
-                Stockage et modération
+                {t("admin.storageModeration")}
               </h2>
               {analyticsLoading ? (
                 <p className="py-4 text-sm text-gray-500 dark:text-slate-400">{t("common.loading")}</p>
@@ -638,7 +638,7 @@ export default function AdminDashboard() {
                     <p className="text-sm text-gray-500 dark:text-slate-400">{t("admin.storageUsed")}</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">{formatSize(analytics?.storage?.totalBytes || 0)}</p>
                     <p className="text-xs text-gray-500 dark:text-slate-400">
-                      {analytics?.storage?.documents || 0} documents · {formatSize(analytics?.storage?.averageBytes || 0)} en moyenne
+                      {t("admin.storageSummary", { count: analytics?.storage?.documents || 0, size: formatSize(analytics?.storage?.averageBytes || 0) })}
                     </p>
                   </div>
                   <div className="grid grid-cols-3 gap-3 border-t border-gray-100 dark:border-slate-700 pt-4">
@@ -667,7 +667,7 @@ export default function AdminDashboard() {
               <div className="mb-4 flex items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t("admin.recentUsers")}</h2>
                 <button type="button" onClick={() => setActiveTab("users")} className="text-xs font-medium text-teal-700 hover:underline dark:text-teal-300">
-                  Tout voir
+                  {t("admin.viewAll")}
                 </button>
               </div>
               <div className="divide-y divide-gray-50 dark:divide-slate-800">
@@ -689,10 +689,10 @@ export default function AdminDashboard() {
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${u.role === "admin" ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-100" : "bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300"}`}>
                         {userRoleLabel(u.role, t)}
                       </span>
-                      <button type="button" onClick={() => { setActiveTab("users"); setEditUserId(u.id); }} className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700" aria-label={`Modifier ${u.display_name}`}>
+                      <button type="button" onClick={() => { setActiveTab("users"); setEditUserId(u.id); }} className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700" aria-label={`${t("admin.edit")} ${u.display_name}`}>
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
-                      <button type="button" onClick={() => handleDeleteUser(u)} disabled={u.id === currentUser?.id} className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-300 dark:hover:bg-red-950/40" aria-label={`Supprimer ${u.display_name}`}>
+                      <button type="button" onClick={() => handleDeleteUser(u)} disabled={u.id === currentUser?.id} className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-300 dark:hover:bg-red-950/40" aria-label={`${t("admin.delete")} ${u.display_name}`}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -728,15 +728,15 @@ export default function AdminDashboard() {
               <div>
                 <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
                   <Users className="h-5 w-5" />
-                  Gestion des utilisateurs
+                  {t("admin.usersManagement")}
                 </h2>
                 <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
-                  {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? "s" : ""} affiché{filteredUsers.length > 1 ? "s" : ""} sur {users.length}
+                  {t("admin.usersShown", { count: filteredUsers.length, total: users.length })}
                 </p>
               </div>
               <Button variant="secondary" onClick={loadData} disabled={loading}>
                 <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                Actualiser
+                {t("admin.refresh")}
               </Button>
             </div>
 
@@ -753,7 +753,7 @@ export default function AdminDashboard() {
                 />
               </div>
               <Button variant="secondary" onClick={() => { setSearchUser(""); setUsersPage(1); }}>
-                Réinitialiser
+                {t("admin.reset")}
               </Button>
             </div>
 
@@ -761,12 +761,12 @@ export default function AdminDashboard() {
               <table className="w-full min-w-[860px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-                    <th className="px-3 py-3 font-semibold">Utilisateur</th>
+                    <th className="px-3 py-3 font-semibold">{t("admin.user")}</th>
                     <th className="px-3 py-3 font-semibold">{t("admin.role")}</th>
                     <th className="px-3 py-3 font-semibold">{t("admin.credits")}</th>
-                    <th className="px-3 py-3 font-semibold">Statut</th>
-                    <th className="px-3 py-3 font-semibold">Inscrit le</th>
-                    <th className="px-3 py-3 text-right font-semibold">Actions</th>
+                    <th className="px-3 py-3 font-semibold">{t("admin.status")}</th>
+                    <th className="px-3 py-3 font-semibold">{t("admin.registeredAt")}</th>
+                    <th className="px-3 py-3 text-right font-semibold">{t("admin.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
@@ -794,21 +794,21 @@ export default function AdminDashboard() {
                         <button
                           type="button"
                           onClick={() => handleToggleVerified(u)}
-                          title={u.email_verified ? "Marquer comme non vérifié" : "Marquer comme vérifié"}
+                          title={u.email_verified ? t("admin.markUnverified") : t("admin.markVerified")}
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${u.email_verified ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40" : "bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/40"}`}
                         >
                           {u.email_verified ? <MailCheck className="h-3 w-3" /> : <MailX className="h-3 w-3" />}
-                          {u.email_verified ? "Vérifié" : "Non vérifié"}
+                          {u.email_verified ? t("admin.verified") : t("admin.unverified")}
                         </button>
                       </td>
                       <td className="px-3 py-3 text-gray-600 dark:text-slate-400">{formatDate(u.created_at)}</td>
                       <td className="px-3 py-3">
                         <div className="flex items-center justify-end gap-2">
                           <button type="button" onClick={() => setEditUserId(u.id)} className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700">
-                            <Pencil className="h-3.5 w-3.5" /> Modifier
+                            <Pencil className="h-3.5 w-3.5" /> {t("admin.edit")}
                           </button>
-                          <button type="button" onClick={() => handleDeleteUser(u)} disabled={u.id === currentUser?.id} title={u.id === currentUser?.id ? "Impossible de supprimer votre propre compte" : "Supprimer"} className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/40">
-                            <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                          <button type="button" onClick={() => handleDeleteUser(u)} disabled={u.id === currentUser?.id} title={u.id === currentUser?.id ? t("admin.cannotDeleteSelf") : t("admin.delete")} className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/40">
+                            <Trash2 className="h-3.5 w-3.5" /> {t("admin.delete")}
                           </button>
                         </div>
                       </td>
@@ -840,17 +840,17 @@ export default function AdminDashboard() {
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-slate-400">
                     <button type="button" onClick={() => handleToggleVerified(u)} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${u.email_verified ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"}`}>
                       {u.email_verified ? <MailCheck className="h-3 w-3" /> : <MailX className="h-3 w-3" />}
-                      {u.email_verified ? "Vérifié" : "Non vérifié"}
+                      {u.email_verified ? t("admin.verified") : t("admin.unverified")}
                     </button>
-                    <span>{u.credits} crédit{u.credits > 1 ? "s" : ""}</span>
-                    <span>Inscrit le {formatDate(u.created_at)}</span>
+                    <span>{t("admin.creditsCount", { count: u.credits })}</span>
+                    <span>{t("admin.registeredOn", { date: formatDate(u.created_at) })}</span>
                   </div>
                   <div className="mt-3 flex gap-2">
                     <button type="button" onClick={() => setEditUserId(u.id)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 dark:border-slate-700 dark:text-slate-200">
-                      <Pencil className="h-3.5 w-3.5" /> Modifier
+                      <Pencil className="h-3.5 w-3.5" /> {t("admin.edit")}
                     </button>
                     <button type="button" onClick={() => handleDeleteUser(u)} disabled={u.id === currentUser?.id} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 disabled:opacity-40 dark:border-red-900 dark:text-red-300">
-                      <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                      <Trash2 className="h-3.5 w-3.5" /> {t("admin.delete")}
                     </button>
                   </div>
                 </article>
@@ -865,7 +865,7 @@ export default function AdminDashboard() {
             {usersTotalPages > 1 && (
               <div className="mt-4 flex flex-col gap-2 border-t border-gray-100 pt-4 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs text-gray-500 dark:text-slate-400">
-                  Page {currentUsersPage} sur {usersTotalPages}
+                  {t("admin.pageOf", { current: currentUsersPage, total: usersTotalPages })}
                 </p>
                 <Pagination page={currentUsersPage} totalPages={usersTotalPages} onPageChange={goToUsersPage} />
               </div>
@@ -914,17 +914,17 @@ export default function AdminDashboard() {
                   </div>
                   <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                     <input type="checkbox" checked={editEmailVerified === "oui"} onChange={(e) => setEditEmailVerified(e.target.checked ? "oui" : "non")} className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 dark:border-slate-600" />
-                    E-mail vérifié
+                    {t("admin.emailVerified")}
                   </label>
                   {editUserId === currentUser?.id && editRole !== "admin" && (
                     <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-                      Vous ne pouvez pas retirer votre propre rôle administrateur.
+                      {t("admin.cannotRemoveOwnAdmin")}
                     </p>
                   )}
                   <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
                     <Button type="button" variant="secondary" onClick={closeEditUser} disabled={editSaving}>{t("admin.cancel")}</Button>
                     <Button type="submit" disabled={editSaving || (editUserId === currentUser?.id && editRole !== "admin")}>
-                      {editSaving ? "Enregistrement..." : "Enregistrer"}
+                      {editSaving ? t("common.saving") : t("admin.save")}
                     </Button>
                   </div>
                 </form>
@@ -939,7 +939,7 @@ export default function AdminDashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2 sm:text-xl">
               <BookOpen className="w-5 h-5" />
-              Gestion des documents ({filteredDocs.length})
+              {t("admin.docsManagement", { total: filteredDocs.length })}
             </h2>
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
               <button
@@ -947,7 +947,7 @@ export default function AdminDashboard() {
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900"
               >
                 <Download className="h-4 w-4" />
-                Exporter CSV
+                {t("admin.exportCsv")}
               </button>
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -967,18 +967,18 @@ export default function AdminDashboard() {
                 }}
                 className="h-4 w-4 rounded border-gray-300 dark:border-slate-600 text-primary-600 dark:text-primary-100"
               />
-              Sélectionner la page
+              {t("admin.selectPage")}
             </label>
             {selectedDocIds.length > 0 ? (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">{selectedDocIds.length} sélectionné(s)</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-slate-400">{selectedDocIds.length} {t("admin.selected")}</span>
                 <button
                   onClick={() => handleBulkVisibility("public")}
                   disabled={bulkBusy}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-teal-700 dark:text-teal-300 ring-1 ring-teal-200 dark:ring-teal-800 hover:bg-teal-50 dark:hover:bg-teal-950/40 disabled:opacity-50"
                 >
                   <Globe2 className="h-3.5 w-3.5" />
-                  Public
+                  {t("admin.public")}
                 </button>
                 <button
                   onClick={() => handleBulkVisibility("private")}
@@ -986,7 +986,7 @@ export default function AdminDashboard() {
                   className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 ring-1 ring-gray-200 dark:ring-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-50"
                 >
                   <Lock className="h-3.5 w-3.5" />
-                  Privé
+                  {t("admin.private")}
                 </button>
                 <button
                   onClick={handleBulkDelete}
@@ -994,7 +994,7 @@ export default function AdminDashboard() {
                   className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Supprimer
+                  {t("admin.delete")}
                 </button>
               </div>
             ) : (
@@ -1011,7 +1011,7 @@ export default function AdminDashboard() {
                     type="checkbox"
                     checked={selectedDocIds.includes(d.id)}
                     onChange={() => toggleDocSelection(d.id)}
-                    aria-label={`Sélectionner ${d.title}`}
+                    aria-label={`${t("admin.selectDocAria", { title: d.title })}`}
                     className="absolute right-2.5 top-2.5 z-20 h-4 w-4 cursor-pointer rounded border-white/70 bg-white/90 dark:bg-slate-800/90 text-primary-600 dark:text-primary-100 shadow-sm"
                   />
                   <Link
@@ -1035,7 +1035,7 @@ export default function AdminDashboard() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/20" />
                     <span className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium text-white ${d.visibility === "private" ? "bg-gray-900/85" : "bg-teal-700/90"}`}>
                       {d.visibility === "private" ? <Lock className="h-3 w-3" /> : <Globe2 className="h-3 w-3" />}
-                      {d.visibility === "private" ? "Privé" : "Public"}
+                      {d.visibility === "private" ? t("admin.private") : t("admin.public")}
                     </span>
                     {d.category && (
                       <span className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/90 dark:bg-slate-800/90 px-2.5 py-1 text-[11px] font-medium text-gray-800 dark:text-slate-200 backdrop-blur">
@@ -1054,7 +1054,7 @@ export default function AdminDashboard() {
                       {d.title}
                     </Link>
                     <p className="mt-1 truncate text-xs text-gray-500 dark:text-slate-400">{d.author_name}</p>
-                    <p className="mt-1 truncate text-[11px] text-gray-400" title={d.original_filename}>{d.original_filename || "Fichier"}</p>
+                    <p className="mt-1 truncate text-[11px] text-gray-400" title={d.original_filename}>{d.original_filename || t("admin.file")}</p>
 
                     <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]">
                       {canShowViewCount(d) && (
@@ -1087,7 +1087,7 @@ export default function AdminDashboard() {
                         className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-primary-600 dark:hover:text-primary-100"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
-                        Ouvrir
+                        {t("admin.open")}
                       </Link>
                       <button
                         onClick={() => handleDeleteDoc(d)}
@@ -1096,7 +1096,7 @@ export default function AdminDashboard() {
                         className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        Supprimer
+                        {t("admin.delete")}
                       </button>
                     </div>
                   </div>
@@ -1118,13 +1118,13 @@ export default function AdminDashboard() {
             <div>
               <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
                 <Flag className="h-5 w-5 text-red-600" />
-                Signalements ({pendingReports} en attente)
+                {t("admin.reportsPending", { total: pendingReports })}
               </h2>
               <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">{t("admin.reportsSubtitle")}</p>
             </div>
             <Button variant="secondary" onClick={loadData} disabled={loading}>
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Actualiser
+              {t("admin.refresh")}
             </Button>
           </div>
 
@@ -1141,7 +1141,7 @@ export default function AdminDashboard() {
                   : report.status === "resolved"
                     ? "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300"
                     : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400";
-                const statusLabel = report.status === "pending" ? "En attente" : report.status === "resolved" ? "Résolu" : "Ignoré";
+                const statusLabel = report.status === "pending" ? t("admin.pending") : report.status === "resolved" ? t("admin.resolved") : t("admin.dismissed");
                 return (
                   <article key={report.id} className="rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1154,12 +1154,12 @@ export default function AdminDashboard() {
                           <span className="text-xs text-gray-400">{formatDate(report.created_at)}</span>
                         </div>
                         <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-slate-100">
-                          {report.document_id ? "Document signalé" : "Commentaire signalé"}
+                          {report.document_id ? t("admin.reportedDocument") : t("admin.reportedComment")}
                           {targetDocId && (
                             <>
                               {" · "}
                               <Link to={`/documents/${targetDocId}`} target="_blank" rel="noreferrer" className="font-medium text-primary-600 dark:text-primary-100 hover:underline">
-                                {report.document_title || "Voir le document"}
+                                {report.document_title || t("admin.viewDocument")}
                               </Link>
                             </>
                           )}
@@ -1176,7 +1176,7 @@ export default function AdminDashboard() {
                           </p>
                         )}
                         <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">
-                          Par {report.reporter_name} ({report.reporter_email})
+                          {t("admin.reportedBy", { name: report.reporter_name, email: report.reporter_email })}
                         </p>
                       </div>
 
@@ -1188,14 +1188,14 @@ export default function AdminDashboard() {
                               className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-xs font-medium text-white hover:bg-green-700"
                             >
                               <Check className="h-3.5 w-3.5" />
-                              Résolu
+                              {t("admin.resolved")}
                             </button>
                             <button
                               onClick={() => handleReportStatus(report, "dismissed")}
                               className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 dark:bg-slate-800 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"
                             >
                               <X className="h-3.5 w-3.5" />
-                              Ignorer
+                              {t("admin.dismiss")}
                             </button>
                           </>
                         ) : (
@@ -1203,7 +1203,7 @@ export default function AdminDashboard() {
                             onClick={() => handleReportStatus(report, "pending")}
                             className="rounded-lg border border-gray-200 dark:border-slate-700 px-3 py-2 text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-900"
                           >
-                            Réouvrir
+                            {t("admin.reopen")}
                           </button>
                         )}
                       </div>
@@ -1222,7 +1222,7 @@ export default function AdminDashboard() {
             <div>
               <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
                 <History className="h-5 w-5 text-primary-600 dark:text-primary-100" />
-                Journal d'audit
+                {t("admin.auditLog")}
               </h2>
               <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">{t("admin.auditSubtitle")}</p>
             </div>
@@ -1232,11 +1232,11 @@ export default function AdminDashboard() {
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900"
               >
                 <Download className="h-4 w-4" />
-                Exporter CSV
+                {t("admin.exportCsv")}
               </button>
               <Button variant="secondary" onClick={() => setAuditRefresh((value) => value + 1)} disabled={auditLoading}>
                 <RefreshCw className={`h-4 w-4 ${auditLoading ? "animate-spin" : ""}`} />
-                Actualiser
+                {t("admin.refresh")}
               </Button>
             </div>
           </div>
@@ -1265,11 +1265,11 @@ export default function AdminDashboard() {
                           <span className="text-xs text-gray-400">{formatDate(entry.created_at)}</span>
                         </div>
                         <p className="mt-2 text-sm text-gray-900 dark:text-slate-100">
-                          Par <span className="font-medium">{entry.admin_name || "Administrateur supprimé"}</span>
+                          {t("admin.by")} <span className="font-medium">{entry.admin_name || t("admin.deletedAdmin")}</span>
                           {entry.admin_email && <span className="text-gray-500 dark:text-slate-400"> ({entry.admin_email})</span>}
                         </p>
                         <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-                          Cible : {entry.target_type || "—"}
+                          {t("admin.targetLabel")}{entry.target_type || "—"}
                           {entry.target_id && <span className="ml-1 font-mono">{String(entry.target_id).slice(0, 8)}…</span>}
                         </p>
                         {details && <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">{details}</p>}
@@ -1299,16 +1299,16 @@ export default function AdminDashboard() {
               <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
                   <Settings className="h-5 w-5 shrink-0" />
-                  Paramètres du site
+                  {t("admin.siteSettings")}
                 </h2>
                 <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">
-                  Ces réglages sont enregistrés en base et appliqués immédiatement à la plateforme et aux e-mails.
+                  {t("admin.settingsIntro")}
                 </p>
               </div>
               {settingsDirty && (
                 <span className="inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                  Modifications non enregistrées
+                  {t("admin.unsavedChanges")}
                 </span>
               )}
             </div>
@@ -1335,7 +1335,7 @@ export default function AdminDashboard() {
                       maxLength={60}
                       required
                     />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{String(settings.siteName || "").length}/60 caractères</p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{t("admin.charCount", { count: String(settings.siteName || "").length, max: 60 })}</p>
                   </div>
                   <div>
                     <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">{t("admin.shortDescription")}</label>
@@ -1345,7 +1345,7 @@ export default function AdminDashboard() {
                       maxLength={120}
                       placeholder={t("admin.siteTaglinePlaceholder")}
                     />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{String(settings.siteTagline || "").length}/120 caractères</p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{t("admin.charCount", { count: String(settings.siteTagline || "").length, max: 120 })}</p>
                   </div>
                   <div>
                     <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">{t("admin.contactEmailLabel")}</label>
@@ -1359,7 +1359,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900/40">
                     <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{t("admin.preview")}</p>
-                    <p className="mt-1 truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{settings.siteName || "Nom du site"}</p>
+                    <p className="mt-1 truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{settings.siteName || t("admin.siteName")}</p>
                     <p className="truncate text-xs text-gray-500 dark:text-slate-400">{settings.siteTagline || t("admin.shortDescription")}</p>
                   </div>
                 </div>
@@ -1376,7 +1376,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">Taille maximale par fichier (Mo)</label>
+                  <label className="mb-1 block text-sm text-gray-600 dark:text-slate-400">{t("admin.maxFileSize")}</label>
                   <Input
                     type="number"
                     min="1"
@@ -1386,12 +1386,12 @@ export default function AdminDashboard() {
                     required
                   />
                   <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-                    Limite appliquée lors du dépôt, entre 1 et 100 Mo.
+                    {t("admin.maxUploadHint")}
                   </p>
                   <div className="mt-4 flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-3 py-2 text-xs text-gray-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400">
-                    <span>1 Mo</span>
-                    <span className="font-semibold text-gray-900 dark:text-slate-100">{settings.maxUploadSizeMb || 0} Mo</span>
-                    <span>100 Mo</span>
+                    <span>1 {t("admin.mb")}</span>
+                    <span className="font-semibold text-gray-900 dark:text-slate-100">{settings.maxUploadSizeMb || 0} {t("admin.mb")}</span>
+                    <span>100 {t("admin.mb")}</span>
                   </div>
                 </div>
               </Card>
@@ -1452,16 +1452,16 @@ export default function AdminDashboard() {
                     <Toggle
                       checked={Boolean(settings.allowRegistrations)}
                       onChange={(e) => setSettings({ ...settings, allowRegistrations: e.target.checked })}
-                      label="Autoriser les inscriptions"
-                      description="Si désactivé, la création de compte est bloquée et les liens d'inscription sont masqués."
+                      label={t("admin.allowRegistrations")}
+                      description={t("admin.allowRegistrationsDesc")}
                     />
                   </div>
                   <div className="rounded-xl border border-gray-100 p-3 dark:border-slate-700">
                     <Toggle
                       checked={Boolean(settings.publicBrowsing)}
                       onChange={(e) => setSettings({ ...settings, publicBrowsing: e.target.checked })}
-                      label="Navigation publique"
-                      description="Si désactivé, les visiteurs non connectés doivent se connecter pour consulter la bibliothèque."
+                      label={t("admin.publicBrowsing")}
+                      description={t("admin.publicBrowsingDesc")}
                     />
                   </div>
                 </div>
@@ -1471,7 +1471,7 @@ export default function AdminDashboard() {
             <div className="sticky bottom-3 z-10">
               <Card className="flex flex-col gap-3 p-3 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:p-4">
                 <p className="text-xs text-gray-500 dark:text-slate-400">
-                  {settingsDirty ? "Des modifications sont en attente d'enregistrement." : "Tous les paramètres sont à jour."}
+                  {settingsDirty ? t("admin.unsavedChangesNotice") : t("admin.allSaved")}
                 </p>
                 <div className="flex flex-col gap-2 min-[420px]:flex-row">
                   <Button
@@ -1481,11 +1481,11 @@ export default function AdminDashboard() {
                     disabled={!settingsDirty || savingSettings}
                   >
                     <RotateCcw className="h-4 w-4" />
-                    Réinitialiser
+                    {t("admin.reset")}
                   </Button>
                   <Button type="submit" disabled={!settingsDirty || savingSettings}>
                     <Save className="h-4 w-4" />
-                    {savingSettings ? "Enregistrement..." : "Enregistrer"}
+                    {savingSettings ? t("common.saving") : t("admin.save")}
                   </Button>
                 </div>
               </Card>

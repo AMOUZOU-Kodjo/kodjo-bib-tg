@@ -46,8 +46,8 @@ export default function DocumentDetail() {
   const { user, setUser } = useAuth();
 
   useSeo({
-    title: doc ? doc.title : "Document",
-    description: doc?.description || (doc ? `Consultez et téléchargez « ${doc.title} » sur Archives de Documents.` : "Consultez un document de la bibliothèque numérique."),
+    title: doc ? doc.title : t("document.fallback"),
+    description: doc?.description || (doc ? t("document.seoDesc", { title: doc.title }) : t("document.seoDescFallback")),
     image: doc?.thumbnail,
     url: doc ? `${window.location.origin}/documents/${doc.id}` : undefined,
     type: "article",
@@ -107,7 +107,7 @@ export default function DocumentDetail() {
 
   const loadPreview = async () => {
     if (!user) {
-      promptLogin("Connectez-vous pour consulter en ligne");
+      promptLogin(t("document.loginToPreview"));
       return;
     }
     if (!user.email_verified) {
@@ -133,7 +133,7 @@ export default function DocumentDetail() {
 
   const download = async () => {
     if (!user) {
-      promptLogin("Connectez-vous pour télécharger");
+      promptLogin(t("document.loginToDownload"));
       return;
     }
     try {
@@ -160,7 +160,7 @@ export default function DocumentDetail() {
 
   const like = async () => {
     if (!user) {
-      promptLogin("Connectez-vous pour aimer ce document");
+      promptLogin(t("document.loginToLike"));
       return;
     }
     const previous = { likedByMe: doc.likedByMe, like_count: doc.like_count || 0 };
@@ -177,7 +177,7 @@ export default function DocumentDetail() {
 
   const favorite = async () => {
     if (!user) {
-      promptLogin("Connectez-vous pour ajouter ce document aux favoris");
+      promptLogin(t("document.loginToFavorite"));
       return;
     }
     try {
@@ -225,7 +225,7 @@ export default function DocumentDetail() {
 
   const openReport = () => {
     if (!user) {
-      promptLogin("Connectez-vous pour signaler ce contenu");
+      promptLogin(t("document.loginToReport"));
       return;
     }
     if (!user.email_verified) {
@@ -246,7 +246,7 @@ export default function DocumentDetail() {
       return;
     }
     if (!user) {
-      promptLogin("Connectez-vous pour partager ce document");
+      promptLogin(t("document.loginToShare"));
       return;
     }
     if (!user.email_verified) {
@@ -270,7 +270,7 @@ export default function DocumentDetail() {
 
   const openContact = () => {
     if (!user) {
-      promptLogin("Connectez-vous pour contacter l'auteur");
+      promptLogin(t("document.loginToContact"));
       return;
     }
     if (!user.email_verified) {
@@ -282,8 +282,8 @@ export default function DocumentDetail() {
 
   const previewSrc = showPreview ? previewBlobUrl : null;
 
-  if (loading) return <div className="text-center py-12">Chargement...</div>;
-  if (!doc) return <div className="text-center py-12">Document introuvable</div>;
+  if (loading) return <div className="text-center py-12">{t("common.loading")}</div>;
+  if (!doc) return <div className="text-center py-12">{t("document.notFound")}</div>;
 
   const isAdmin = user?.role === "admin" && !doc.isOwner;
   const showViewCount = doc.visibility !== "private" && !doc.isOwner;
@@ -292,9 +292,9 @@ export default function DocumentDetail() {
     <div>
       <ReadingProgress />
       <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-slate-400 sm:mb-6 sm:text-sm">
-        <Link to="/" className="hover:text-teal-700 dark:hover:text-teal-300">Accueil</Link>
+        <Link to="/" className="hover:text-teal-700 dark:hover:text-teal-300">{t("document.home")}</Link>
         <ChevronRight className="w-4 h-4" />
-        <Link to="/documents" className="hover:text-teal-700 dark:hover:text-teal-300">Livres</Link>
+        <Link to="/documents" className="hover:text-teal-700 dark:hover:text-teal-300">{t("document.books")}</Link>
         {doc.category && (
           <>
             <ChevronRight className="w-4 h-4" />
@@ -328,23 +328,23 @@ export default function DocumentDetail() {
                 </div>
               )}
               <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium text-white bg-teal-700">
-                Gratuit
+                {t("document.free")}
               </span>
             </div>
           </div>
           {showViewCount && (
             <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-slate-400 mb-4">
               <Eye className="w-4 h-4" />
-              <span>{doc.view_count || 0} en lecture</span>
+              <span>{t("document.views", { count: doc.view_count || 0 })}</span>
             </div>
           )}
           <button onClick={loadPreview} disabled={previewLoading || !user?.email_verified} className="w-full flex items-center justify-center gap-2 bg-teal-700 text-white px-6 py-3 rounded-xl font-medium hover:bg-teal-800 transition-colors mb-3 disabled:opacity-50">
             <FileText className="w-5 h-5" />
-            {previewLoading ? "Chargement..." : showPreview ? "Actualiser l'aperçu" : user?.email_verified ? "Consulter en ligne" : "Vérifiez votre email"}
+            {previewLoading ? t("common.loading") : showPreview ? t("document.refreshPreview") : user?.email_verified ? t("document.viewOnline") : t("document.verifyEmail")}
           </button>
           <button onClick={download} className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700 transition-colors mb-3">
             <Download className="w-5 h-5" />
-            Télécharger
+            {t("common.download")}
           </button>
           <button
             onClick={share}
@@ -352,7 +352,7 @@ export default function DocumentDetail() {
             className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Share2 className="w-4 h-4" />
-            {doc.visibility !== "public" && user && !user.email_verified ? "Vérifiez votre email pour partager" : "Partager le lien"}
+            {doc.visibility !== "public" && user && !user.email_verified ? t("document.verifyToShare") : t("document.shareLink")}
           </button>
           {doc.visibility === "public" && (
             <button
@@ -360,7 +360,7 @@ export default function DocumentDetail() {
               className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700 transition-colors mb-3"
             >
               <Share2 className="w-4 h-4" />
-              Partager sur les réseaux
+              {t("document.shareOnSocial")}
             </button>
           )}
           <button
@@ -372,7 +372,7 @@ export default function DocumentDetail() {
             }`}
           >
             <Bookmark className={`w-4 h-4 ${doc.favoritedByMe ? "fill-current" : ""}`} />
-            {doc.favoritedByMe ? "Dans ma liste de lecture" : "Ajouter à ma liste"}
+            {doc.favoritedByMe ? t("document.inReadingList") : t("document.addToReadingList")}
           </button>
           {(doc.isOwner || user?.role === "admin") && (
             <WhatsAppPublishButton doc={doc} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-2.5 font-medium text-white transition-colors hover:bg-[#1ebe5b] disabled:cursor-not-allowed disabled:opacity-50" />
@@ -380,13 +380,13 @@ export default function DocumentDetail() {
           {!doc.isOwner && !isAdmin && (
             <button onClick={openContact} className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 px-6 py-2.5 rounded-xl font-medium hover:bg-teal-50 dark:hover:bg-teal-950/40 border border-teal-200 dark:border-teal-800 transition-colors">
               <Mail className="w-4 h-4" />
-              Contacter l'auteur
+              {t("document.contactAuthor")}
             </button>
           )}
           {!doc.isOwner && (
             <button onClick={openReport} className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-2 text-sm font-medium text-gray-500 dark:text-slate-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600">
               <Flag className="w-4 h-4" />
-              Signaler ce document
+              {t("document.reportDocument")}
             </button>
           )}
         </aside>
@@ -396,7 +396,7 @@ export default function DocumentDetail() {
             <h1 className="mb-3 text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl md:text-3xl lg:text-4xl">{doc.title}</h1>
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <p className="text-base text-gray-600 dark:text-slate-400 sm:text-lg">
-                par{" "}
+                {t("document.by")}{" "}
                 <Link to={`/authors/${doc.owner_id}`} className="font-medium text-teal-700 dark:text-teal-300 hover:underline">
                   {doc.author_name}
                 </Link>
@@ -404,13 +404,13 @@ export default function DocumentDetail() {
               {doc.visibility === "private" && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1 text-xs font-medium text-white">
                   <Lock className="w-3 h-3" />
-                  Document privé
+                  {t("document.privateDoc")}
                 </span>
               )}
               {isAdmin && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-200">
                   <Shield className="w-3 h-3" />
-                  Vue administrateur
+                  {t("document.adminView")}
                 </span>
               )}
             </div>
@@ -437,14 +437,14 @@ export default function DocumentDetail() {
           </header>
 
           <section className="mb-6 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
-            <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">Informations</h2>
+            <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">{t("document.info")}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950/40">
                   <User className="w-5 h-5 text-teal-700 dark:text-teal-300" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-500 dark:text-slate-400">Auteur</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{t("document.author")}</p>
                   <Link to={`/authors/${doc.owner_id}`} className="font-medium text-teal-700 dark:text-teal-300 break-words hover:underline">
                     {doc.author_name}
                   </Link>
@@ -465,7 +465,7 @@ export default function DocumentDetail() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm text-gray-500 dark:text-slate-400">{t("document.availability")}</p>
-                  <p className="font-medium text-gray-900 dark:text-slate-100">Gratuit</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">{t("document.free")}</p>
                 </div>
               </div>
               <div className="flex min-w-0 items-center gap-3">
@@ -551,7 +551,7 @@ export default function DocumentDetail() {
               {showPreview && (
                 <a href={previewSrc || getDocumentViewFile(id)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-medium text-teal-700 dark:text-teal-300 hover:underline">
                   <Maximize2 className="w-4 h-4" />
-                  Plein écran
+                  {t("document.fullScreen")}
                 </a>
               )}
             </div>
@@ -574,7 +574,7 @@ export default function DocumentDetail() {
                     <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
                       <FileText className="h-10 w-10 text-gray-400" />
                       <p className="text-sm text-gray-600 dark:text-slate-400">
-                        L’aperçu ne s’affiche pas correctement sur ce navigateur.
+                        {t("document.previewFrameError")}
                       </p>
                       <a
                         href={previewSrc}
@@ -582,7 +582,7 @@ export default function DocumentDetail() {
                         rel="noreferrer"
                         className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
                       >
-                        Ouvrir dans un nouvel onglet
+                        {t("document.openNewTab")}
                       </a>
                     </div>
                   </object>
@@ -590,7 +590,7 @@ export default function DocumentDetail() {
                 {previewLoading && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 dark:bg-slate-800/80 text-sm text-gray-600 dark:text-slate-400" aria-live="polite">
                     <div className="h-7 w-7 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
-                    Chargement de l’aperçu complet…
+                    {t("document.loadingFullPreview")}
                   </div>
                 )}
               </div>
@@ -598,15 +598,15 @@ export default function DocumentDetail() {
               <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 dark:from-slate-800 to-gray-50 dark:to-slate-900 border border-gray-100 dark:border-slate-700">
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
                   <FileText className="w-12 h-12 text-gray-400 mb-3" />
-                  <p className="text-gray-600 dark:text-slate-400 mb-4">{user?.email_verified ? "Cliquez sur \"Consulter en ligne\" pour afficher l'aperçu" : "Vérifiez votre email pour consulter l'aperçu en ligne"}</p>
+                  <p className="text-gray-600 dark:text-slate-400 mb-4">{user?.email_verified ? t("document.clickToPreview") : t("document.verifyToPreviewOnline")}</p>
                   <button onClick={loadPreview} disabled={previewLoading || !user?.email_verified} className="px-4 py-2 bg-teal-700 text-white rounded-lg shadow-sm hover:bg-teal-800 disabled:opacity-50">
-                    {previewLoading ? "Chargement..." : user?.email_verified ? "Charger l'aperçu" : "Vérifier mon email"}
+                    {previewLoading ? t("common.loading") : user?.email_verified ? t("document.loadPreview") : t("document.verifyEmailBtn")}
                   </button>
                 </div>
               </div>
             )}
             {doc.size_bytes && (
-              <p className="text-sm text-gray-500 dark:text-slate-400 mt-3">Taille : {formatSize(doc.size_bytes)} • Format : {doc.mime_type?.split("/")[1]?.toUpperCase() || "-"}</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-3">{t("document.fileMeta", { size: formatSize(doc.size_bytes), format: doc.mime_type?.split("/")[1]?.toUpperCase() || "-" })}</p>
             )}
           </section>
 

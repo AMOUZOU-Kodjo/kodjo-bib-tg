@@ -14,7 +14,7 @@ export function Pagination({ page, totalPages, onPageChange }) {
         aria-label={t("pagination.previous")}
         className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
       >
-        « <span className="hidden sm:inline">{t("pagination.previousLabel")}</span><span className="sm:hidden">Préc.</span>
+        « <span className="hidden sm:inline">{t("pagination.previousLabel")}</span><span className="sm:hidden">{t("pagination.previousShort")}</span>
       </button>
       {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
         let p;
@@ -47,7 +47,7 @@ export function Pagination({ page, totalPages, onPageChange }) {
         aria-label={t("pagination.next")}
         className="shrink-0 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed sm:px-3"
       >
-        <span className="hidden sm:inline">Suivant</span><span className="sm:hidden">Suiv.</span> »
+        <span className="hidden sm:inline">{t("pagination.nextLabel")}</span><span className="sm:hidden">{t("pagination.nextShort")}</span> »
       </button>
     </nav>
   );

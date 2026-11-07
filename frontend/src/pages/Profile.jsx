@@ -155,7 +155,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
                 }`}
               >
                 <Globe2 className="w-4 h-4" />
-                Public
+                {t("profile.public")}
               </button>
               <button
                 type="button"
@@ -168,7 +168,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
                 }`}
               >
                 <Lock className="w-4 h-4" />
-                Privé
+                {t("profile.private")}
               </button>
             </div>
             {visibilityChanged && (
@@ -329,7 +329,7 @@ function ShareDocumentModal({ doc, onClose, onChanged }) {
           <div className="space-y-4">
             <p className="text-sm text-red-600">{error}</p>
             <button onClick={() => createLink(false)} disabled={busy} className="w-full px-4 py-2.5 rounded-lg text-sm font-medium bg-teal-700 text-white hover:bg-teal-800 disabled:opacity-50">
-              Réessayer
+              {t("profile.retry")}
             </button>
           </div>
         ) : enabled && url ? (
@@ -687,7 +687,7 @@ export default function Profile() {
   return (
       <div className="max-w-5xl mx-auto">
       <header className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-slate-100 mb-1">Mon profil</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-slate-100 mb-1">{t("nav.myProfile")}</h1>
         <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("profile.subtitle")}</p>
       </header>
 
@@ -697,7 +697,7 @@ export default function Profile() {
             <div className="flex items-center justify-between gap-3 mb-5 sm:gap-4">
               <div className="min-w-0">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">{t("profile.myDocs")}</h2>
-                <p className="text-sm text-gray-500 dark:text-slate-400">{docs.length} document{docs.length > 1 ? "s" : ""} au total</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">{t("profile.docsTotal", { count: docs.length })}</p>
               </div>
               <Link to="/upload" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-teal-700 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800 sm:px-4">
                 <Upload className="w-4 h-4" />
@@ -709,10 +709,10 @@ export default function Profile() {
               <div className="flex justify-center py-10"><Spinner size="lg" /></div>
             ) : docs.length === 0 ? (
               <div className="py-4">
-                <EmptyState message="Vous n'avez encore déposé aucun document" icon={FileText} />
+                <EmptyState message={t("profile.noDocs")} icon={FileText} />
                 <div className="text-center">
                   <Link to="/upload" className="text-sm font-medium text-teal-700 dark:text-teal-300 hover:underline">
-                    Déposer votre premier document
+                    {t("profile.uploadFirstCta")}
                   </Link>
                 </div>
               </div>
@@ -745,7 +745,7 @@ export default function Profile() {
                   {t("profile.readingList")}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-slate-400">
-                  {favoritesTotal} document{favoritesTotal > 1 ? "s" : ""} enregistré{favoritesTotal > 1 ? "s" : ""}
+                  {t("profile.favoritesCount", { count: favoritesTotal })}
                 </p>
               </div>
             </div>
@@ -754,10 +754,10 @@ export default function Profile() {
               <div className="flex justify-center py-10"><Spinner size="lg" /></div>
             ) : favorites.length === 0 ? (
               <div className="py-4">
-                <EmptyState message="Votre liste de lecture est vide" icon={Bookmark} />
+                <EmptyState message={t("profile.readingListEmpty")} icon={Bookmark} />
                 <div className="text-center">
                   <Link to="/documents" className="text-sm font-medium text-teal-700 dark:text-teal-300 hover:underline">
-                    Parcourir la bibliothèque
+                    {t("profile.browseLibrary")}
                   </Link>
                 </div>
               </div>
@@ -838,7 +838,7 @@ export default function Profile() {
                   <p className="text-sm text-amber-800 dark:text-amber-200">{t("profile.verifyEmailHint")}</p>
                 </div>
                 <Link to="/verify-email" state={{ email: user?.email }} className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-900 dark:text-amber-100 hover:underline">
-                  Vérifier mon e-mail
+                  {t("profile.verifyEmail")}
                 </Link>
               </div>
             )}
@@ -848,7 +848,7 @@ export default function Profile() {
             <div className="mb-4">
               <h2 className="flex items-center gap-2 font-bold text-gray-900 dark:text-slate-100">
                 <Bell className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-                Notifications
+                {t("profile.notifications")}
               </h2>
               <p className="mt-1 text-xs leading-relaxed text-gray-500 dark:text-slate-400">
                 {t("profile.notifyIntro")}
@@ -878,7 +878,7 @@ export default function Profile() {
               {pushSupported && pushConfig.enabled && (
                 <PreferenceToggle
                   label={t("profile.pushNotifications")}
-                  description="Recevoir des alertes même lorsque l'application est fermée."
+                  description={t("profile.pushDescription")}
                   checked={pushEnabled}
                   disabled={pushBusy}
                   onChange={togglePush}
@@ -899,12 +899,12 @@ export default function Profile() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
                 <History className="w-4 h-4 text-teal-700 dark:text-teal-300" />
-                Crédits
+                {t("profile.credits")}
               </h2>
               <span className="text-2xl font-bold text-teal-700 dark:text-teal-300">{credits}</span>
             </div>
             <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
-              1 dépôt = {creditsParUpload} crédit{creditsParUpload > 1 ? "s" : ""}, 1 téléchargement = 1 crédit.
+              {t("profile.creditsSummary", { count: creditsParUpload })}
             </p>
 
             {creditsLoading ? (

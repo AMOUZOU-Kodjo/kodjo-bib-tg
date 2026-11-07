@@ -143,7 +143,7 @@ export default function Home() {
           </div>
 
           <div className="relative h-40 sm:h-48 lg:h-auto">
-            <img src={heroImg} alt="Bibliothèque de documents" className="absolute inset-0 h-full w-full object-cover" />
+            <img src={heroImg} alt={t("home.heroAlt")} className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent lg:bg-gradient-to-r lg:from-slate-950 lg:via-slate-950/10 lg:to-transparent" />
           </div>
         </div>
