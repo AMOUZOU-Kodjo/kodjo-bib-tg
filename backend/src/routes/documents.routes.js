@@ -315,7 +315,9 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
       compression: {
         optimized: optimizedFile.optimized,
         originalSize: optimizedFile.originalSize,
-        finalSize: optimizedFile.finalSize
+        finalSize: optimizedFile.finalSize,
+        mode: optimizedFile.mode,
+        targetReached: optimizedFile.targetReached
       }
     });
   } catch (err) {

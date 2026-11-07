@@ -190,11 +190,16 @@ export default function Upload() {
         setUser((current) => (current ? { ...current, credits: data.credits } : current));
       }
       const savedBytes = (data.compression?.originalSize || 0) - (data.compression?.finalSize || 0);
+      const savedPercent = data.compression?.originalSize
+        ? Math.round((savedBytes / data.compression.originalSize) * 100)
+        : 0;
       toast.success(
         visibility === "private"
           ? t("upload.toastPrivateDone")
           : savedBytes > 0
-          ? t("upload.toastSaved", { size: formatFileSize(savedBytes, t) })
+          ? data.compression?.mode === "raster"
+            ? t("upload.toastRasterSaved", { size: formatFileSize(savedBytes, t), percent: savedPercent })
+            : t("upload.toastSaved", { size: formatFileSize(savedBytes, t), percent: savedPercent })
           : t("upload.toastDone")
       );
       setCreatedDoc(data.document || null);
@@ -330,6 +335,9 @@ export default function Upload() {
                 </>
               )}
             </div>
+            {file && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) && (
+              <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">{t("upload.pdfCompressionNote")}</p>
+            )}
           </div>
 
           <div className="space-y-6 p-4 sm:p-6 md:p-8">

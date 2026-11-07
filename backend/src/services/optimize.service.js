@@ -3,13 +3,22 @@ import { randomUUID } from "crypto";
 import { readFileSync } from "fs";
 import JSZip from "jszip";
 import initQpdf from "@jspawn/qpdf-wasm/qpdf.mjs";
+import initGhostscript from "@okathira/ghostpdl-wasm";
 
 const OOXML_EXTENSIONS = new Set([".docx", ".xlsx", ".pptx"]);
 const ZIP_MAGIC = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 const PDF_SIGNATURE_MARKERS = ["/ByteRange", "/Type /Sig", "/Type/Sig"].map((marker) => Buffer.from(marker));
 const MAX_ZIP_UNCOMPRESSED_BYTES = 80 * 1024 * 1024;
+const PDF_TARGET_RATIO = 0.2;
+const PDF_RASTER_STEPS = [
+  { resolution: 72, quality: 50 },
+  { resolution: 60, quality: 45 },
+  { resolution: 50, quality: 40 },
+  { resolution: 36, quality: 35 }
+];
 
 let qpdfPromise;
+const ghostscriptPromises = new Map();
 
 function isZip(buffer) {
   return buffer.length >= ZIP_MAGIC.length && buffer.subarray(0, ZIP_MAGIC.length).equals(ZIP_MAGIC);
@@ -38,10 +47,53 @@ async function loadQpdf() {
   return qpdfPromise;
 }
 
-async function optimizePdf(buffer) {
-  if (PDF_SIGNATURE_MARKERS.some((marker) => buffer.includes(marker))) {
-    return buffer;
+function isPdf(buffer) {
+  return buffer.subarray(0, 1024).toString("latin1").includes("%PDF-");
+}
+
+function isSignedPdf(buffer) {
+  return PDF_SIGNATURE_MARKERS.some((marker) => buffer.includes(marker));
+}
+
+async function loadGhostscript(device) {
+  if (!ghostscriptPromises.has(device)) {
+    const promise = initGhostscript().catch((err) => {
+      ghostscriptPromises.delete(device);
+      throw err;
+    });
+    ghostscriptPromises.set(device, promise);
   }
+  return ghostscriptPromises.get(device);
+}
+
+async function runGhostscript(device, buffer, options) {
+  const ghostscript = await loadGhostscript(device);
+  const id = randomUUID();
+  const inputPath = `/input-${id}.pdf`;
+  const outputPath = `/output-${id}.pdf`;
+  ghostscript.FS.writeFile(inputPath, buffer);
+  try {
+    const code = ghostscript.callMain([
+      `-sDEVICE=${device}`,
+      "-dNOPAUSE",
+      "-dBATCH",
+      "-dQUIET",
+      ...options,
+      `-sOutputFile=${outputPath}`,
+      inputPath
+    ]);
+    if (code !== 0) return null;
+    return Buffer.from(ghostscript.FS.readFile(outputPath));
+  } finally {
+    for (const file of [inputPath, outputPath]) {
+      try {
+        ghostscript.FS.unlink(file);
+      } catch {}
+    }
+  }
+}
+
+async function optimizePdfLossless(buffer) {
   const qpdf = await loadQpdf();
   const id = randomUUID();
   const inputPath = `/input-${id}.pdf`;
@@ -56,7 +108,7 @@ async function optimizePdf(buffer) {
       "--compression-level=9",
       "--compress-streams=y"
     ]);
-    if (code !== 0) return buffer;
+    if (code !== 0) return null;
     return Buffer.from(qpdf.FS.readFile(outputPath));
   } finally {
     for (const file of [inputPath, outputPath]) {
@@ -65,6 +117,66 @@ async function optimizePdf(buffer) {
       } catch {}
     }
   }
+}
+
+async function optimizePdf(buffer) {
+  if (!isPdf(buffer) || isSignedPdf(buffer)) {
+    return { buffer, mode: "none", targetReached: false };
+  }
+  const targetSize = Math.floor(buffer.length * PDF_TARGET_RATIO);
+  let best = null;
+
+  try {
+    const screen = await runGhostscript("pdfwrite", buffer, [
+      "-dSAFER",
+      "-dCompatibilityLevel=1.5",
+      "-dAutoRotatePages=/None",
+      "-dPDFSETTINGS=/screen",
+      "-dDetectDuplicateImages=true",
+      "-dCompressFonts=true",
+      "-dSubsetFonts=true"
+    ]);
+    if (screen && screen.length < buffer.length) {
+      best = { buffer: screen, mode: "screen" };
+      if (screen.length <= targetSize) {
+        return { ...best, targetReached: true };
+      }
+    }
+  } catch (err) {
+    console.warn(`Compression Ghostscript ignorée: ${err.message}`);
+  }
+
+  for (const step of PDF_RASTER_STEPS) {
+    try {
+      const raster = await runGhostscript("pdfimage24", buffer, [
+        `-r${step.resolution}`,
+        `-dJPEGQ=${step.quality}`
+      ]);
+      if (raster && raster.length < buffer.length && (!best || raster.length < best.buffer.length)) {
+        best = { buffer: raster, mode: "raster" };
+      }
+      if (best?.mode === "raster" && best.buffer.length <= targetSize) {
+        return { ...best, targetReached: true };
+      }
+    } catch (err) {
+      console.warn(`Compression raster Ghostscript ignorée: ${err.message}`);
+    }
+  }
+
+  if (best) {
+    return { ...best, targetReached: best.buffer.length <= targetSize };
+  }
+
+  try {
+    const lossless = await optimizePdfLossless(buffer);
+    if (lossless && lossless.length < buffer.length) {
+      return { buffer: lossless, mode: "lossless", targetReached: lossless.length <= targetSize };
+    }
+  } catch (err) {
+    console.warn(`Compression qpdf ignorée: ${err.message}`);
+  }
+
+  return { buffer, mode: "none", targetReached: false };
 }
 
 function entryCompression(entry) {
@@ -120,22 +232,30 @@ export async function optimizeDocumentBuffer(buffer, originalName = "", mimeType
   const ext = path.extname(originalName).toLowerCase();
   try {
     let optimized = buffer;
+    let mode = "none";
+    let targetReached = false;
     if (ext === ".pdf" || mimeType === "application/pdf") {
-      optimized = await optimizePdf(buffer);
+      const result = await optimizePdf(buffer);
+      optimized = result.buffer;
+      mode = result.mode;
+      targetReached = result.targetReached;
     } else if (OOXML_EXTENSIONS.has(ext)) {
       optimized = await optimizeOfficeZip(buffer);
+      mode = optimized.length < buffer.length ? "lossless" : "none";
     }
     if (optimized.length >= buffer.length) {
-      return { buffer, optimized: false, originalSize: buffer.length, finalSize: buffer.length };
+      return { buffer, optimized: false, originalSize: buffer.length, finalSize: buffer.length, mode: "none", targetReached: false };
     }
     return {
       buffer: optimized,
       optimized: true,
       originalSize: buffer.length,
-      finalSize: optimized.length
+      finalSize: optimized.length,
+      mode,
+      targetReached
     };
   } catch (err) {
     console.warn(`Optimisation ignorée pour ${originalName || "fichier"}: ${err.message}`);
-    return { buffer, optimized: false, originalSize: buffer.length, finalSize: buffer.length };
+    return { buffer, optimized: false, originalSize: buffer.length, finalSize: buffer.length, mode: "none", targetReached: false };
   }
 }
