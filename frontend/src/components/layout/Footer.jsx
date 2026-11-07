@@ -62,16 +62,23 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-white">{t("footer.account")}</h3>
             <ul className="mt-4 space-y-3">
-              <li><Link to="/login" className={linkClass}>{t("footer.login")}</Link></li>
-              {allowRegistrations && <li><Link to="/register" className={linkClass}>{t("footer.register")}</Link></li>}
-              <li><Link to="/profile" className={linkClass}>{t("footer.profile")}</Link></li>
-              <li><Link to="/favorites" className={linkClass}>{t("nav.favorites")}</Link></li>
-              <li><Link to="/downloads" className={linkClass}>{t("nav.downloads")}</Link></li>
-              {user && !user.email_verified && (
-                <li><Link to="/verify-email" state={{ email: user.email }} className={linkClass}>{t("nav.verifyEmail")}</Link></li>
-              )}
-              {user?.role === "admin" && (
-                <li><Link to="/admin" className={linkClass}>{t("nav.admin")}</Link></li>
+              {user ? (
+                <>
+                  <li><Link to="/profile" className={linkClass}>{t("footer.profile")}</Link></li>
+                  <li><Link to="/favorites" className={linkClass}>{t("nav.favorites")}</Link></li>
+                  <li><Link to="/downloads" className={linkClass}>{t("nav.downloads")}</Link></li>
+                  {!user.email_verified && (
+                    <li><Link to="/verify-email" state={{ email: user.email }} className={linkClass}>{t("nav.verifyEmail")}</Link></li>
+                  )}
+                  {user.role === "admin" && (
+                    <li><Link to="/admin" className={linkClass}>{t("nav.admin")}</Link></li>
+                  )}
+                </>
+              ) : (
+                <>
+                  <li><Link to="/login" className={linkClass}>{t("footer.login")}</Link></li>
+                  {allowRegistrations && <li><Link to="/register" className={linkClass}>{t("footer.register")}</Link></li>}
+                </>
               )}
             </ul>
           </div>

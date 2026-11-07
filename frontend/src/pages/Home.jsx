@@ -7,6 +7,7 @@ import { getDocuments } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import useSeo from "../hooks/useSeo";
 import { useSiteSettings } from "../context/SiteSettingsContext";
+import { useAuth } from "../context/AuthContext";
 import { SkeletonCard, Reveal } from "../components/ui";
 
 const HOME_DOCUMENTS_LIMIT = 10;
@@ -37,6 +38,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { allowRegistrations } = useSiteSettings();
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +115,12 @@ export default function Home() {
                   {t("home.explore")}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-                {allowRegistrations && (
+                {user ? (
+                  <Link to="/upload" className="flex w-full items-center justify-center gap-1.5 rounded-md border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-white/20 sm:w-auto sm:text-sm">
+                    <Upload className="w-3.5 h-3.5" />
+                    {t("footer.upload")}
+                  </Link>
+                ) : allowRegistrations && (
                   <Link to="/register" className="flex w-full items-center justify-center gap-1.5 rounded-md border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-white/20 sm:w-auto sm:text-sm">
                     <Upload className="w-3.5 h-3.5" />
                     {t("home.createAccount")}
