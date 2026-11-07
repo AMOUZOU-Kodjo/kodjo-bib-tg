@@ -9,6 +9,8 @@ import useSeo from "../hooks/useSeo";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { SkeletonCard, Reveal } from "../components/ui";
 
+const HOME_DOCUMENTS_LIMIT = 10;
+
 function DocumentSection({ title, subtitle, docs, to = "/documents", loading = false, seeAll }) {
   if (!loading && !docs.length) return null;
   return (
@@ -24,7 +26,7 @@ function DocumentSection({ title, subtitle, docs, to = "/documents", loading = f
       </div>
       <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
         {loading
-          ? Array.from({ length: 5 }).map((_, index) => <SkeletonCard key={index} />)
+          ? Array.from({ length: HOME_DOCUMENTS_LIMIT }).map((_, index) => <SkeletonCard key={index} />)
           : docs.map((doc) => <DocumentCard key={doc.id} doc={doc} />)}
       </div>
     </section>
@@ -37,7 +39,6 @@ export default function Home() {
   const { allowRegistrations } = useSiteSettings();
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState([]);
-  const [popular, setPopular] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useSeo({
@@ -48,19 +49,14 @@ export default function Home() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([
-      getDocuments({ sort: "recent", limit: 5 }),
-      getDocuments({ sort: "views", limit: 5 })
-    ])
-      .then(([recentRes, popularRes]) => {
+    getDocuments({ sort: "recent", limit: HOME_DOCUMENTS_LIMIT })
+      .then((res) => {
         if (!active) return;
-        setRecent(recentRes.data.documents || []);
-        setPopular(popularRes.data.documents || []);
+        setRecent(res.data.documents || []);
       })
       .catch(() => {
         if (!active) return;
         setRecent([]);
-        setPopular([]);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -160,16 +156,6 @@ export default function Home() {
         />
       </Reveal>
 
-      <Reveal delay={80}>
-        <DocumentSection
-          title={t("home.popularTitle")}
-          subtitle={t("home.popularDesc")}
-          docs={popular}
-          loading={loading}
-          to="/documents?sort=views"
-          seeAll={t("common.seeAll")}
-        />
-      </Reveal>
 
     </div>
   );
