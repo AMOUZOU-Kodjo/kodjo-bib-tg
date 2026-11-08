@@ -129,7 +129,7 @@
     "drop": "Glissez-déposez votre fichier ici",
     "orClick": "ou cliquez pour parcourir",
     "maxSize": "{{max}} Mo maximum",
-    "pdfCompressionNote": "Les PDF sont optimisés automatiquement sans convertir les pages en images : le texte reste lisible et sélectionnable.",
+    "pdfCompressionNote": "Les PDF jusqu’à 10 Mo sont optimisés sans perdre le texte. Au-delà, seule une compression sans perte est tentée, pour préserver la qualité.",
     "sizeKb": "{{value}} Ko",
     "sizeMb": "{{value}} Mo",
     "titleLabel": "Titre *",

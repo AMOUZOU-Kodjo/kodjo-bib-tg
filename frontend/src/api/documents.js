@@ -17,6 +17,7 @@ export const fetchDocumentViewBlob = (id) =>
 export const uploadDocument = (formData, onProgress) =>
   client.post("/documents", formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    timeout: 600000,
     onUploadProgress: (event) => {
       if (!onProgress || !event.total) return;
       onProgress(Math.min(100, Math.round((event.loaded * 100) / event.total)));

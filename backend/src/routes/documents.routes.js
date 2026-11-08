@@ -8,7 +8,7 @@ import { uploadRaw, uploadPreview, deleteRaw, deletePreview, getSignedDownloadUr
 import { addCreditsOnUpload } from "../services/credits.service.js";
 import { sendEmail } from "../services/email.service.js";
 import { buildContactEmail } from "../services/emailTemplates.js";
-import { optimizeDocumentBuffer } from "../services/optimize.service.js";
+import { createPdfFirstPagePreview, optimizeDocumentBuffer } from "../services/optimize.service.js";
 import { notifyDocumentUpload } from "../services/notifications.service.js";
 import { notifyFollowersNewDocument } from "../services/notificationCenter.service.js";
 import { streamDocumentFile } from "../services/documentStream.service.js";
@@ -285,9 +285,15 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
   try {
     const optimizedFile = await optimizeDocumentBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
     uploaded = await uploadRaw(optimizedFile.buffer, req.file.originalname, req.file.mimetype);
-    if (canGeneratePreview(req.file.mimetype, req.file.originalname) && optimizedFile.buffer.length <= CLOUDINARY_PREVIEW_MAX_BYTES) {
+    if (canGeneratePreview(req.file.mimetype, req.file.originalname)) {
       try {
-        preview = await uploadPreview(optimizedFile.buffer);
+        const isPdfUpload = req.file.mimetype === "application/pdf" || req.file.originalname.toLowerCase().endsWith(".pdf");
+        if (isPdfUpload && optimizedFile.buffer.length > CLOUDINARY_PREVIEW_MAX_BYTES) {
+          const firstPage = await createPdfFirstPagePreview(optimizedFile.buffer);
+          if (firstPage) preview = await uploadPreview(firstPage);
+        } else if (optimizedFile.buffer.length <= CLOUDINARY_PREVIEW_MAX_BYTES) {
+          preview = await uploadPreview(optimizedFile.buffer);
+        }
       } catch (err) {
         console.error("Impossible de générer la miniature Cloudinary:", err.message);
       }

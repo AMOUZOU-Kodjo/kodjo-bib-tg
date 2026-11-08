@@ -123,7 +123,7 @@ Voir `frontend/.env.example`.
 - Renseigner `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID` et `R2_SECRET_ACCESS_KEY` dans le backend.
 - Les nouveaux documents sont stockés sous le préfixe `r2/archives/` et servis par des URLs signées.
 - Les documents existants restent sur Cloudinary : la suppression et les téléchargements détectent automatiquement le stockage d'origine.
-- Les miniatures restent générées par Cloudinary et ne sont pas créées pour les fichiers dépassant sa limite gratuite de 10 Mo.
+- Les miniatures restent générées par Cloudinary ; pour les PDF dépassant 10 Mo, seule la première page est rendue en JPEG avant l’envoi.
 - Configurer `MAX_FILE_SIZE_MB` et le paramètre d'administration à `50` pour autoriser les fichiers jusqu'à 50 Mo.
 
 ### Brevo

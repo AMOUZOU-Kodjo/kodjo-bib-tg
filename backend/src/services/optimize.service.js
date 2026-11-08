@@ -9,6 +9,8 @@ const OOXML_EXTENSIONS = new Set([".docx", ".xlsx", ".pptx"]);
 const ZIP_MAGIC = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 const PDF_SIGNATURE_MARKERS = ["/ByteRange", "/Type /Sig", "/Type/Sig"].map((marker) => Buffer.from(marker));
 const MAX_ZIP_UNCOMPRESSED_BYTES = 80 * 1024 * 1024;
+const PDF_GS_MAX_BYTES = 10 * 1024 * 1024;
+const PDF_LOSSLESS_MAX_BYTES = 50 * 1024 * 1024;
 const PDF_TARGET_RATIO = 0.6;
 
 let qpdfPromise;
@@ -114,7 +116,7 @@ async function optimizePdfLossless(buffer) {
 }
 
 async function optimizePdf(buffer) {
-  if (!isPdf(buffer) || isSignedPdf(buffer)) {
+  if (!isPdf(buffer) || isSignedPdf(buffer) || buffer.length > PDF_LOSSLESS_MAX_BYTES) {
     return { buffer, mode: "none", targetReached: false };
   }
   const targetSize = Math.floor(buffer.length * PDF_TARGET_RATIO);
@@ -130,6 +132,10 @@ async function optimizePdf(buffer) {
     }
   } catch (err) {
     console.warn(`Compression qpdf ignorée: ${err.message}`);
+  }
+
+  if (buffer.length > PDF_GS_MAX_BYTES) {
+    return best ? { ...best, targetReached: best.buffer.length <= targetSize } : { buffer, mode: "none", targetReached: false };
   }
 
   try {
@@ -161,6 +167,45 @@ async function optimizePdf(buffer) {
   }
 
   return { buffer, mode: "none", targetReached: false };
+}
+
+export async function createPdfFirstPagePreview(buffer) {
+  if (!isPdf(buffer)) return null;
+  const id = randomUUID();
+  const inputPath = `/preview-input-${id}.pdf`;
+  const outputPath = `/preview-output-${id}.jpg`;
+  try {
+    const ghostscript = await loadGhostscript("jpeg");
+    ghostscript.FS.writeFile(inputPath, buffer);
+    try {
+      const code = ghostscript.callMain([
+        "-sDEVICE=jpeg",
+        "-dNOPAUSE",
+        "-dBATCH",
+        "-dQUIET",
+        "-dSAFER",
+        "-dFirstPage=1",
+        "-dLastPage=1",
+        "-r120",
+        "-dJPEGQ=82",
+        "-dTextAlphaBits=4",
+        "-dGraphicsAlphaBits=4",
+        `-sOutputFile=${outputPath}`,
+        inputPath
+      ]);
+      if (code !== 0) return null;
+      return Buffer.from(ghostscript.FS.readFile(outputPath));
+    } finally {
+      for (const file of [inputPath, outputPath]) {
+        try {
+          ghostscript.FS.unlink(file);
+        } catch {}
+      }
+    }
+  } catch (err) {
+    console.warn(`Génération de l'aperçu PDF ignorée: ${err.message}`);
+    return null;
+  }
 }
 
 function entryCompression(entry) {

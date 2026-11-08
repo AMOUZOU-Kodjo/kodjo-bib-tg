@@ -129,7 +129,7 @@
     "drop": "Drag and drop your file here",
     "orClick": "or click to browse",
     "maxSize": "{{max}} MB maximum",
-    "pdfCompressionNote": "PDFs are optimized automatically without converting pages to images: text stays readable and selectable.",
+    "pdfCompressionNote": "PDFs up to 10 MB are optimized without losing text. Above that, only lossless compression is attempted to preserve quality.",
     "sizeKb": "{{value}} KB",
     "sizeMb": "{{value}} MB",
     "titleLabel": "Title *",
