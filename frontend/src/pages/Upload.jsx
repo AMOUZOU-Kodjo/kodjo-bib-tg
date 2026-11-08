@@ -194,7 +194,9 @@ export default function Upload() {
         ? Math.round((savedBytes / data.compression.originalSize) * 100)
         : 0;
       toast.success(
-        visibility === "private"
+        data.compression?.background
+          ? t("upload.toastBackgroundCompression")
+          : visibility === "private"
           ? t("upload.toastPrivateDone")
           : savedBytes > 0
           ? t("upload.toastSaved", { size: formatFileSize(savedBytes, t), percent: savedPercent })

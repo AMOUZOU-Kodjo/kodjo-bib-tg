@@ -73,6 +73,17 @@ export async function uploadR2Object(fileBuffer, originalName, mimeType) {
   return { public_id: key, secure_url: getEndpoint(), provider: "r2" };
 }
 
+export async function replaceR2Object(key, fileBuffer, mimeType) {
+  if (!isR2Key(key)) return;
+  const client = await getClient();
+  await client.send(new PutObjectCommand({
+    Bucket: config.r2.bucket,
+    Key: key,
+    Body: fileBuffer,
+    ContentType: mimeType || "application/octet-stream"
+  }));
+}
+
 export async function deleteR2Object(key) {
   if (!isR2Key(key)) return;
   const client = await getClient();

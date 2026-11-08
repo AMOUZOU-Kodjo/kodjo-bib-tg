@@ -12,6 +12,22 @@ const MAX_ZIP_UNCOMPRESSED_BYTES = 80 * 1024 * 1024;
 const PDF_GS_MAX_BYTES = 10 * 1024 * 1024;
 const PDF_LOSSLESS_MAX_BYTES = 50 * 1024 * 1024;
 const PDF_TARGET_RATIO = 0.6;
+const GHOSTSCRIPT_EBOOK_OPTIONS = [
+  "-dSAFER",
+  "-dCompatibilityLevel=1.5",
+  "-dAutoRotatePages=/None",
+  "-dPDFSETTINGS=/ebook",
+  "-dDetectDuplicateImages=true",
+  "-dCompressFonts=true",
+  "-dSubsetFonts=true",
+  "-dEmbedAllFonts=true",
+  "-dDownsampleColorImages=true",
+  "-dColorImageResolution=150",
+  "-dDownsampleGrayImages=true",
+  "-dGrayImageResolution=150",
+  "-dDownsampleMonoImages=true",
+  "-dMonoImageResolution=300"
+];
 
 let qpdfPromise;
 const ghostscriptPromises = new Map();
@@ -115,7 +131,7 @@ async function optimizePdfLossless(buffer) {
   }
 }
 
-async function optimizePdf(buffer) {
+async function optimizePdf(buffer, { heavy = false } = {}) {
   if (!isPdf(buffer) || isSignedPdf(buffer) || buffer.length > PDF_LOSSLESS_MAX_BYTES) {
     return { buffer, mode: "none", targetReached: false };
   }
@@ -134,27 +150,12 @@ async function optimizePdf(buffer) {
     console.warn(`Compression qpdf ignorée: ${err.message}`);
   }
 
-  if (buffer.length > PDF_GS_MAX_BYTES) {
+  if (!heavy && buffer.length > PDF_GS_MAX_BYTES) {
     return best ? { ...best, targetReached: best.buffer.length <= targetSize } : { buffer, mode: "none", targetReached: false };
   }
 
   try {
-    const ebook = await runGhostscript("pdfwrite", buffer, [
-      "-dSAFER",
-      "-dCompatibilityLevel=1.5",
-      "-dAutoRotatePages=/None",
-      "-dPDFSETTINGS=/ebook",
-      "-dDetectDuplicateImages=true",
-      "-dCompressFonts=true",
-      "-dSubsetFonts=true",
-      "-dEmbedAllFonts=true",
-      "-dDownsampleColorImages=true",
-      "-dColorImageResolution=150",
-      "-dDownsampleGrayImages=true",
-      "-dGrayImageResolution=150",
-      "-dDownsampleMonoImages=true",
-      "-dMonoImageResolution=300"
-    ]);
+    const ebook = await runGhostscript("pdfwrite", buffer, GHOSTSCRIPT_EBOOK_OPTIONS);
     if (ebook && ebook.length < buffer.length && (!best || ebook.length < best.buffer.length)) {
       best = { buffer: ebook, mode: "ebook" };
     }
@@ -167,6 +168,14 @@ async function optimizePdf(buffer) {
   }
 
   return { buffer, mode: "none", targetReached: false };
+}
+
+export async function compressPdfHeavy(buffer) {
+  if (!isPdf(buffer) || isSignedPdf(buffer) || buffer.length > PDF_LOSSLESS_MAX_BYTES) {
+    return null;
+  }
+  const result = await optimizeDocumentBuffer(buffer, "document.pdf", "application/pdf", { heavy: true });
+  return result.optimized ? { buffer: result.buffer, mode: result.mode } : null;
 }
 
 export async function createPdfFirstPagePreview(buffer) {
@@ -257,14 +266,14 @@ async function optimizeOfficeZip(buffer) {
   });
 }
 
-export async function optimizeDocumentBuffer(buffer, originalName = "", mimeType = "") {
+export async function optimizeDocumentBuffer(buffer, originalName = "", mimeType = "", options = {}) {
   const ext = path.extname(originalName).toLowerCase();
   try {
     let optimized = buffer;
     let mode = "none";
     let targetReached = false;
     if (ext === ".pdf" || mimeType === "application/pdf") {
-      const result = await optimizePdf(buffer);
+      const result = await optimizePdf(buffer, options);
       optimized = result.buffer;
       mode = result.mode;
       targetReached = result.targetReached;

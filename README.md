@@ -124,6 +124,7 @@ Voir `frontend/.env.example`.
 - Les nouveaux documents sont stockés sous le préfixe `r2/archives/` et servis par des URLs signées.
 - Les documents existants restent sur Cloudinary : la suppression et les téléchargements détectent automatiquement le stockage d'origine.
 - Les miniatures restent générées par Cloudinary ; pour les PDF dépassant 10 Mo, seule la première page est rendue en JPEG avant l’envoi.
+- Au-delà de 10 Mo, la compression Ghostscript lourde est exécutée dans un worker en arrière-plan après l’upload, puis le fichier R2 et sa taille sont mis à jour si le gain est réel.
 - Configurer `MAX_FILE_SIZE_MB` et le paramètre d'administration à `50` pour autoriser les fichiers jusqu'à 50 Mo.
 
 ### Brevo

@@ -9,6 +9,8 @@ import { addCreditsOnUpload } from "../services/credits.service.js";
 import { sendEmail } from "../services/email.service.js";
 import { buildContactEmail } from "../services/emailTemplates.js";
 import { createPdfFirstPagePreview, optimizeDocumentBuffer } from "../services/optimize.service.js";
+import { enqueuePdfCompression } from "../services/pdfCompressionQueue.service.js";
+import { isR2Configured } from "../services/r2.service.js";
 import { notifyDocumentUpload } from "../services/notifications.service.js";
 import { notifyFollowersNewDocument } from "../services/notificationCenter.service.js";
 import { streamDocumentFile } from "../services/documentStream.service.js";
@@ -278,16 +280,19 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     return res.status(400).json({ error: { code: "INVALID_VISIBILITY", message: "Visibilité invalide" } });
   }
 
+  const isPdfUpload = req.file.mimetype === "application/pdf" || req.file.originalname.toLowerCase().endsWith(".pdf");
   let client;
   let uploaded;
   let preview;
   let committed = false;
   try {
-    const optimizedFile = await optimizeDocumentBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
+    const deferPdfCompression = isPdfUpload && req.file.buffer.length > CLOUDINARY_PREVIEW_MAX_BYTES && isR2Configured();
+    const optimizedFile = deferPdfCompression
+      ? { buffer: req.file.buffer, optimized: false, originalSize: req.file.buffer.length, finalSize: req.file.buffer.length, mode: "none", targetReached: false }
+      : await optimizeDocumentBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
     uploaded = await uploadRaw(optimizedFile.buffer, req.file.originalname, req.file.mimetype);
     if (canGeneratePreview(req.file.mimetype, req.file.originalname)) {
       try {
-        const isPdfUpload = req.file.mimetype === "application/pdf" || req.file.originalname.toLowerCase().endsWith(".pdf");
         if (isPdfUpload && optimizedFile.buffer.length > CLOUDINARY_PREVIEW_MAX_BYTES) {
           const firstPage = await createPdfFirstPagePreview(optimizedFile.buffer);
           if (firstPage) preview = await uploadPreview(firstPage);
@@ -315,6 +320,15 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     notifyFollowersNewDocument({ documentId: doc.id }).catch((err) => {
       console.error("Échec des notifications aux abonnés:", err.message);
     });
+    const backgroundCompression = deferPdfCompression
+      ? enqueuePdfCompression({
+        documentId: doc.id,
+        key: uploaded.public_id,
+        buffer: optimizedFile.buffer,
+        mimeType: req.file.mimetype,
+        originalSize: optimizedFile.finalSize
+      })
+      : false;
     res.json({
       ok: true,
       document: doc,
@@ -324,7 +338,8 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
         originalSize: optimizedFile.originalSize,
         finalSize: optimizedFile.finalSize,
         mode: optimizedFile.mode,
-        targetReached: optimizedFile.targetReached
+        targetReached: optimizedFile.targetReached,
+        background: backgroundCompression
       }
     });
   } catch (err) {
