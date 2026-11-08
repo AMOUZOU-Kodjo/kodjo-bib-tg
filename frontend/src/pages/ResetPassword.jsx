@@ -50,7 +50,7 @@ export default function ResetPassword() {
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t("auth.email")}</label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t("auth.resetCode")}</label>
@@ -58,11 +58,11 @@ export default function ResetPassword() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t("auth.newPassword")}</label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("auth.passwordMin")} required />
+            <Input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("auth.passwordMin")} required />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t("auth.confirmPassword")}</label>
-            <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
+            <Input type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? t("auth.resetting") : t("auth.resetBtn")}

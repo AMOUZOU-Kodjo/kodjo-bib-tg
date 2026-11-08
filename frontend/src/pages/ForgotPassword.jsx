@@ -48,7 +48,7 @@ export default function ForgotPassword() {
           <form onSubmit={submit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">{t("auth.email")}</label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("auth.emailPlaceholder")} required />
+              <Input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("auth.emailPlaceholder")} required />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? t("auth.sending") : t("auth.sendCode")}
