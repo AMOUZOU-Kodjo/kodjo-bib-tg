@@ -243,7 +243,7 @@ export default function Documents() {
       )}
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-6">
           {Array.from({ length: 10 }).map((_, index) => <SkeletonCard key={index} />)}
         </div>
       ) : docs.length === 0 ? (
@@ -256,7 +256,7 @@ export default function Documents() {
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">{t("documents.featured")}</h2>
                 </div>
-                <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-6">
                   {featured.map((doc) => <DocumentCard key={doc.id} doc={doc} />)}
                 </div>
               </section>
@@ -268,7 +268,7 @@ export default function Documents() {
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">{t("documents.results")}</h2>
               </div>
-              <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+              <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-6">
                 {list.map((doc) => <DocumentCard key={doc.id} doc={doc} />)}
               </div>
             </section>

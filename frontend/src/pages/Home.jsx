@@ -25,7 +25,7 @@ function DocumentSection({ title, subtitle, docs, to = "/documents", loading = f
           {seeAll} <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
-      <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-6">
         {loading
           ? Array.from({ length: HOME_DOCUMENTS_LIMIT }).map((_, index) => <SkeletonCard key={index} />)
           : docs.map((doc) => <DocumentCard key={doc.id} doc={doc} />)}

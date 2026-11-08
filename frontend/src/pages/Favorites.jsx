@@ -77,7 +77,7 @@ export default function Favorites() {
       )}
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-6">
           {Array.from({ length: 6 }).map((_, index) => (
             <SkeletonCard key={index} />
           ))}
@@ -91,7 +91,7 @@ export default function Favorites() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-6">
           {favorites.map((doc) => (
             <DocumentCard key={doc.id} doc={doc} />
           ))}

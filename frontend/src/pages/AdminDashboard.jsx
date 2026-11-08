@@ -1091,7 +1091,7 @@ export default function AdminDashboard() {
           {filteredDocs.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">{t("admin.noDocs")}</div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
               {pagedDocs.map(d => (
                 <article key={d.id} className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-shadow hover:shadow-md">
                   <input

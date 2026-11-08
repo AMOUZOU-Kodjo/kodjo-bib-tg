@@ -161,7 +161,7 @@ export default function Author() {
       ) : docs.length === 0 ? (
         <EmptyState message={t("author.noPublicDocs")} icon={FileText} />
       ) : (
-        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-6">
           {docs.map((doc) => (
             <DocumentCard key={doc.id} doc={doc} />
           ))}
