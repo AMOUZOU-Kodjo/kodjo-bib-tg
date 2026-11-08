@@ -25,7 +25,7 @@ export function attachmentContentDisposition(filename) {
 }
 
 export async function streamDocumentFile(doc, req, res, { cacheControl = "private, max-age=300" } = {}) {
-  const url = getSignedViewUrl(
+  const url = await getSignedViewUrl(
     doc.cloudinary_public_id,
     doc.original_filename,
     doc.cloudinary_resource_type

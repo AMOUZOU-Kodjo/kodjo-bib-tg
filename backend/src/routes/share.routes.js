@@ -274,7 +274,7 @@ router.get("/:token/download", async (req, res, next) => {
     const doc = await loadSharedDocument(req.params.token);
     if (!doc) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lien de partage invalide ou expiré" } });
     await query("UPDATE documents SET download_count = download_count + 1 WHERE id = $1", [doc.id]);
-    const url = getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
+    const url = await getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
     res.json({ url });
   } catch (err) {
     next(err);

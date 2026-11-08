@@ -23,6 +23,13 @@ export const config = {
     apiKey: process.env.CLOUDINARY_API_KEY,
     apiSecret: process.env.CLOUDINARY_API_SECRET
   },
+  r2: {
+    accountId: process.env.R2_ACCOUNT_ID || null,
+    endpoint: process.env.R2_ENDPOINT || null,
+    bucket: process.env.R2_BUCKET || null,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || null,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || null
+  },
   brevo: {
     apiKey: process.env.BREVO_API_KEY,
     senderEmail: process.env.BREVO_SENDER_EMAIL,

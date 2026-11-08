@@ -23,6 +23,7 @@ function asString(value) {
   return typeof value === "string" ? value : "";
 }
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const CLOUDINARY_PREVIEW_MAX_BYTES = 10 * 1024 * 1024;
 
 router.param("id", (req, res, next, id) => {
   if (!UUID_RE.test(id)) {
@@ -283,8 +284,8 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
   let committed = false;
   try {
     const optimizedFile = await optimizeDocumentBuffer(req.file.buffer, req.file.originalname, req.file.mimetype);
-    uploaded = await uploadRaw(optimizedFile.buffer, req.file.originalname);
-    if (canGeneratePreview(req.file.mimetype, req.file.originalname)) {
+    uploaded = await uploadRaw(optimizedFile.buffer, req.file.originalname, req.file.mimetype);
+    if (canGeneratePreview(req.file.mimetype, req.file.originalname) && optimizedFile.buffer.length <= CLOUDINARY_PREVIEW_MAX_BYTES) {
       try {
         preview = await uploadPreview(optimizedFile.buffer);
       } catch (err) {
@@ -569,13 +570,13 @@ router.post("/:id/download", authRequired, requireVerified, async (req, res, nex
         "INSERT INTO downloads (user_id, document_id) VALUES ($1, $2) ON CONFLICT (user_id, document_id) DO NOTHING",
         [req.user.id, req.params.id]
       );
-      const url = getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
+      const url = await getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
       await client.query("COMMIT");
       return res.json({ url, credits: userRes.rows[0].credits, charged: false });
     }
     const already = await client.query("SELECT 1 FROM downloads WHERE user_id = $1 AND document_id = $2", [req.user.id, req.params.id]);
     if (already.rows.length > 0) {
-      const url = getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
+      const url = await getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
       await client.query("COMMIT");
       return res.json({ url, credits: userRes.rows[0].credits, charged: false });
     }
@@ -587,7 +588,7 @@ router.post("/:id/download", authRequired, requireVerified, async (req, res, nex
     await client.query("INSERT INTO credit_transactions (user_id, delta, reason, document_id) VALUES ($1,-1,'download',$2)", [req.user.id, req.params.id]);
     await client.query("INSERT INTO downloads (user_id, document_id) VALUES ($1,$2)", [req.user.id, req.params.id]);
     await client.query("UPDATE documents SET download_count = download_count + 1 WHERE id = $1", [req.params.id]);
-    const url = getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
+    const url = await getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
     await client.query("COMMIT");
     res.json({ url, credits: creditRes.rows[0].credits, charged: true });
   } catch (err) {
@@ -606,7 +607,7 @@ router.get("/:id/preview", authRequired, requireVerified, async (req, res, next)
     if (!canAccessDocument(doc, req.user)) {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     }
-    const url = getSignedViewUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
+    const url = await getSignedViewUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
     res.json({ url, mimeType: doc.mime_type, fileName: doc.original_filename });
   } catch (err) {
     next(err);

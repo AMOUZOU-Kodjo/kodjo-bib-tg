@@ -11,6 +11,8 @@
     "keep-alive": "node src/scripts/keep-alive.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1164.0",
+    "@aws-sdk/s3-request-presigner": "^3.1164.0",
     "@jspawn/qpdf-wasm": "^0.0.2",
     "@okathira/ghostpdl-wasm": "^1.1.0",
     "bcryptjs": "^2.4.3",

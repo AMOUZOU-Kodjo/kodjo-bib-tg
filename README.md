@@ -5,13 +5,13 @@ Archive collaborative de documents (PDF, Word, Excel, PowerPoint, TXT) avec comp
 ## Stack
 
 - Frontend : React 18, Vite 8, Tailwind CSS, React Router 7, Axios.
-- Backend : Node.js, Express, PostgreSQL, JWT, Cloudinary, Brevo.
+- Backend : Node.js, Express, PostgreSQL, JWT, Cloudinary, Cloudflare R2, Brevo.
 - Hébergement gratuit prévu : Cloudflare Pages / Vercel pour le frontend, Render pour le backend, Neon pour PostgreSQL.
 
 ## Fonctionnalités principales
 
 - Inscription et connexion avec vérification d'e-mail par code.
-- Upload sécurisé vers Cloudinary avec contrôle MIME + extension.
+- Upload sécurisé vers Cloudflare R2 (nouveaux documents) et Cloudinary (documents existants), avec contrôle MIME + extension.
 - Recherche plein texte, catégories, tags (5 maximum) et tri.
 - Crédits : chaque upload rapporte des crédits, chaque nouveau téléchargement en consomme, avec historique complet (y compris ajustements administrateur).
 - Likes, vues dédoublonnées, commentaires, favoris, abonnements.
@@ -80,7 +80,11 @@ Voir `backend/.env.example`.
 | `DATABASE_URL` | Chaîne PostgreSQL Neon avec pooler et SSL |
 | `JWT_SECRET` | Secret long et aléatoire |
 | `JWT_EXPIRES_IN` | Durée de session, par défaut `7d` |
-| `CLOUDINARY_*` | Identifiants Cloudinary |
+| `CLOUDINARY_*` | Identifiants Cloudinary (documents existants et miniatures) |
+| `R2_ACCOUNT_ID` | Identifiant de compte Cloudflare R2 |
+| `R2_ENDPOINT` | Endpoint S3 R2 (optionnel si `R2_ACCOUNT_ID` est fourni) |
+| `R2_BUCKET` | Nom du bucket, `archivia-docs` |
+| `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | Clés API R2 (ne jamais committer) |
 | `BREVO_*` | Clé API et expéditeur Brevo |
 | `CONTACT_EMAIL` | Destinataire du formulaire de contact (sinon `BREVO_SENDER_EMAIL`) |
 | `MAX_FILE_SIZE_MB` | Taille maximale par défaut des fichiers |
@@ -111,6 +115,16 @@ Voir `frontend/.env.example`.
 - Dans Settings → Security, autoriser la livraison des PDF et fichiers ZIP.
 - Les fichiers sont envoyés en `resource_type: raw`, `type: authenticated`, dans le dossier `archives/`.
 - Les téléchargements passent par le backend et utilisent des URLs signées de courte durée.
+
+### Cloudflare R2
+
+- Créer un bucket privé, par exemple `archivia-docs`, avec le endpoint S3 du compte.
+- Créer un token API avec les droits `Object Read & Write` limité au bucket.
+- Renseigner `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID` et `R2_SECRET_ACCESS_KEY` dans le backend.
+- Les nouveaux documents sont stockés sous le préfixe `r2/archives/` et servis par des URLs signées.
+- Les documents existants restent sur Cloudinary : la suppression et les téléchargements détectent automatiquement le stockage d'origine.
+- Les miniatures restent générées par Cloudinary et ne sont pas créées pour les fichiers dépassant sa limite gratuite de 10 Mo.
+- Configurer `MAX_FILE_SIZE_MB` et le paramètre d'administration à `50` pour autoriser les fichiers jusqu'à 50 Mo.
 
 ### Brevo
 

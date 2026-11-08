@@ -1,6 +1,10 @@
 import cloudinary from "../config/cloudinary.js";
+import { deleteR2Object, getR2SignedUrl, isR2Configured, isR2Key, uploadR2Object } from "./r2.service.js";
 
-export function uploadRaw(fileBuffer, originalName) {
+export async function uploadRaw(fileBuffer, originalName, mimeType) {
+  if (isR2Configured()) {
+    return uploadR2Object(fileBuffer, originalName, mimeType);
+  }
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
@@ -44,6 +48,14 @@ export function uploadPreview(fileBuffer) {
 }
 
 export async function deleteRaw(publicId) {
+  if (isR2Key(publicId)) {
+    try {
+      await deleteR2Object(publicId);
+    } catch (err) {
+      console.error("Erreur suppression R2", err);
+    }
+    return;
+  }
   try {
     await cloudinary.uploader.destroy(publicId, { resource_type: "raw", type: "authenticated" });
   } catch (err) {
@@ -66,7 +78,10 @@ function getAssetFormat(originalName, resourceType) {
   return extension && extension !== originalName ? extension : originalName;
 }
 
-export function getSignedDownloadUrl(publicId, originalName, resourceType = "raw") {
+export async function getSignedDownloadUrl(publicId, originalName, resourceType = "raw") {
+  if (isR2Key(publicId)) {
+    return getR2SignedUrl({ key: publicId, originalName, expiresIn: 300, download: true });
+  }
   const expiresAt = Math.floor(Date.now() / 1000) + 300;
   const url = cloudinary.utils.private_download_url(publicId, getAssetFormat(originalName, resourceType), {
     resource_type: resourceType,
@@ -77,7 +92,10 @@ export function getSignedDownloadUrl(publicId, originalName, resourceType = "raw
   return url;
 }
 
-export function getSignedViewUrl(publicId, originalName, resourceType = "raw") {
+export async function getSignedViewUrl(publicId, originalName, resourceType = "raw") {
+  if (isR2Key(publicId)) {
+    return getR2SignedUrl({ key: publicId, originalName, expiresIn: 3600, download: false });
+  }
   const expiresAt = Math.floor(Date.now() / 1000) + 3600;
   const url = cloudinary.utils.private_download_url(publicId, getAssetFormat(originalName, resourceType), {
     resource_type: resourceType,
@@ -115,7 +133,7 @@ export function getPreviewUrl(publicId, { expiresIn = 7200 } = {}) {
 
 export function getDocumentThumbnailUrl(publicId, mimeType, previewPublicId, expiresIn = 7200) {
   if (previewPublicId) return getPreviewUrl(previewPublicId, { expiresIn });
-  if (!publicId) return null;
+  if (!publicId || isR2Key(publicId)) return null;
   const expiresAt = Math.floor(Date.now() / 1000) + expiresIn;
   try {
     const url = cloudinary.url(publicId, {
