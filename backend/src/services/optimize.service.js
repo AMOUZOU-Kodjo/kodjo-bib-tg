@@ -9,13 +9,7 @@ const OOXML_EXTENSIONS = new Set([".docx", ".xlsx", ".pptx"]);
 const ZIP_MAGIC = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 const PDF_SIGNATURE_MARKERS = ["/ByteRange", "/Type /Sig", "/Type/Sig"].map((marker) => Buffer.from(marker));
 const MAX_ZIP_UNCOMPRESSED_BYTES = 80 * 1024 * 1024;
-const PDF_TARGET_RATIO = 0.2;
-const PDF_RASTER_STEPS = [
-  { resolution: 72, quality: 50 },
-  { resolution: 60, quality: 45 },
-  { resolution: 50, quality: 40 },
-  { resolution: 36, quality: 35 }
-];
+const PDF_TARGET_RATIO = 0.6;
 
 let qpdfPromise;
 const ghostscriptPromises = new Map();
@@ -127,53 +121,43 @@ async function optimizePdf(buffer) {
   let best = null;
 
   try {
-    const screen = await runGhostscript("pdfwrite", buffer, [
+    const lossless = await optimizePdfLossless(buffer);
+    if (lossless && lossless.length < buffer.length) {
+      best = { buffer: lossless, mode: "lossless" };
+      if (lossless.length <= targetSize) {
+        return { ...best, targetReached: true };
+      }
+    }
+  } catch (err) {
+    console.warn(`Compression qpdf ignorée: ${err.message}`);
+  }
+
+  try {
+    const ebook = await runGhostscript("pdfwrite", buffer, [
       "-dSAFER",
       "-dCompatibilityLevel=1.5",
       "-dAutoRotatePages=/None",
-      "-dPDFSETTINGS=/screen",
+      "-dPDFSETTINGS=/ebook",
       "-dDetectDuplicateImages=true",
       "-dCompressFonts=true",
-      "-dSubsetFonts=true"
+      "-dSubsetFonts=true",
+      "-dEmbedAllFonts=true",
+      "-dDownsampleColorImages=true",
+      "-dColorImageResolution=150",
+      "-dDownsampleGrayImages=true",
+      "-dGrayImageResolution=150",
+      "-dDownsampleMonoImages=true",
+      "-dMonoImageResolution=300"
     ]);
-    if (screen && screen.length < buffer.length) {
-      best = { buffer: screen, mode: "screen" };
-      if (screen.length <= targetSize) {
-        return { ...best, targetReached: true };
-      }
+    if (ebook && ebook.length < buffer.length && (!best || ebook.length < best.buffer.length)) {
+      best = { buffer: ebook, mode: "ebook" };
     }
   } catch (err) {
     console.warn(`Compression Ghostscript ignorée: ${err.message}`);
   }
 
-  for (const step of PDF_RASTER_STEPS) {
-    try {
-      const raster = await runGhostscript("pdfimage24", buffer, [
-        `-r${step.resolution}`,
-        `-dJPEGQ=${step.quality}`
-      ]);
-      if (raster && raster.length < buffer.length && (!best || raster.length < best.buffer.length)) {
-        best = { buffer: raster, mode: "raster" };
-      }
-      if (best?.mode === "raster" && best.buffer.length <= targetSize) {
-        return { ...best, targetReached: true };
-      }
-    } catch (err) {
-      console.warn(`Compression raster Ghostscript ignorée: ${err.message}`);
-    }
-  }
-
   if (best) {
     return { ...best, targetReached: best.buffer.length <= targetSize };
-  }
-
-  try {
-    const lossless = await optimizePdfLossless(buffer);
-    if (lossless && lossless.length < buffer.length) {
-      return { buffer: lossless, mode: "lossless", targetReached: lossless.length <= targetSize };
-    }
-  } catch (err) {
-    console.warn(`Compression qpdf ignorée: ${err.message}`);
   }
 
   return { buffer, mode: "none", targetReached: false };

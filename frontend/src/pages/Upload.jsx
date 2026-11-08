@@ -197,9 +197,7 @@ export default function Upload() {
         visibility === "private"
           ? t("upload.toastPrivateDone")
           : savedBytes > 0
-          ? data.compression?.mode === "raster"
-            ? t("upload.toastRasterSaved", { size: formatFileSize(savedBytes, t), percent: savedPercent })
-            : t("upload.toastSaved", { size: formatFileSize(savedBytes, t), percent: savedPercent })
+          ? t("upload.toastSaved", { size: formatFileSize(savedBytes, t), percent: savedPercent })
           : t("upload.toastDone")
       );
       setCreatedDoc(data.document || null);
