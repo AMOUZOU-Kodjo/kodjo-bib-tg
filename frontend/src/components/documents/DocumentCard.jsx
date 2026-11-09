@@ -52,7 +52,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
         <div className="doc-overlay absolute inset-x-0 bottom-0 p-5">
           <p className="mb-1 line-clamp-2 text-sm font-medium text-white">{doc.title}</p>
           <p className="text-xs text-gray-300">{doc.author_name}</p>
-          <div className="mt-1.5 flex items-center gap-3 text-[11px] text-gray-200">
+          <div className="mt-2 flex items-center gap-3 border-t border-white/15 pt-2 text-[10px] text-gray-200">
             <span className="inline-flex items-center gap-1" title={t("document.viewCount", { count: views })}>
               <Eye className="h-3.5 w-3.5" />
               {views}
@@ -63,7 +63,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
             </span>
           </div>
           {doc.tags?.length > 0 && (
-            <p className="mt-1 line-clamp-1 text-[10px] font-medium text-teal-200">
+            <p className="mt-1.5 line-clamp-1 text-[10px] font-medium text-teal-200">
               #{doc.tags.slice(0, 3).join(" #")}
             </p>
           )}

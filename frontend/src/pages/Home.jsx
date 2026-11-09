@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Upload, Search, ArrowRight, CheckCircle, FileText } from "lucide-react";
+import { Upload, Search, ArrowRight, CheckCircle } from "lucide-react";
 import heroImg from "../assets/hero.jpg";
 import { getDocuments, getDocumentStats } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
@@ -151,23 +151,27 @@ export default function Home() {
               </div>
 
               {docStats && docStats.total > 0 && (
-                <div className="mb-3 flex flex-wrap items-center gap-2 text-[10px] min-[360px]:text-[11px] sm:mb-4 sm:text-xs">
-                  <span
-                    className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 px-2.5 py-1 font-semibold text-teal-200 ring-1 ring-inset ring-teal-400/30"
-                    title={t("home.documentsTotal", { count: docStats.total, displayCount: docStats.total })}
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    {t("home.documentsTotal", {
-                      count: docStats.total,
-                      displayCount: formatDocumentCount(docStats.total)
-                    })}
-                  </span>
-                  <span className="rounded-full bg-white/10 px-2.5 py-1 text-gray-200">
-                    {t("home.documentsPublic", { count: docStats.public || 0 })}
-                  </span>
-                  <span className="rounded-full bg-white/10 px-2.5 py-1 text-gray-200">
-                    {t("home.documentsPrivate", { count: docStats.private || 0 })}
-                  </span>
+                <div className="mb-4 mt-4 grid grid-cols-3 gap-2 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2.5 sm:mb-5 sm:gap-3 sm:px-3 sm:py-3">
+                  <div className="min-w-0 text-center sm:text-left">
+                    <p className="text-sm font-bold leading-none text-white sm:text-base">
+                      {formatDocumentCount(docStats.total)}
+                    </p>
+                    <p className="mt-1 truncate text-[9px] font-medium uppercase tracking-wide text-teal-200 sm:text-[10px]">
+                      {t("home.documentsTotalLabel")}
+                    </p>
+                  </div>
+                  <div className="min-w-0 border-l border-white/10 pl-2 text-center sm:pl-3 sm:text-left">
+                    <p className="text-sm font-bold leading-none text-white sm:text-base">{docStats.public || 0}</p>
+                    <p className="mt-1 truncate text-[9px] font-medium uppercase tracking-wide text-gray-300 sm:text-[10px]">
+                      {t("home.documentsPublicLabel")}
+                    </p>
+                  </div>
+                  <div className="min-w-0 border-l border-white/10 pl-2 text-center sm:pl-3 sm:text-left">
+                    <p className="text-sm font-bold leading-none text-white sm:text-base">{docStats.private || 0}</p>
+                    <p className="mt-1 truncate text-[9px] font-medium uppercase tracking-wide text-gray-300 sm:text-[10px]">
+                      {t("home.documentsPrivateLabel")}
+                    </p>
+                  </div>
                 </div>
               )}
 
