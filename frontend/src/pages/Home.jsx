@@ -11,7 +11,7 @@ import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useAuth } from "../context/AuthContext";
 import { SkeletonCard, Reveal } from "../components/ui";
 
-const HOME_DOCUMENTS_LIMIT = 12;
+const HOME_DOCUMENTS_LIMIT = 18;
 
 function formatDocumentCount(value) {
   const total = Number(value) || 0;
@@ -101,7 +101,7 @@ export default function Home() {
       <section className="relative mt-4 sm:mt-6 mb-8 sm:mb-10 overflow-hidden max-w-full rounded-2xl sm:rounded-3xl border border-slate-800/60 bg-slate-950">
         <div className="relative">
           <img src={heroImg} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950/55 sm:bg-gradient-to-r sm:from-slate-950 sm:via-slate-950/75 sm:to-slate-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-slate-950/25 sm:bg-gradient-to-r sm:from-slate-950 sm:via-slate-950/25 sm:to-slate-950/20" />
           <div className="relative z-10 px-3 py-5 min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
             <div className="relative min-w-0 max-w-full lg:max-w-2xl">
               <h1 className="text-base min-[360px]:text-lg sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold text-white mb-2 sm:mb-2.5 leading-tight break-words">
