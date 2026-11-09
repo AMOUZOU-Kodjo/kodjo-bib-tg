@@ -102,7 +102,7 @@ export default function Home() {
         <div className="relative">
           <img src={heroImg} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-slate-950/25 sm:bg-gradient-to-r sm:from-slate-950 sm:via-slate-950/25 sm:to-slate-950/20" />
-          <div className="relative z-10 px-3 py-5 min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
+          <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-5 min-[360px]:py-6 sm:px-6 sm:py-9 lg:px-8 lg:py-10">
             <div className="relative min-w-0 max-w-full lg:max-w-2xl">
               <h1 className="text-base min-[360px]:text-lg sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold text-white mb-2 sm:mb-2.5 leading-tight break-words">
                 {t("home.heroTitle")}
