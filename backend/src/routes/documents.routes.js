@@ -85,6 +85,25 @@ function isDocumentOwner(doc, user) {
   return Boolean(user && String(user.id) === String(doc.owner_id));
 }
 
+router.get("/meta/stats", optionalAuth, async (req, res, next) => {
+  try {
+    if (!(await getSettings()).publicBrowsing && !req.user) {
+      return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
+    }
+    await ensureFeatureSchema();
+    const statsRes = await query(
+      `SELECT COUNT(*)::int AS total,
+              COUNT(*) FILTER (WHERE visibility = 'public')::int AS public_count,
+              COUNT(*) FILTER (WHERE visibility = 'private')::int AS private_count
+       FROM documents`
+    );
+    const stats = statsRes.rows[0];
+    res.json({ total: stats.total, public: stats.public_count, private: stats.private_count });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get("/meta/categories", optionalAuth, async (req, res, next) => {
   try {
     if (!(await getSettings()).publicBrowsing && !req.user) {

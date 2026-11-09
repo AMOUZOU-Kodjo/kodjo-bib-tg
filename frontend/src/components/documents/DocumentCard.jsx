@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, FileText, Lock, Pencil, Share2, Trash2 } from "lucide-react";
+import { Download, Eye, FileText, Lock, Pencil, Share2, Trash2 } from "lucide-react";
 import { getCategoryColor, formatCategoryName } from "../../utils/document";
 import { useQuickPreview } from "../../context/QuickPreviewContext";
 
@@ -11,6 +11,8 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
   const { openPreview } = useQuickPreview();
   const isPrivate = doc.visibility === "private";
   const showThumbnail = Boolean(doc.thumbnail) && !thumbnailFailed;
+  const views = doc.view_count || 0;
+  const downloads = doc.download_count || 0;
 
   return (
     <article className="group relative h-64 md:h-72 overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -50,6 +52,16 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
         <div className="doc-overlay absolute inset-x-0 bottom-0 p-5">
           <p className="mb-1 line-clamp-2 text-sm font-medium text-white">{doc.title}</p>
           <p className="text-xs text-gray-300">{doc.author_name}</p>
+          <div className="mt-1.5 flex items-center gap-3 text-[11px] text-gray-200">
+            <span className="inline-flex items-center gap-1" title={t("document.viewCount", { count: views })}>
+              <Eye className="h-3.5 w-3.5" />
+              {views}
+            </span>
+            <span className="inline-flex items-center gap-1" title={t("document.downloadCount", { count: downloads })}>
+              <Download className="h-3.5 w-3.5" />
+              {downloads}
+            </span>
+          </div>
           {doc.tags?.length > 0 && (
             <p className="mt-1 line-clamp-1 text-[10px] font-medium text-teal-200">
               #{doc.tags.slice(0, 3).join(" #")}
@@ -57,6 +69,17 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
           )}
         </div>
       </Link>
+
+        <div className="doc-stats-badge pointer-events-none absolute bottom-4 right-4 z-10 items-center gap-2 rounded-full border border-white/15 bg-black/65 px-2.5 py-1 text-[10px] font-medium text-white shadow-sm backdrop-blur transition-opacity">
+          <span className="inline-flex items-center gap-1" title={t("document.viewCount", { count: views })}>
+            <Eye className="h-3 w-3" />
+            {views}
+          </span>
+          <span className="inline-flex items-center gap-1" title={t("document.downloadCount", { count: downloads })}>
+            <Download className="h-3 w-3" />
+            {downloads}
+          </span>
+        </div>
 
         <div className="absolute right-4 top-4 z-10 flex gap-1.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
           <button

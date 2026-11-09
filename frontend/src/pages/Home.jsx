@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Upload, Search, ArrowRight, CheckCircle } from "lucide-react";
+import { Upload, Search, ArrowRight, CheckCircle, FileText } from "lucide-react";
 import heroImg from "../assets/hero.jpg";
-import { getDocuments } from "../api/documents";
+import { getDocuments, getDocumentStats } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import InstallBanner from "../components/layout/InstallBanner";
 import useSeo from "../hooks/useSeo";
@@ -12,6 +12,12 @@ import { useAuth } from "../context/AuthContext";
 import { SkeletonCard, Reveal } from "../components/ui";
 
 const HOME_DOCUMENTS_LIMIT = 12;
+
+function formatDocumentCount(value) {
+  const total = Number(value) || 0;
+  if (total < 10) return String(total);
+  return `${Math.floor(total / 10) * 10}+`;
+}
 
 function DocumentSection({ title, subtitle, docs, to = "/documents", loading = false, seeAll }) {
   if (!loading && !docs.length) return null;
@@ -42,6 +48,7 @@ export default function Home() {
   const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState([]);
+  const [docStats, setDocStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useSeo({
@@ -63,6 +70,20 @@ export default function Home() {
       })
       .finally(() => {
         if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getDocumentStats()
+      .then((res) => {
+        if (active) setDocStats(res.data);
+      })
+      .catch(() => {
+        if (active) setDocStats(null);
       });
     return () => {
       active = false;
@@ -128,6 +149,27 @@ export default function Home() {
                   </Link>
                 )}
               </div>
+
+              {docStats && docStats.total > 0 && (
+                <div className="mb-3 flex flex-wrap items-center gap-2 text-[10px] min-[360px]:text-[11px] sm:mb-4 sm:text-xs">
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 px-2.5 py-1 font-semibold text-teal-200 ring-1 ring-inset ring-teal-400/30"
+                    title={t("home.documentsTotal", { count: docStats.total, displayCount: docStats.total })}
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    {t("home.documentsTotal", {
+                      count: docStats.total,
+                      displayCount: formatDocumentCount(docStats.total)
+                    })}
+                  </span>
+                  <span className="rounded-full bg-white/10 px-2.5 py-1 text-gray-200">
+                    {t("home.documentsPublic", { count: docStats.public || 0 })}
+                  </span>
+                  <span className="rounded-full bg-white/10 px-2.5 py-1 text-gray-200">
+                    {t("home.documentsPrivate", { count: docStats.private || 0 })}
+                  </span>
+                </div>
+              )}
 
               <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-gray-300 text-[11px] sm:text-xs">
                 <div className="flex items-center gap-1">

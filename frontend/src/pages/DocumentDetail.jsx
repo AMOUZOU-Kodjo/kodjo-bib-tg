@@ -347,9 +347,15 @@ export default function DocumentDetail() {
             </div>
           </div>
           {showViewCount && (
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-slate-400 mb-4">
-              <Eye className="w-4 h-4" />
-              <span>{t("document.views", { count: doc.view_count || 0 })}</span>
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-slate-400 mb-4">
+              <span className="inline-flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                <span>{t("document.views", { count: doc.view_count || 0 })}</span>
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                <span>{t("document.downloadCount", { count: doc.download_count || 0 })}</span>
+              </span>
             </div>
           )}
           <button onClick={loadPreview} disabled={previewLoading || !user?.email_verified} className="w-full flex items-center justify-center gap-2 bg-teal-700 text-white px-6 py-3 rounded-xl font-medium hover:bg-teal-800 transition-colors mb-3 disabled:opacity-50">

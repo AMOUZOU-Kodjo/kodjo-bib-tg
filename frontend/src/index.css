@@ -79,14 +79,27 @@ a {
   transition: opacity 0.3s ease;
 }
 
+.doc-stats-badge {
+  display: none;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .doc-overlay {
     opacity: 0;
   }
 
+  .doc-stats-badge {
+    display: inline-flex;
+  }
+
   .group:hover .doc-overlay,
   .group:focus-within .doc-overlay {
     opacity: 1;
+  }
+
+  .group:hover .doc-stats-badge,
+  .group:focus-within .doc-stats-badge {
+    opacity: 0;
   }
 }
 
