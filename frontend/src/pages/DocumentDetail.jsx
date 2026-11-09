@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -22,6 +22,8 @@ import { getCategoryColor, formatCategoryName } from "../utils/document";
 import useSeo from "../hooks/useSeo";
 import { getPublicShareUrl } from "../api/share";
 
+const PdfPreview = lazy(() => import("../components/documents/PdfPreview"));
+
 export default function DocumentDetail() {
   const { id } = useParams();
   const location = useLocation();
@@ -43,6 +45,7 @@ export default function DocumentDetail() {
   const [translation, setTranslation] = useState("");
   const [translationLang, setTranslationLang] = useState("");
   const [translationLoading, setTranslationLoading] = useState(false);
+  const autoPreviewDocRef = useRef(null);
   const { user, setUser } = useAuth();
 
   useSeo({
@@ -58,6 +61,7 @@ export default function DocumentDetail() {
     setLoading(true);
     setShowPreview(false);
     setPreviewLoading(false);
+    autoPreviewDocRef.current = null;
     setThumbnailFailed(false);
     setShareOpen(false);
     setReportOpen(false);
@@ -100,12 +104,12 @@ export default function DocumentDetail() {
     return () => clearTimeout(timer);
   }, [previewLoading]);
 
-  const promptLogin = (message) => {
+  const promptLogin = useCallback((message) => {
     toast.error(message);
     navigate("/login", { state: { from: location } });
-  };
+  }, [navigate, location]);
 
-  const loadPreview = async () => {
+  const loadPreview = useCallback(async () => {
     if (!user) {
       promptLogin(t("document.loginToPreview"));
       return;
@@ -116,6 +120,7 @@ export default function DocumentDetail() {
     }
     if (previewBlobUrl) {
       URL.revokeObjectURL(previewBlobUrl);
+      setPreviewBlobUrl(null);
     }
     setPreviewLoading(true);
     setShowPreview(true);
@@ -129,7 +134,15 @@ export default function DocumentDetail() {
     } finally {
       setPreviewLoading(false);
     }
-  };
+  }, [id, previewBlobUrl, promptLogin, t, user]);
+
+  useEffect(() => {
+    if (!doc?.id || !user?.email_verified) return;
+    const previewKey = `${doc.id}:${user.id || "anon"}`;
+    if (autoPreviewDocRef.current === previewKey) return;
+    autoPreviewDocRef.current = previewKey;
+    loadPreview();
+  }, [doc?.id, loadPreview, user?.email_verified, user?.id]);
 
   const download = async () => {
     if (!user) {
@@ -287,6 +300,7 @@ export default function DocumentDetail() {
 
   const isAdmin = user?.role === "admin" && !doc.isOwner;
   const showViewCount = doc.visibility !== "private" && !doc.isOwner;
+  const isPdfDoc = doc.mime_type === "application/pdf" || doc.original_filename?.toLowerCase().endsWith(".pdf");
 
   return (
     <div>
@@ -340,7 +354,7 @@ export default function DocumentDetail() {
           )}
           <button onClick={loadPreview} disabled={previewLoading || !user?.email_verified} className="w-full flex items-center justify-center gap-2 bg-teal-700 text-white px-6 py-3 rounded-xl font-medium hover:bg-teal-800 transition-colors mb-3 disabled:opacity-50">
             <FileText className="w-5 h-5" />
-            {previewLoading ? t("common.loading") : showPreview ? t("document.refreshPreview") : user?.email_verified ? t("document.viewOnline") : t("document.verifyEmail")}
+            {previewLoading ? t("common.loading") : showPreview ? t("document.refreshPreview") : user?.email_verified ? t("document.loadPreview") : t("document.verifyEmail")}
           </button>
           <button onClick={download} className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700 transition-colors mb-3">
             <Download className="w-5 h-5" />
@@ -556,7 +570,7 @@ export default function DocumentDetail() {
               )}
             </div>
             {showPreview ? (
-              <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <div className={previewSrc && isPdfDoc ? "relative" : "relative overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800"}>
                 {!previewSrc && doc.thumbnail && (
                   <img
                     src={doc.thumbnail}
@@ -565,27 +579,44 @@ export default function DocumentDetail() {
                   />
                 )}
                 {previewSrc ? (
-                  <object
-                    data={previewSrc}
-                    type={doc.mime_type || "application/pdf"}
-                    className="h-[65vh] min-h-[380px] w-full md:h-[900px]"
-                    aria-label={doc.title}
-                  >
-                    <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-                      <FileText className="h-10 w-10 text-gray-400" />
-                      <p className="text-sm text-gray-600 dark:text-slate-400">
-                        {t("document.previewFrameError")}
-                      </p>
-                      <a
-                        href={previewSrc}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
-                      >
-                        {t("document.openNewTab")}
-                      </a>
-                    </div>
-                  </object>
+                  isPdfDoc ? (
+                    <Suspense fallback={(
+                      <div className="flex min-h-[320px] flex-col items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                        <div className="h-7 w-7 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
+                        {t("document.loadingFullPreview")}
+                      </div>
+                    )}>
+                      <PdfPreview src={previewSrc} title={doc.title} />
+                    </Suspense>
+                  ) : doc.mime_type?.startsWith("image/") ? (
+                    <img
+                      src={previewSrc}
+                      alt={doc.title}
+                      className="max-h-[75vh] w-full bg-gray-50 object-contain md:max-h-[900px]"
+                    />
+                  ) : (
+                    <object
+                      data={previewSrc}
+                      type={doc.mime_type || "application/octet-stream"}
+                      className="h-[65vh] min-h-[380px] w-full md:h-[900px]"
+                      aria-label={doc.title}
+                    >
+                      <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                        <FileText className="h-10 w-10 text-gray-400" />
+                        <p className="text-sm text-gray-600 dark:text-slate-400">
+                          {t("document.previewFrameError")}
+                        </p>
+                        <a
+                          href={previewSrc}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
+                        >
+                          {t("document.openNewTab")}
+                        </a>
+                      </div>
+                    </object>
+                  )
                 ) : null}
                 {previewLoading && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 dark:bg-slate-800/80 text-sm text-gray-600 dark:text-slate-400" aria-live="polite">
