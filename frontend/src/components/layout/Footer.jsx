@@ -85,13 +85,13 @@ export default function Footer() {
             <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:max-w-sm lg:grid-cols-1">
               <li><Link to="/a-propos" className={linkClass}>{t("footer.about")}</Link></li>
               <li><Link to="/mentions-legales" className={linkClass}>{t("footer.legalNotice")}</Link></li>
-              <li><Link to="/confidentialite" className={linkClass}>{t("footer.privacy")}</Link></li>
-              <li><Link to="/cgu" className={linkClass}>{t("footer.terms")}</Link></li>
-              <li>
+              {/* <li><Link to="/confidentialite" className={linkClass}>{t("footer.privacy")}</Link></li> */}
+              {/* <li><Link to="/cgu" className={linkClass}>{t("footer.terms")}</Link></li> */}
+              {/* <li>
                 <Link to="/contact" className={`inline-flex items-center gap-2 ${linkClass}`}>
                   <Mail className="h-3.5 w-3.5" />{t("footer.contact")}
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <button type="button" onClick={reopenCookies} className={`inline-flex items-center gap-2 ${linkClass}`}>
                   <Cookie className="h-3.5 w-3.5" />{t("footer.cookies")}
