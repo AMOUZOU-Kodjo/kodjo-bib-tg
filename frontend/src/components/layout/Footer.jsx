@@ -20,7 +20,7 @@ export default function Footer() {
   return (
     <footer className="mt-20 border-t border-white/10 bg-gradient-to-b from-teal-700 to-teal-800 text-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8">
+        <div className="grid gap-10 text-center sm:grid-cols-2 sm:text-left lg:grid-cols-12 lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-4">
             <Link to="/" className="inline-flex items-center gap-3">
               <img
@@ -32,17 +32,17 @@ export default function Footer() {
                 {siteName}
               </span>
             </Link>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/80">
+            <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-white/80 sm:mx-0">
               {siteTagline || t("footer.tagline")}
             </p>
-            <p className="mt-4 flex items-center gap-1.5 text-sm text-white/75">
+            <p className="mt-4 flex items-center justify-center gap-1.5 text-sm text-white/75 sm:justify-start">
               {t("footer.madeWith")} <Heart className="h-4 w-4 text-rose-300 fill-rose-300/30" /> {t("footer.forCommunity")}
             </p>
             <div className="mt-6">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/70">{t("footer.followUs")}</p>
-              <SocialLinks />
+              <SocialLinks className="justify-center sm:justify-start" />
             </div>
-            <div className="mt-4">
+            <div className="mt-4 flex justify-center sm:justify-start">
               <InstallPWA />
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="sm:col-span-2 lg:col-span-3">
+          <div className="sm:col-span-2  lg:col-span-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-white">{t("footer.legal")}</h3>
             <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:max-w-sm lg:grid-cols-1">
               <li><Link to="/a-propos" className={linkClass}>{t("footer.about")}</Link></li>
