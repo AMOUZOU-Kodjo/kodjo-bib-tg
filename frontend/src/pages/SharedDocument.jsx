@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { Calendar, Copy, Download, ExternalLink, FileText, Lock, User } from "lucide-react";
 import { getSharedDocument, downloadSharedDocument, getSharedFileUrl, getPublicShareUrl } from "../api/share";
+import { useAuth } from "../context/AuthContext";
 import { formatSize, formatDate } from "../utils/format";
 import { getCategoryColor, formatCategoryName } from "../utils/document";
 import { Spinner } from "../components/ui";
@@ -11,6 +12,9 @@ import { Spinner } from "../components/ui";
 export default function SharedDocument() {
   const { t } = useTranslation();
   const { token } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [doc, setDoc] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -70,6 +74,10 @@ export default function SharedDocument() {
   };
 
   const download = async () => {
+    if (!user) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
     setDownloading(true);
     try {
       const res = await downloadSharedDocument(token);
@@ -82,6 +90,10 @@ export default function SharedDocument() {
       link.remove();
       toast.success(t("share.downloadStarted"));
     } catch (err) {
+      if (err.response?.status === 401) {
+        navigate("/login", { state: { from: location } });
+        return;
+      }
       toast.error(err.response?.data?.error?.message || t("share.downloadError"));
     } finally {
       setDownloading(false);
@@ -145,7 +157,7 @@ export default function SharedDocument() {
             className="w-full flex items-center justify-center gap-2 bg-teal-700 text-white px-6 py-3 rounded-xl font-medium hover:bg-teal-800 transition-colors mb-3 disabled:opacity-50"
           >
             <Download className="w-5 h-5" />
-            {downloading ? t("share.preparing") : t("share.download")}
+            {downloading ? t("share.preparing") : user ? t("share.download") : t("share.loginToDownload")}
           </button>
           <button
             onClick={copyLink}

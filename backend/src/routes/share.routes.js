@@ -4,6 +4,7 @@ import { query } from "../config/db.js";
 import { getDocumentThumbnailUrl, getSignedDownloadUrl } from "../services/cloudinary.service.js";
 import { streamDocumentFile } from "../services/documentStream.service.js";
 import { createDocumentShareToken, verifyDocumentShareToken } from "../services/share.service.js";
+import { authRequired } from "../middlewares/auth.js";
 import { config } from "../config/env.js";
 
 const router = express.Router();
@@ -269,7 +270,7 @@ router.get("/:token/file", async (req, res, next) => {
   }
 });
 
-router.get("/:token/download", async (req, res, next) => {
+router.get("/:token/download", authRequired, async (req, res, next) => {
   try {
     const doc = await loadSharedDocument(req.params.token);
     if (!doc) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lien de partage invalide ou expiré" } });
