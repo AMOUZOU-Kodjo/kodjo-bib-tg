@@ -10,7 +10,7 @@ import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useAuth } from "../context/AuthContext";
 import { SkeletonCard, Reveal } from "../components/ui";
 
-const HOME_DOCUMENTS_LIMIT = 10;
+const HOME_DOCUMENTS_LIMIT = 12;
 
 function DocumentSection({ title, subtitle, docs, to = "/documents", loading = false, seeAll }) {
   if (!loading && !docs.length) return null;

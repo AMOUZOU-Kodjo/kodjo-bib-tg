@@ -78,7 +78,7 @@ export default function MyDownloads() {
 
       {loading ? (
         <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-6">
-          {Array.from({ length: 6 }).map((_, index) => (
+          {Array.from({ length: 12 }).map((_, index) => (
             <SkeletonCard key={index} />
           ))}
         </div>

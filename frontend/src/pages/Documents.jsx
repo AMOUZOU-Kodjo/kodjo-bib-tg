@@ -10,7 +10,7 @@ import { Input, SkeletonCard, EmptyState, Pagination, Reveal } from "../componen
 import { formatCategoryName } from "../utils/document";
 import useSeo from "../hooks/useSeo";
 
-const CATALOG_DOCUMENTS_PER_PAGE = 15;
+const CATALOG_DOCUMENTS_PER_PAGE = 12;
 
 export default function Documents() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -139,8 +139,8 @@ export default function Documents() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const featured = useMemo(() => (page === 1 ? docs.slice(0, 5) : []), [docs, page]);
-  const list = useMemo(() => (page === 1 ? docs.slice(5) : docs), [docs, page]);
+  const featured = useMemo(() => (page === 1 ? docs.slice(0, 6) : []), [docs, page]);
+  const list = useMemo(() => (page === 1 ? docs.slice(6) : docs), [docs, page]);
   const totalPages = Math.max(1, Math.ceil(total / CATALOG_DOCUMENTS_PER_PAGE));
 
   const sortOptions = [
@@ -244,7 +244,7 @@ export default function Documents() {
 
       {loading ? (
         <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-6">
-          {Array.from({ length: 10 }).map((_, index) => <SkeletonCard key={index} />)}
+          {Array.from({ length: 12 }).map((_, index) => <SkeletonCard key={index} />)}
         </div>
       ) : docs.length === 0 ? (
         <EmptyState icon={FileText} title={t("documents.none")} description={t("documents.noneDesc")} />
