@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 * {
-  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Quicksand', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 html {
@@ -56,7 +56,7 @@ a {
 }
 
 .font-ui {
-  font-family: 'Manrope', 'Poppins', system-ui, -apple-system, sans-serif;
+  font-family: 'Manrope', 'Quicksand', system-ui, -apple-system, sans-serif;
 }
 
 .font-display {
