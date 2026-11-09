@@ -92,7 +92,7 @@ export default function Footer() {
                   <Mail className="h-3.5 w-3.5" />{t("footer.contact")}
                 </Link>
               </li> */}
-              <li>
+              <li className="col-span-2 flex justify-center lg:col-span-1 lg:justify-start">
                 <button type="button" onClick={reopenCookies} className={`inline-flex items-center gap-2 ${linkClass}`}>
                   <Cookie className="h-3.5 w-3.5" />{t("footer.cookies")}
                 </button>
