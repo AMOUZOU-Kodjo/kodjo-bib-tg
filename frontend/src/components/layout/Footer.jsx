@@ -28,10 +28,7 @@ export default function Footer() {
                 alt={siteName}
                 className="h-11 w-auto shrink-0 rounded-xl object-contain ring-1 ring-white/15 sm:h-12"
               />
-              <span
-                className="text-3xl leading-none text-white sm:text-4xl"
-                style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}
-              >
+              <span className="font-display text-3xl font-semibold leading-none tracking-[0.02em] text-white sm:text-4xl">
                 {siteName}
               </span>
             </Link>

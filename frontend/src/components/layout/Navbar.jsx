@@ -50,7 +50,7 @@ export default function Navbar() {
               className="h-8 w-auto shrink-0 rounded-lg object-contain shadow-sm ring-1 ring-slate-200 transition group-hover:ring-teal-300 sm:h-9 lg:h-10 dark:ring-slate-700"
             />
             <div className="min-w-0 hidden sm:block">
-              <div className="truncate text-base leading-tight text-slate-900 sm:text-lg lg:text-xl dark:text-white" style={{ fontFamily: "'Caveat', cursive", letterSpacing: "0.01em", fontWeight: 600 }}>{siteName}</div>
+              <div className="font-display truncate text-base font-semibold leading-tight tracking-[0.02em] text-slate-900 sm:text-lg lg:text-xl dark:text-white">{siteName}</div>
               <div className="hidden truncate text-xs leading-tight text-slate-500 md:block dark:text-slate-400">{siteTagline}</div>
             </div>
           </Link>
