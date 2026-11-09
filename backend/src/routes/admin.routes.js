@@ -4,7 +4,7 @@ import { createNotification, notifyReportUpdate } from "../services/notification
 import { authRequired } from "../middlewares/auth.js";
 import { requireAdmin } from "../middlewares/admin.js";
 import { getSettings, normalizeCreditPacks, saveSettings } from "../services/settings.service.js";
-import { deleteRaw, deletePreview, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
+import { deleteAvatar, deleteRaw, deletePreview, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
 import { reviewCreditOrder } from "../services/creditOrders.service.js";
 
 const router = express.Router();
@@ -530,7 +530,7 @@ router.delete("/users/:id", async (req, res, next) => {
     if (req.params.id.toLowerCase() === String(req.user.id).toLowerCase()) {
       return res.status(400).json({ error: { code: "SELF_DELETE", message: "Vous ne pouvez pas supprimer votre propre compte" } });
     }
-    const userRes = await query("SELECT id, display_name FROM users WHERE id = $1", [req.params.id]);
+    const userRes = await query("SELECT id, display_name, avatar_public_id FROM users WHERE id = $1", [req.params.id]);
     if (userRes.rows.length === 0) {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Utilisateur introuvable" } });
     }
@@ -538,6 +538,7 @@ router.delete("/users/:id", async (req, res, next) => {
     await Promise.allSettled(
       docsRes.rows.flatMap((doc) => [deleteRaw(doc.cloudinary_public_id), deletePreview(doc.preview_public_id)])
     );
+    await deleteAvatar(userRes.rows[0].avatar_public_id);
     await query("DELETE FROM users WHERE id = $1", [req.params.id]);
     await audit(req, "user.delete", "user", req.params.id, { display_name: userRes.rows[0].display_name });
     res.json({ ok: true });

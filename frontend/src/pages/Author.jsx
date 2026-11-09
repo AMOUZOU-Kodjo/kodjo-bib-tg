@@ -102,8 +102,12 @@ export default function Author() {
         <div className="px-5 pb-6 sm:px-8">
           <div className="-mt-10 flex flex-col gap-4 sm:-mt-12 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex min-w-0 items-end gap-4">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-teal-50 dark:bg-teal-950/40 text-2xl font-bold text-teal-700 dark:text-teal-300 shadow-sm sm:h-24 sm:w-24 sm:text-3xl">
-                {(author.display_name || "?").charAt(0).toUpperCase()}
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-teal-50 dark:bg-teal-950/40 text-2xl font-bold text-teal-700 dark:text-teal-300 shadow-sm sm:h-24 sm:w-24 sm:text-3xl">
+                {author.avatar_url ? (
+                  <img src={author.avatar_url} alt={author.display_name || ""} className="h-full w-full object-cover" />
+                ) : (
+                  (author.display_name || "?").charAt(0).toUpperCase()
+                )}
               </div>
               <div className="min-w-0 pb-1">
                 <h1 className="truncate text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">{author.display_name}</h1>

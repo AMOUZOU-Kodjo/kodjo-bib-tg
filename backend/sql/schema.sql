@@ -12,12 +12,16 @@ CREATE TABLE users (
   notify_email BOOLEAN NOT NULL DEFAULT true,
   notify_new_documents BOOLEAN NOT NULL DEFAULT true,
   notify_document_updates BOOLEAN NOT NULL DEFAULT true,
+  avatar_url TEXT,
+  avatar_public_id TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_email BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_new_documents BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_document_updates BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_public_id TEXT;
 
 CREATE TABLE email_codes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

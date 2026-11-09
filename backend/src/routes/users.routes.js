@@ -1,10 +1,11 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ensureFeatureSchema, query } from "../config/db.js";
+import { ensureFeatureSchema, ensureSecuritySchema, query } from "../config/db.js";
 import { authRequired, optionalAuth, requireVerified } from "../middlewares/auth.js";
-import { authLimiter } from "../middlewares/rateLimit.js";
-import { deletePreview, deleteRaw, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
+import { authLimiter, uploadLimiter } from "../middlewares/rateLimit.js";
+import { uploadAvatarSingle, validateAvatarBuffer } from "../middlewares/upload.js";
+import { deleteAvatar, deletePreview, deleteRaw, getDocumentThumbnailUrl, uploadAvatar } from "../services/cloudinary.service.js";
 import { config } from "../config/env.js";
 import { getSettings } from "../services/settings.service.js";
 import { createNotification, notifyNewFollower } from "../services/notificationCenter.service.js";
@@ -25,6 +26,15 @@ router.param("id", (req, res, next, id) => {
     return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant invalide" } });
   }
   next();
+});
+
+router.use(async (req, res, next) => {
+  try {
+    await ensureSecuritySchema();
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 function mapDocumentRow(row) {
@@ -240,7 +250,7 @@ router.delete("/me", authRequired, authLimiter, async (req, res, next) => {
     if (!password) {
       return res.status(400).json({ error: { code: "MISSING_PASSWORD", message: "Mot de passe requis pour supprimer le compte" } });
     }
-    const userRes = await query("SELECT password_hash FROM users WHERE id = $1", [req.user.id]);
+    const userRes = await query("SELECT password_hash, avatar_public_id FROM users WHERE id = $1", [req.user.id]);
     if (userRes.rows.length === 0 || !(await bcrypt.compare(password, userRes.rows[0].password_hash))) {
       return res.status(401).json({ error: { code: "INVALID_CREDENTIALS", message: "Mot de passe incorrect" } });
     }
@@ -251,6 +261,7 @@ router.delete("/me", authRequired, authLimiter, async (req, res, next) => {
     await Promise.allSettled(
       docsRes.rows.flatMap((doc) => [deleteRaw(doc.cloudinary_public_id), deletePreview(doc.preview_public_id)])
     );
+    await deleteAvatar(userRes.rows[0].avatar_public_id);
     await query("DELETE FROM users WHERE id = $1", [req.user.id]);
     res.clearCookie("token", {
       httpOnly: true,
@@ -273,7 +284,7 @@ router.patch("/me", authRequired, async (req, res, next) => {
     }
 
     const up = await query(
-      "UPDATE users SET display_name = $1 WHERE id = $2 RETURNING id, email, display_name, email_verified, credits, role, token_version, notify_email, notify_new_documents, notify_document_updates",
+      "UPDATE users SET display_name = $1 WHERE id = $2 RETURNING id, email, display_name, email_verified, credits, role, token_version, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at",
       [displayName, req.user.id]
     );
     const user = up.rows[0];
@@ -286,6 +297,53 @@ router.patch("/me", authRequired, async (req, res, next) => {
     res.cookie("token", token, { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
 
     res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/me/avatar", authRequired, uploadLimiter, uploadAvatarSingle("avatar"), async (req, res, next) => {
+  let uploaded = null;
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: { code: "MISSING_FILE", message: "Sélectionnez une image" } });
+    }
+    const invalidImage = validateAvatarBuffer(req.file.buffer);
+    if (invalidImage) throw invalidImage;
+    if (!config.cloudinary.cloudName || !config.cloudinary.apiKey || !config.cloudinary.apiSecret) {
+      return res.status(503).json({ error: { code: "STORAGE_UNAVAILABLE", message: "Le stockage des photos de profil n'est pas configuré" } });
+    }
+
+    const currentRes = await query("SELECT avatar_public_id FROM users WHERE id = $1", [req.user.id]);
+    uploaded = await uploadAvatar(req.file.buffer, req.user.id);
+    const up = await query(
+      `UPDATE users SET avatar_url = $1, avatar_public_id = $2 WHERE id = $3
+       RETURNING id, email, display_name, email_verified, credits, role,
+                 notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at`,
+      [uploaded.secure_url, uploaded.public_id, req.user.id]
+    );
+    const previousAvatar = currentRes.rows[0]?.avatar_public_id;
+    if (previousAvatar && previousAvatar !== uploaded.public_id) {
+      await deleteAvatar(previousAvatar);
+    }
+    res.json({ user: up.rows[0] });
+  } catch (err) {
+    if (uploaded?.public_id) await deleteAvatar(uploaded.public_id);
+    next(err);
+  }
+});
+
+router.delete("/me/avatar", authRequired, async (req, res, next) => {
+  try {
+    const currentRes = await query("SELECT avatar_public_id FROM users WHERE id = $1", [req.user.id]);
+    const up = await query(
+      `UPDATE users SET avatar_url = NULL, avatar_public_id = NULL WHERE id = $1
+       RETURNING id, email, display_name, email_verified, credits, role,
+                 notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at`,
+      [req.user.id]
+    );
+    await deleteAvatar(currentRes.rows[0]?.avatar_public_id);
+    res.json({ user: up.rows[0] });
   } catch (err) {
     next(err);
   }
@@ -315,7 +373,7 @@ router.patch("/me/preferences", authRequired, async (req, res, next) => {
     const up = await query(
       `UPDATE users SET ${updates.join(", ")} WHERE id = $${values.length}
        RETURNING id, email, display_name, email_verified, credits, role,
-                 notify_email, notify_new_documents, notify_document_updates`,
+                 notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at`,
       values
     );
     res.json({ user: up.rows[0] });
@@ -334,7 +392,7 @@ router.get("/:id/public", optionalAuth, async (req, res, next) => {
     }
     await ensureFeatureSchema();
     const userRes = await query(
-      "SELECT id, display_name, created_at FROM users WHERE id = $1",
+      "SELECT id, display_name, avatar_url, created_at FROM users WHERE id = $1",
       [req.params.id]
     );
     if (userRes.rows.length === 0) {

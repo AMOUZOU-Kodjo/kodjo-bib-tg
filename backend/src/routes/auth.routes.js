@@ -48,7 +48,9 @@ function publicUser(user) {
     role: user.role,
     notify_email: user.notify_email ?? true,
     notify_new_documents: user.notify_new_documents ?? true,
-    notify_document_updates: user.notify_document_updates ?? true
+    notify_document_updates: user.notify_document_updates ?? true,
+    avatar_url: user.avatar_url ?? null,
+    created_at: user.created_at
   };
 }
 
@@ -120,7 +122,7 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
     const email = normalizeEmail(req.body.email);
     const code = normalizeCode(req.body.code);
     if (!email || !EMAIL_RE.test(email) || !/^\d{6}$/.test(code)) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
-    const userRes = await query("SELECT id, email, display_name, email_verified, role, credits, token_version, notify_email, notify_new_documents, notify_document_updates FROM users WHERE email = $1", [email]);
+    const userRes = await query("SELECT id, email, display_name, email_verified, role, credits, token_version, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE email = $1", [email]);
     if (userRes.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     const user = userRes.rows[0];
     const codeRes = await query(
@@ -203,7 +205,7 @@ router.post("/login", authLimiter, async (req, res, next) => {
     const email = normalizeEmail(req.body.email);
     const password = normalizePassword(req.body.password);
     if (!email || !password) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    const userRes = await query("SELECT id, email, display_name, password_hash, email_verified, role, credits, token_version, notify_email, notify_new_documents, notify_document_updates FROM users WHERE email = $1", [email]);
+    const userRes = await query("SELECT id, email, display_name, password_hash, email_verified, role, credits, token_version, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE email = $1", [email]);
     if (userRes.rows.length === 0) return res.status(401).json({ error: { code: "INVALID_CREDENTIALS", message: "Identifiants invalides" } });
     const user = userRes.rows[0];
     const okPass = await bcrypt.compare(password, user.password_hash);
@@ -285,7 +287,7 @@ router.post("/reset-password", authLimiter, async (req, res, next) => {
 
 router.get("/me", authRequired, async (req, res, next) => {
   try {
-    const userRes = await query("SELECT id, email, display_name, email_verified, credits, role, notify_email, notify_new_documents, notify_document_updates FROM users WHERE id = $1", [req.user.id]);
+    const userRes = await query("SELECT id, email, display_name, email_verified, credits, role, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE id = $1", [req.user.id]);
     res.json({ user: userRes.rows[0] });
   } catch (err) {
     next(err);

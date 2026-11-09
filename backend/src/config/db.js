@@ -34,6 +34,8 @@ export function ensureSecuritySchema() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_email BOOLEAN NOT NULL DEFAULT true;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_new_documents BOOLEAN NOT NULL DEFAULT true;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_document_updates BOOLEAN NOT NULL DEFAULT true;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_public_id TEXT;
       ALTER TABLE credit_transactions DROP CONSTRAINT IF EXISTS credit_transactions_reason_check;
       ALTER TABLE credit_transactions ADD CONSTRAINT credit_transactions_reason_check CHECK (reason IN ('initial','upload','download','admin','purchase'));
     `).catch((err) => {

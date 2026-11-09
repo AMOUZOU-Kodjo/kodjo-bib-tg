@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import {
   User, Mail, Shield, Coins, AlertCircle, FileText,
   Upload, X, Check, History, Copy, Globe2, Link2, Lock,
-  RotateCw, Share2, Bookmark, Bell, Trash2, Sparkles, Loader2
+  RotateCw, Share2, Bookmark, Bell, Trash2, Sparkles, Loader2,
+  Camera, CalendarDays, CheckCircle2, Settings2
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
-import { getMyDocuments, getMyCredits, getMyFavorites, updateMyProfile, updateNotificationPreferences, deleteMyAccount } from "../api/users";
+import { getMyDocuments, getMyCredits, getMyFavorites, updateMyProfile, uploadMyAvatar, deleteMyAvatar, updateNotificationPreferences, deleteMyAccount } from "../api/users";
 import { getPushConfig, subscribePush, unsubscribePush } from "../api/notifications";
 import {
   updateDocument, deleteDocument, getDocumentShareLink,
@@ -442,6 +443,8 @@ export default function Profile() {
   const [pushBusy, setPushBusy] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const avatarInputRef = useRef(null);
 
   useSeo({
     title: t("profile.title"),
@@ -536,6 +539,45 @@ export default function Profile() {
       toast.error(err.response?.data?.error?.message || t("profile.nameError"));
     } finally {
       setSavingName(false);
+    }
+  };
+
+  const onAvatarSelected = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!["image/jpeg", "image/jpg", "image/pjpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error(t("profile.avatarInvalidType"));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t("profile.avatarTooLarge"));
+      return;
+    }
+    setAvatarBusy(true);
+    try {
+      const res = await uploadMyAvatar(file);
+      setUser((current) => (current ? { ...current, ...res.data.user } : current));
+      toast.success(t("profile.avatarUpdated"));
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || t("profile.avatarError"));
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
+
+  const removeAvatar = async () => {
+    if (!user?.avatar_url || avatarBusy) return;
+    if (!window.confirm(t("profile.avatarRemoveConfirm"))) return;
+    setAvatarBusy(true);
+    try {
+      const res = await deleteMyAvatar();
+      setUser((current) => (current ? { ...current, ...res.data.user } : current));
+      toast.success(t("profile.avatarRemoved"));
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || t("profile.avatarError"));
+    } finally {
+      setAvatarBusy(false);
     }
   };
 
@@ -685,11 +727,102 @@ export default function Profile() {
   };
 
   return (
-      <div className="max-w-5xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-slate-100 mb-1">{t("nav.myProfile")}</h1>
-        <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("profile.subtitle")}</p>
-      </header>
+    <div className="mx-auto max-w-5xl">
+      <section className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-teal-950 via-teal-800 to-emerald-700 px-5 py-6 text-white shadow-xl shadow-teal-950/10 sm:px-8 sm:py-8">
+        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-emerald-300/10 blur-3xl" />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+            <div className="relative shrink-0">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-white/25 bg-white/15 text-2xl font-bold shadow-lg backdrop-blur sm:h-24 sm:w-24 sm:text-3xl">
+                {user?.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={t("profile.avatarAlt", { name: user?.display_name || "" })}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  (user?.display_name || user?.email || "?").charAt(0).toUpperCase()
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={avatarBusy}
+                className="absolute -bottom-2 -right-2 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-teal-900 bg-white text-teal-800 shadow-lg transition hover:bg-teal-50 disabled:opacity-60"
+                aria-label={t("profile.changePhoto")}
+              >
+                {avatarBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                className="hidden"
+                onChange={onAvatarSelected}
+              />
+            </div>
+
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/75">{t("profile.myAccount")}</p>
+              <h1 className="mt-1 truncate text-2xl font-bold sm:text-3xl">{user?.display_name || t("profile.title")}</h1>
+              <p className="mt-1 truncate text-sm text-teal-50/85">{user?.email}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium ${user?.email_verified ? "bg-emerald-400/15 text-emerald-100" : "bg-amber-300/15 text-amber-100"}`}>
+                  {user?.email_verified ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertCircle className="h-3.5 w-3.5" />}
+                  {user?.email_verified ? t("profile.verified") : t("profile.unverified")}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 font-medium text-teal-50">
+                  <Shield className="h-3.5 w-3.5" />
+                  {user?.role === "admin" ? t("profile.roleAdmin") : t("profile.roleUser")}
+                </span>
+                {user?.created_at && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-teal-50/90">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {t("profile.memberSince", { date: formatDate(user.created_at) })}
+                  </span>
+                )}
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-teal-100/80">
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={avatarBusy}
+                  className="font-medium text-white underline-offset-4 hover:underline disabled:opacity-60"
+                >
+                  {user?.avatar_url ? t("profile.changePhoto") : t("profile.uploadPhoto")}
+                </button>
+                {user?.avatar_url && (
+                  <button
+                    type="button"
+                    onClick={removeAvatar}
+                    disabled={avatarBusy}
+                    className="font-medium text-red-100 underline-offset-4 hover:underline disabled:opacity-60"
+                  >
+                    {t("profile.removePhoto")}
+                  </button>
+                )}
+                <span>{t("profile.avatarHint")}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 sm:min-w-[320px] sm:gap-3">
+            <div className="rounded-2xl bg-white/10 px-3 py-3 text-center backdrop-blur">
+              <p className="text-xl font-bold sm:text-2xl">{docs.length}</p>
+              <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-teal-100/70">{t("profile.documentsStat")}</p>
+            </div>
+            <div className="rounded-2xl bg-white/10 px-3 py-3 text-center backdrop-blur">
+              <p className="text-xl font-bold sm:text-2xl">{favoritesTotal}</p>
+              <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-teal-100/70">{t("profile.favoritesStat")}</p>
+            </div>
+            <div className="rounded-2xl bg-white/10 px-3 py-3 text-center backdrop-blur">
+              <p className="text-xl font-bold sm:text-2xl">{credits}</p>
+              <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-teal-100/70">{t("profile.creditsStat")}</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-6">
@@ -778,13 +911,13 @@ export default function Profile() {
 
         <aside className="space-y-6">
           <section className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-5 sm:p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-full bg-teal-50 dark:bg-teal-950/40 flex items-center justify-center text-lg font-bold text-teal-700 dark:text-teal-300">
-                {(user?.display_name || user?.email || "?").charAt(0).toUpperCase()}
-              </div>
+            <div className="mb-5 flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300">
+                <Settings2 className="h-4 w-4" />
+              </span>
               <div className="min-w-0">
-                <h2 className="font-semibold text-gray-900 dark:text-slate-100 truncate">{user?.display_name}</h2>
-                <p className="text-sm text-gray-500 dark:text-slate-400 truncate">{user?.email}</p>
+                <h2 className="font-bold text-gray-900 dark:text-slate-100">{t("profile.accountSettings")}</h2>
+                <p className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-slate-400">{t("profile.accountSettingsDesc")}</p>
               </div>
             </div>
 
@@ -799,7 +932,7 @@ export default function Profile() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-2 text-gray-600 dark:text-slate-400"><Shield className="w-4 h-4" />{t("profile.role")}</span>
-                <span className="text-gray-900 dark:text-slate-100 font-medium capitalize">{user?.role}</span>
+                <span className="text-gray-900 dark:text-slate-100 font-medium">{user?.role === "admin" ? t("profile.roleAdmin") : t("profile.roleUser")}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-2 text-gray-600 dark:text-slate-400"><Coins className="w-4 h-4" />{t("profile.credits")}</span>

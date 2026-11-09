@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import cloudinary from "../config/cloudinary.js";
 import { deleteR2Object, getR2SignedUrl, isR2Configured, isR2Key, uploadR2Object } from "./r2.service.js";
 
@@ -45,6 +46,38 @@ export function uploadPreview(fileBuffer) {
     );
     stream.end(fileBuffer);
   });
+}
+
+export function uploadAvatar(fileBuffer, userId) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "image",
+        folder: "archives/avatars",
+        public_id: `user-${userId}-${randomUUID()}`,
+        overwrite: false,
+        invalidate: true,
+        transformation: [
+          { width: 512, height: 512, crop: "fill", gravity: "face" },
+          { quality: "auto:good", fetch_format: "auto" }
+        ]
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    stream.end(fileBuffer);
+  });
+}
+
+export async function deleteAvatar(publicId) {
+  if (!publicId) return;
+  try {
+    await cloudinary.uploader.destroy(publicId, { resource_type: "image", invalidate: true });
+  } catch (err) {
+    console.error("Erreur suppression de la photo de profil Cloudinary", err);
+  }
 }
 
 export async function deleteRaw(publicId) {
