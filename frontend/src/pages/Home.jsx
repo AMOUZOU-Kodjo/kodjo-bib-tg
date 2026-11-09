@@ -98,7 +98,7 @@ export default function Home() {
 
   return (
     <div>
-      <section className="relative mt-4 sm:mt-6 mb-8 sm:mb-10 overflow-hidden max-w-full rounded-2xl sm:rounded-3xl border border-slate-800/60 bg-slate-950">
+      <section className="full-bleed relative mt-4 sm:mt-6 mb-8 sm:mb-10 overflow-hidden border-y border-slate-800/60 bg-slate-950">
         <div className="relative">
           <img src={heroImg} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-slate-950/25 sm:bg-gradient-to-r sm:from-slate-950 sm:via-slate-950/25 sm:to-slate-950/20" />
