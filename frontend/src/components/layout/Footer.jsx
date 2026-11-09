@@ -20,8 +20,8 @@ export default function Footer() {
   return (
     <footer className="mt-20 border-t border-white/10 bg-gradient-to-b from-teal-700 to-teal-800 text-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
-        <div className="grid gap-10 text-center sm:grid-cols-2 sm:text-left lg:grid-cols-12 lg:gap-8">
-          <div className="sm:col-span-2 lg:col-span-4">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-10 text-center sm:text-left lg:grid-cols-12 lg:gap-8">
+          <div className="col-span-2 lg:col-span-4">
             <Link to="/" className="inline-flex items-center gap-3">
               <img
                 src="/logo.png"
@@ -80,7 +80,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="sm:col-span-2  lg:col-span-3">
+          <div className="col-span-2 lg:col-span-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-white">{t("footer.legal")}</h3>
             <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:max-w-sm lg:grid-cols-1">
               <li><Link to="/a-propos" className={linkClass}>{t("footer.about")}</Link></li>
