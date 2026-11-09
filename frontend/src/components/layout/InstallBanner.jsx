@@ -110,8 +110,8 @@ export default function InstallBanner() {
 
   return (
     <>
-      <div className="sticky top-0 z-40 w-full animate-[fadeIn_0.4s_ease-in-out]">
-        <div className="bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-600 text-white shadow-lg dark:from-teal-800 dark:via-teal-700 dark:to-emerald-700">
+      <div className="my-6 w-full sm:my-8">
+        <div className="overflow-hidden rounded-2xl border border-teal-100 bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-600 text-white shadow-lg dark:border-teal-900/50 dark:from-teal-800 dark:via-teal-700 dark:to-emerald-700">
           <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15">
