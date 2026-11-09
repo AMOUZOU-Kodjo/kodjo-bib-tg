@@ -98,11 +98,12 @@ export default function Home() {
 
   return (
     <div>
-      <section className="mt-4 sm:mt-6 mb-8 sm:mb-10 overflow-hidden max-w-full rounded-2xl sm:rounded-3xl border border-slate-800/60 bg-slate-950">
-        <div className="grid lg:grid-cols-2">
-          <div className="relative px-3 py-5 min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
-            <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-teal-500/20 blur-3xl" />
-            <div className="relative min-w-0 max-w-full">
+      <section className="relative mt-4 sm:mt-6 mb-8 sm:mb-10 overflow-hidden max-w-full rounded-2xl sm:rounded-3xl border border-slate-800/60 bg-slate-950">
+        <div className="relative">
+          <img src={heroImg} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950/55 sm:bg-gradient-to-r sm:from-slate-950 sm:via-slate-950/75 sm:to-slate-950/20" />
+          <div className="relative z-10 px-3 py-5 min-[360px]:px-4 min-[360px]:py-6 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
+            <div className="relative min-w-0 max-w-full lg:max-w-2xl">
               <h1 className="text-base min-[360px]:text-lg sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold text-white mb-2 sm:mb-2.5 leading-tight break-words">
                 {t("home.heroTitle")}
                 <span className="text-teal-300 block">{t("home.heroAccent")}</span>
@@ -190,11 +191,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="relative h-40 sm:h-48 lg:h-auto">
-            <img src={heroImg} alt={t("home.heroAlt")} className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent lg:bg-gradient-to-r lg:from-slate-950 lg:via-slate-950/10 lg:to-transparent" />
           </div>
         </div>
       </section>
