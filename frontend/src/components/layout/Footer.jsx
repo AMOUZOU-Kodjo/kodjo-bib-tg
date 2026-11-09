@@ -103,7 +103,7 @@ export default function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/15 pt-6 sm:flex-row">
           <p className="text-center text-sm text-white/70 sm:text-left">
-            © {new Date().getFullYear()} {siteName}. {t("footer.rights")}
+            © {new Date().getFullYear()} <span className="font-semibold text-sky-200">{siteName}</span>. {t("footer.rights")}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
             <Link to="/confidentialite" className="text-white/70 transition-colors hover:text-white">{t("footer.privacy")}</Link>
