@@ -21,14 +21,18 @@ import { formatDate } from "../utils/format";
 import { Spinner, EmptyState, Pagination } from "../components/ui";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
+import { findCategoryByName } from "../utils/categories";
+import useCategories from "../hooks/useCategories";
 import useSeo from "../hooks/useSeo";
 import { useLiveVersion } from "../context/LiveUpdatesContext";
 
 function EditDocumentModal({ doc, onClose, onSaved }) {
   const { t } = useTranslation();
+  const { categories } = useCategories();
   const [title, setTitle] = useState(doc.title || "");
   const [description, setDescription] = useState(doc.description || "");
   const [category, setCategory] = useState(doc.category || "");
+  const [categoryId, setCategoryId] = useState(doc.category_id || "");
   const [tags, setTags] = useState((doc.tags || []).join(", "));
   const [visibility, setVisibility] = useState(doc.visibility || "public");
   const [saving, setSaving] = useState(false);
@@ -42,6 +46,12 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
+
+  useEffect(() => {
+    if (categoryId) return;
+    const match = findCategoryByName(categories, doc.category);
+    if (match) setCategoryId(match.id);
+  }, [categories, doc.category, categoryId]);
 
   const handleImproveDescription = async () => {
     if (!description.trim()) return toast.error(t("profile.improveNeedDesc"));
@@ -77,6 +87,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
         title: title.trim(),
         description: description.trim(),
         category: category.trim(),
+        categoryId: categoryId || null,
         tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
         visibility
       });
@@ -86,6 +97,7 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
         title: res.data.document.title,
         description: res.data.document.description,
         category: res.data.document.category,
+        category_id: res.data.document.category_id,
         tags: res.data.document.tags || [],
         visibility: res.data.document.visibility,
         shareEnabled: res.data.document.share_enabled
@@ -122,14 +134,29 @@ function EditDocumentModal({ doc, onClose, onSaved }) {
           </div>
           <div>
             <label htmlFor="edit-category" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t("profile.category")}</label>
-            <input
+            <select
               id="edit-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              maxLength={80}
-              className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
-              placeholder={t("profile.categoryPlaceholder")}
-            />
+              value={categoryId}
+              onChange={(e) => {
+                const nextId = e.target.value;
+                const selected = categories
+                  .flatMap((root) => [root, ...(root.children || [])])
+                  .find((item) => String(item.id) === String(nextId));
+                setCategoryId(nextId);
+                setCategory(selected?.name || "");
+              }}
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent bg-white dark:bg-slate-800"
+            >
+              <option value="">{t("upload.selectCategory")}</option>
+              {categories.map((root) => (
+                <optgroup key={root.id} label={root.name}>
+                  <option value={root.id}>{root.name}</option>
+                  {(root.children || []).map((child) => (
+                    <option key={child.id} value={child.id}>{child.name}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
           </div>
           <div>
             <label htmlFor="edit-tags" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t("profile.tags")}</label>

@@ -18,6 +18,13 @@ import { createDocumentShareToken, getDocumentShareUrl } from "../services/share
 import { config } from "../config/env.js";
 import { getSettings } from "../services/settings.service.js";
 import { suggestCategory } from "../services/categoryClassifier.js";
+import {
+  ensureCategoriesSchema,
+  getCategoryById,
+  getCategoryDescendantIds,
+  getCategoryTree,
+  resolveCategoryReference
+} from "../services/categories.service.js";
 
 const router = express.Router();
 
@@ -110,14 +117,9 @@ router.get("/meta/categories", optionalAuth, async (req, res, next) => {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     await ensureFeatureSchema();
-    const [categoriesRes, tagsRes, totalRes] = await Promise.all([
-      query(
-        `SELECT category, COUNT(*)::int as count
-         FROM documents
-         WHERE visibility = 'public' AND category IS NOT NULL AND category <> ''
-         GROUP BY category
-         ORDER BY count DESC, category ASC`
-      ),
+    await ensureCategoriesSchema();
+    const [categories, tagsRes, totalRes] = await Promise.all([
+      getCategoryTree({ includeInactive: false, publicOnly: true }),
       query(
         `SELECT t.tag, COUNT(*)::int AS count
          FROM documents d
@@ -129,7 +131,7 @@ router.get("/meta/categories", optionalAuth, async (req, res, next) => {
       ),
       query("SELECT COUNT(*)::int as total FROM documents WHERE visibility = 'public'")
     ]);
-    res.json({ categories: categoriesRes.rows, tags: tagsRes.rows, total: totalRes.rows[0].total });
+    res.json({ categories, tags: tagsRes.rows, total: totalRes.rows[0].total });
   } catch (err) {
     next(err);
   }
@@ -155,6 +157,7 @@ router.get("/", optionalAuth, async (req, res, next) => {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     await ensureFeatureSchema();
+    await ensureCategoriesSchema();
     const { q, category, tag, sort = "recent", page = 1, limit = 12 } = req.query;
     const pageNum = Math.min(Math.max(1, Number(page) || 1), 10000);
     const limitNum = Math.min(Math.max(1, Number(limit) || 12), 50);
@@ -163,6 +166,14 @@ router.get("/", optionalAuth, async (req, res, next) => {
     let params = [];
     let idx = 1;
     let rankParamIndex = null;
+    let categoryIds = null;
+    let categoryName = null;
+    if (category) {
+      const reference = String(category).trim();
+      const resolved = await resolveCategoryReference(reference);
+      if (resolved) categoryIds = await getCategoryDescendantIds(resolved.id);
+      else categoryName = reference;
+    }
     if (q) {
       const term = String(q).slice(0, 200);
       rankParamIndex = idx;
@@ -176,9 +187,12 @@ router.get("/", optionalAuth, async (req, res, next) => {
       params.push(term, `%${term}%`);
       idx += 2;
     }
-    if (category) {
+    if (categoryIds) {
+      where.push(`d.category_id = ANY($${idx++}::uuid[])`);
+      params.push(categoryIds);
+    } else if (categoryName) {
       where.push(`d.category = $${idx++}`);
-      params.push(category);
+      params.push(categoryName);
     }
     if (tag) {
       where.push(`d.tags @> ARRAY[$${idx++}]::text[]`);
@@ -202,8 +216,8 @@ router.get("/", optionalAuth, async (req, res, next) => {
     const offsetIndex = listIndex;
     listParams.push(limitNum, offset);
 
-    const sql = `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type, d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.view_count, d.download_count, d.like_count, d.comment_count, d.created_at, u.display_name as author_name, u.id as owner_id${likedSelect}
-      FROM documents d JOIN users u ON u.id = d.owner_id
+    const sql = `SELECT d.id, d.title, d.description, d.category_id, COALESCE(c.name, d.category) AS category, c.slug AS category_slug, d.tags, d.visibility, d.original_filename, d.mime_type, d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.view_count, d.download_count, d.like_count, d.comment_count, d.created_at, u.display_name as author_name, u.id as owner_id${likedSelect}
+      FROM documents d JOIN users u ON u.id = d.owner_id LEFT JOIN categories c ON c.id = d.category_id
       ${whereSql}
       ORDER BY ${order}
       LIMIT $${limitIndex} OFFSET $${offsetIndex}`;
@@ -242,9 +256,15 @@ router.get("/:id", optionalAuth, async (req, res, next) => {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     await ensureFeatureSchema();
+    await ensureCategoriesSchema();
     const [docRes, likedRes, favoriteRes] = await Promise.all([
       query(
-        `SELECT d.*, u.display_name as author_name, u.id as owner_id FROM documents d JOIN users u ON u.id = d.owner_id WHERE d.id = $1`,
+        `SELECT d.*, COALESCE(c.name, d.category) AS resolved_category, c.slug AS category_slug,
+                u.display_name as author_name, u.id as owner_id
+         FROM documents d
+         JOIN users u ON u.id = d.owner_id
+         LEFT JOIN categories c ON c.id = d.category_id
+         WHERE d.id = $1`,
         [req.params.id]
       ),
       req.user
@@ -268,10 +288,11 @@ router.get("/:id", optionalAuth, async (req, res, next) => {
     } catch (e) {
       thumbnail = null;
     }
-    const { cloudinary_public_id, preview_public_id, share_version, share_enabled, ...docClean } = d;
+    const { cloudinary_public_id, preview_public_id, share_version, share_enabled, resolved_category, ...docClean } = d;
     res.json({
       document: {
         ...docClean,
+        category: resolved_category || d.category,
         likedByMe,
         favoritedByMe,
         isOwner,
@@ -289,8 +310,26 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
   const { visibility = "public" } = req.body;
   const title = asString(req.body.title).trim();
   const description = asString(req.body.description).trim();
-  const category = asString(req.body.category).trim();
+  let category = asString(req.body.category).trim();
+  let categoryId = asString(req.body.categoryId).trim() || null;
   const tags = parseTags(req.body.tags) || [];
+  await ensureCategoriesSchema();
+  if (categoryId) {
+    if (!UUID_RE.test(categoryId)) {
+      return res.status(400).json({ error: { code: "INVALID_CATEGORY", message: "Catégorie invalide" } });
+    }
+    const selectedCategory = await getCategoryById(categoryId);
+    if (!selectedCategory) {
+      return res.status(400).json({ error: { code: "INVALID_CATEGORY", message: "Catégorie introuvable" } });
+    }
+    category = selectedCategory.name;
+  } else if (category) {
+    const selectedCategory = await resolveCategoryReference(category);
+    if (selectedCategory) {
+      categoryId = selectedCategory.id;
+      category = selectedCategory.name;
+    }
+  }
   if (!title) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Titre requis" } });
   if (title.length > 200) return res.status(400).json({ error: { code: "TITLE_TOO_LONG", message: "Le titre ne doit pas dépasser 200 caractères" } });
   if (description.length > 5000) return res.status(400).json({ error: { code: "DESCRIPTION_TOO_LONG", message: "La description ne doit pas dépasser 5000 caractères" } });
@@ -325,9 +364,9 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     client = await pool.connect();
     await client.query("BEGIN");
     const docRes = await client.query(
-      `INSERT INTO documents (owner_id, title, description, category, original_filename, mime_type, size_bytes, cloudinary_public_id, cloudinary_resource_type, preview_public_id, tags, visibility)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'raw',$9,$10,$11) RETURNING *`,
-      [req.user.id, title, description || null, category || null, req.file.originalname, req.file.mimetype, optimizedFile.finalSize, uploaded.public_id, preview?.public_id || null, tags, visibility]
+      `INSERT INTO documents (owner_id, title, description, category, category_id, original_filename, mime_type, size_bytes, cloudinary_public_id, cloudinary_resource_type, preview_public_id, tags, visibility)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'raw',$10,$11,$12) RETURNING *`,
+      [req.user.id, title, description || null, category || null, categoryId, req.file.originalname, req.file.mimetype, optimizedFile.finalSize, uploaded.public_id, preview?.public_id || null, tags, visibility]
     );
     const doc = docRes.rows[0];
     const credits = await addCreditsOnUpload(client, req.user.id, doc.id);
@@ -382,10 +421,28 @@ router.patch("/:id", authRequired, requireVerified, async (req, res, next) => {
     const docRes = await query("SELECT owner_id FROM documents WHERE id = $1", [req.params.id]);
     if (docRes.rows.length === 0) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     if (docRes.rows[0].owner_id !== req.user.id) return res.status(403).json({ error: { code: "FORBIDDEN", message: "Interdit" } });
+    await ensureCategoriesSchema();
     const { visibility } = req.body;
     const title = req.body.title === undefined ? null : asString(req.body.title).trim();
     const description = req.body.description === undefined ? null : asString(req.body.description).trim();
-    const category = req.body.category === undefined ? null : asString(req.body.category).trim();
+    let category = req.body.category === undefined ? null : asString(req.body.category).trim() || null;
+    let categoryId = req.body.categoryId === undefined ? null : asString(req.body.categoryId).trim() || null;
+    if (categoryId) {
+      if (!UUID_RE.test(categoryId)) {
+        return res.status(400).json({ error: { code: "INVALID_CATEGORY", message: "Catégorie invalide" } });
+      }
+      const selectedCategory = await getCategoryById(categoryId);
+      if (!selectedCategory) {
+        return res.status(400).json({ error: { code: "INVALID_CATEGORY", message: "Catégorie introuvable" } });
+      }
+      category = selectedCategory.name;
+    } else if (category) {
+      const selectedCategory = await resolveCategoryReference(category);
+      if (selectedCategory) {
+        categoryId = selectedCategory.id;
+        category = selectedCategory.name;
+      }
+    }
     const tags = parseTags(req.body.tags);
     const nextVisibility = visibility ?? null;
     if (title !== null && (!title || title.length > 200)) {
@@ -405,13 +462,14 @@ router.patch("/:id", authRequired, requireVerified, async (req, res, next) => {
        SET title = COALESCE($1,title),
            description = COALESCE($2,description),
            category = COALESCE($3,category),
-           tags = COALESCE($4,tags),
-           visibility = COALESCE($5,visibility),
-           share_enabled = CASE WHEN $5 IS NOT NULL AND $5 <> visibility THEN false ELSE share_enabled END,
-           share_version = CASE WHEN $5 IS NOT NULL AND $5 <> visibility THEN share_version + 1 ELSE share_version END
-       WHERE id = $6
-       RETURNING id, title, description, category, tags, visibility, share_enabled, original_filename, mime_type, size_bytes, created_at`,
-      [title, description, category, tags, nextVisibility, req.params.id]
+           category_id = COALESCE($4,category_id),
+           tags = COALESCE($5,tags),
+           visibility = COALESCE($6,visibility),
+           share_enabled = CASE WHEN $6 IS NOT NULL AND $6 <> visibility THEN false ELSE share_enabled END,
+           share_version = CASE WHEN $6 IS NOT NULL AND $6 <> visibility THEN share_version + 1 ELSE share_version END
+       WHERE id = $7
+       RETURNING id, title, description, category, category_id, tags, visibility, share_enabled, original_filename, mime_type, size_bytes, created_at`,
+      [title, description, category, categoryId, tags, nextVisibility, req.params.id]
     );
     res.json({ document: up.rows[0] });
   } catch (err) {

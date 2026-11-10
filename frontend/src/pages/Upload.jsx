@@ -11,32 +11,11 @@ import { useAuth } from "../context/AuthContext";
 import WhatsAppPublishButton from "../components/documents/WhatsAppPublishButton";
 import { TELEGRAM_CHANNEL_URL } from "../config/links";
 import { formatCategoryName } from "../utils/document";
+import { findCategoryByName } from "../utils/categories";
+import useCategories from "../hooks/useCategories";
 
 const ALLOWED_EXTENSIONS = new Set([".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt"]);
 const ALLOWED_ACCEPT = Array.from(ALLOWED_EXTENSIONS).join(",");
-
-const CATEGORIES = [
-  "Éducation",
-  "Littérature",
-  "Science",
-  "Histoire",
-  "physique-chimie",
-  "Art",
-  "Société",
-  "Petite Enfance",
-  "Philosophie",
-  "Géographie",
-  "Politique",
-  "Sport",
-  "Divertissement",
-  "Santé",
-  "Cours",
-  "TD / TP",
-  "Examens / Annales",
-  "Rapports / Mémoires",
-  "Fiches",
-  "CV & Lettres"
-];
 
 function formatFileSize(bytes, t) {
   if (!bytes) return "";
@@ -49,10 +28,12 @@ export default function Upload() {
   const { maxUploadSizeMb } = useSiteSettings();
   const { setUser } = useAuth();
   const { t } = useTranslation();
+  const { categories } = useCategories();
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [tags, setTags] = useState("");
   const [visibility, setVisibility] = useState("public");
   const [loading, setLoading] = useState(false);
@@ -80,9 +61,11 @@ export default function Upload() {
       });
       const meta = res.data || {};
       if (meta.title && !title.trim()) setTitle(meta.title);
-      if (meta.category && CATEGORIES.includes(meta.category)) {
-        setCategory(meta.category);
-        setSuggestedCategory(meta.category);
+      const suggestedMatch = meta.category ? findCategoryByName(categories, meta.category) : null;
+      if (suggestedMatch) {
+        setCategory(suggestedMatch.name);
+        setCategoryId(suggestedMatch.id);
+        setSuggestedCategory(suggestedMatch.name);
         setSuggestionApplied(true);
       }
       if (Array.isArray(meta.tags) && meta.tags.length && !tags.trim()) {
@@ -178,6 +161,7 @@ export default function Upload() {
     formData.append("file", file);
     formData.append("title", title.trim());
     if (description.trim()) formData.append("description", description.trim());
+    if (categoryId) formData.append("categoryId", categoryId);
     if (category) formData.append("category", category);
     if (tags.trim()) formData.append("tags", tags.trim());
     formData.append("visibility", visibility);
@@ -207,6 +191,7 @@ export default function Upload() {
       setTitle("");
       setDescription("");
       setCategory("");
+      setCategoryId("");
       setTags("");
       setVisibility("public");
       if (inputRef.current) inputRef.current.value = "";
@@ -365,10 +350,15 @@ export default function Upload() {
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.category")}</label>
                 <select
-                value={category}
+                value={categoryId}
                 onChange={(e) => {
-                  setCategory(e.target.value);
-                  if (e.target.value) {
+                  const nextId = e.target.value;
+                  const selected = categories
+                    .flatMap((root) => [root, ...(root.children || [])])
+                    .find((item) => String(item.id) === String(nextId));
+                  setCategoryId(nextId);
+                  setCategory(selected?.name || "");
+                  if (nextId) {
                     setSuggestedCategory(null);
                     setSuggestionApplied(false);
                   }
@@ -376,13 +366,18 @@ export default function Upload() {
                 className="w-full px-4 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-slate-800"
               >
                 <option value="">{t("upload.selectCategory")}</option>
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {formatCategoryName(cat, t)}
-                  </option>
+                {categories.map((root) => (
+                  <optgroup key={root.id} label={formatCategoryName(root.name, t)}>
+                    <option value={root.id}>{formatCategoryName(root.name, t)}</option>
+                    {(root.children || []).map((child) => (
+                      <option key={child.id} value={child.id}>
+                        {formatCategoryName(child.name, t)}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
-              {suggestedCategory && !category && !suggestionApplied && (
+              {suggestedCategory && !categoryId && !suggestionApplied && (
                 <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-teal-50 dark:bg-teal-950/40 px-3 py-2 text-xs text-teal-800 dark:text-teal-200">
                   <Sparkles className="w-4 h-4" />
                   <span>
@@ -391,7 +386,9 @@ export default function Upload() {
                   <button
                     type="button"
                     onClick={() => {
+                      const selected = findCategoryByName(categories, suggestedCategory);
                       setCategory(suggestedCategory);
+                      setCategoryId(selected?.id || "");
                       setSuggestionApplied(true);
                       setSuggestedCategory(null);
                     }}

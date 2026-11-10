@@ -6,6 +6,7 @@ import { requireAdmin } from "../middlewares/admin.js";
 import { getSettings, normalizeCreditPacks, saveSettings } from "../services/settings.service.js";
 import { deleteAvatar, deleteRaw, deletePreview, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
 import { reviewCreditOrder } from "../services/creditOrders.service.js";
+import { createCategory, deleteCategory, ensureCategoriesSchema, getCategoryTree, updateCategory } from "../services/categories.service.js";
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -115,6 +116,85 @@ router.put("/settings", async (req, res, next) => {
       beneficiaryName
     });
     res.json({ settings });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Categories
+router.get("/categories", async (req, res, next) => {
+  try {
+    await ensureCategoriesSchema();
+    const categories = await getCategoryTree({ includeInactive: true, publicOnly: false });
+    res.json({ categories });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/categories", async (req, res, next) => {
+  try {
+    await ensureCategoriesSchema();
+    const name = String(req.body.name ?? "").replace(/\s+/g, " ").trim();
+    const parentId = req.body.parentId ? String(req.body.parentId) : null;
+    const icon = req.body.icon === undefined ? null : String(req.body.icon ?? "").trim().slice(0, 120) || null;
+    const sortOrder = req.body.sortOrder === undefined ? null : Number(req.body.sortOrder);
+    if (parentId && !UUID_RE.test(parentId)) {
+      return res.status(400).json({ error: { code: "INVALID_PARENT", message: "Catégorie parente invalide" } });
+    }
+    if (sortOrder !== null && (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 10000)) {
+      return res.status(400).json({ error: { code: "INVALID_SORT_ORDER", message: "Ordre invalide" } });
+    }
+    const category = await createCategory({ name, parentId, icon, sortOrder });
+    await audit(req, "category.create", "category", category.id, { name: category.name, parent_id: category.parent_id });
+    res.status(201).json({ category });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/categories/:id", async (req, res, next) => {
+  try {
+    await ensureCategoriesSchema();
+    if (!UUID_RE.test(req.params.id)) {
+      return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant de catégorie invalide" } });
+    }
+    const parentId = req.body.parentId === undefined ? undefined : req.body.parentId ? String(req.body.parentId) : null;
+    const sortOrder = req.body.sortOrder === undefined ? undefined : Number(req.body.sortOrder);
+    const isActive = req.body.isActive === undefined ? undefined : Boolean(req.body.isActive);
+    if (parentId && !UUID_RE.test(parentId)) {
+      return res.status(400).json({ error: { code: "INVALID_PARENT", message: "Catégorie parente invalide" } });
+    }
+    if (sortOrder !== undefined && (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 10000)) {
+      return res.status(400).json({ error: { code: "INVALID_SORT_ORDER", message: "Ordre invalide" } });
+    }
+    const category = await updateCategory(req.params.id, {
+      name: req.body.name,
+      parentId,
+      icon: req.body.icon,
+      sortOrder,
+      isActive
+    });
+    await audit(req, "category.update", "category", category.id, {
+      name: category.name,
+      parent_id: category.parent_id,
+      is_active: category.is_active
+    });
+    res.json({ category });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/categories/:id", async (req, res, next) => {
+  try {
+    await ensureCategoriesSchema();
+    if (!UUID_RE.test(req.params.id)) {
+      return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant de catégorie invalide" } });
+    }
+    await deleteCategory(req.params.id);
+    await audit(req, "category.delete", "category", req.params.id, null);
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

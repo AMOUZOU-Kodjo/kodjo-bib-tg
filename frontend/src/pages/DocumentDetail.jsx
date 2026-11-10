@@ -82,7 +82,7 @@ export default function DocumentDetail() {
       .then((res) => {
         setDoc(res.data.document);
         if (res.data.document?.category) {
-          getDocuments({ category: res.data.document.category, limit: 6 })
+          getDocuments({ category: res.data.document.category_slug || res.data.document.category, limit: 6 })
             .then((r) => {
               const items = (r.data.documents || []).filter((d) => d.id !== id).slice(0, 3);
               setRelated(items);
@@ -329,7 +329,7 @@ export default function DocumentDetail() {
         {doc.category && (
           <>
             <ChevronRight className="w-4 h-4" />
-            <Link to={`/documents?category=${encodeURIComponent(doc.category)}`} className="hover:text-teal-700 dark:hover:text-teal-300">
+            <Link to={`/documents?category=${encodeURIComponent(doc.category_slug || doc.category)}`} className="hover:text-teal-700 dark:hover:text-teal-300">
               {formatCategoryName(doc.category, t)}
             </Link>
           </>
@@ -453,7 +453,7 @@ export default function DocumentDetail() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               {doc.category && (
-                <Link to={`/documents?category=${encodeURIComponent(doc.category)}`} className={`px-3 py-1 rounded-full text-sm text-white ${getCategoryColor(doc.category)}`}>
+                <Link to={`/documents?category=${encodeURIComponent(doc.category_slug || doc.category)}`} className={`px-3 py-1 rounded-full text-sm text-white ${getCategoryColor(doc.category)}`}>
                   {formatCategoryName(doc.category, t)}
                 </Link>
               )}

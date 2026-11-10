@@ -51,7 +51,7 @@ function mapDocumentRow(row) {
 router.get("/me/documents", authRequired, async (req, res, next) => {
   try {
     const resDocs = await query(
-      `SELECT id, title, description, category, tags, visibility, share_enabled, original_filename, mime_type, cloudinary_public_id, preview_public_id, size_bytes,
+      `SELECT id, title, description, category, category_id, tags, visibility, share_enabled, original_filename, mime_type, cloudinary_public_id, preview_public_id, size_bytes,
               view_count, download_count, like_count, comment_count, created_at
        FROM documents
        WHERE owner_id = $1

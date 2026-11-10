@@ -46,6 +46,10 @@ export function liveUpdates(req, res, next) {
       add("admin", { role: "admin" });
       if (path.startsWith("/api/admin/settings")) add("settings");
       if (path.startsWith("/api/admin/documents")) add("documents");
+      if (path.startsWith("/api/admin/categories")) {
+        add("categories");
+        add("documents");
+      }
       if (path.startsWith("/api/admin/users")) add("users");
     } else if (path.startsWith("/api/reports") || path.startsWith("/api/contact")) {
       add("admin", { role: "admin" });

@@ -11,6 +11,10 @@ export const bulkDeleteDocuments = (ids) => client.post("/admin/documents/bulk-d
 export const bulkUpdateDocumentsVisibility = (ids, visibility) => client.post("/admin/documents/bulk-visibility", { ids, visibility });
 export const getAdminSettings = () => client.get("/admin/settings");
 export const updateAdminSettings = (data) => client.put("/admin/settings", data);
+export const getAdminCategories = () => client.get("/admin/categories");
+export const createAdminCategory = (data) => client.post("/admin/categories", data);
+export const updateAdminCategory = (id, data) => client.patch(`/admin/categories/${id}`, data);
+export const deleteAdminCategory = (id) => client.delete(`/admin/categories/${id}`);
 export const getAdminReports = (params) => client.get("/admin/reports", { params });
 export const updateAdminReportStatus = (id, status) => client.patch(`/admin/reports/${id}`, { status });
 export const getAdminAudit = (params) => client.get("/admin/audit", { params });

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getStats, getAdminAnalytics, getUsers, updateUser, deleteUserAdmin, getAllDocuments, deleteDocumentAdmin, bulkDeleteDocuments, bulkUpdateDocumentsVisibility, getAdminSettings, updateAdminSettings, getAdminReports, updateAdminReportStatus, getAdminAudit, exportAdminData, getAdminCreditOrders, reviewAdminCreditOrder } from "../api/admin";
-import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil, Coins, Save, RotateCcw, Wallet, Plus, Smartphone } from "lucide-react";
+import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil, Coins, Save, RotateCcw, Wallet, Plus, Smartphone, FolderTree } from "lucide-react";
 import { Card, Button, Input, Select, Pagination, Toggle } from "../components/ui";
+import CategoryManager from "../components/categories/CategoryManager";
 import toast from "react-hot-toast";
 import { formatDate, formatSize } from "../utils/format";
 import { useTranslation } from "react-i18next";
@@ -533,6 +534,7 @@ export default function AdminDashboard() {
     { id: "overview", label: t("admin.overview"), icon: Shield },
     { id: "users", label: t("admin.users"), icon: Users },
     { id: "documents", label: t("admin.documents"), icon: BookOpen },
+    { id: "categories", label: t("admin.categories"), icon: FolderTree },
     { id: "reports", label: t("admin.reports"), icon: Flag },
     { id: "orders", label: t("admin.orders"), icon: Wallet },
     { id: "audit", label: t("admin.audit"), icon: History },
@@ -1200,6 +1202,8 @@ export default function AdminDashboard() {
           )}
         </Card>
       )}
+
+      {activeTab === "categories" && <CategoryManager />}
 
       {activeTab === "reports" && (
         <Card className="p-4 sm:p-6">

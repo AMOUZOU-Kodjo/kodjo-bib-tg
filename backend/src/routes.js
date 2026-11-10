@@ -1,5 +1,6 @@
 import authRoutes from "./routes/auth.routes.js";
 import documentsRoutes from "./routes/documents.routes.js";
+import categoriesRoutes from "./routes/categories.routes.js";
 import commentsRoutes from "./routes/comments.routes.js";
 import usersRoutes from "./routes/users.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
@@ -17,6 +18,7 @@ export function setupRoutes(app) {
   app.use(globalLimiter);
   app.use("/api/events", eventsRoutes);
   app.use("/api/auth", authRoutes);
+  app.use("/api/categories", categoriesRoutes);
   app.use("/api/documents", documentsRoutes);
   app.use("/api/users", usersRoutes);
   app.use("/api/admin", adminRoutes);
