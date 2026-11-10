@@ -62,6 +62,28 @@ export default function Author() {
     };
   }, [id, page, liveVersion]);
 
+  const follow = async () => {
+    if (!user) return;
+    if (!user.email_verified) {
+      toast.error(t("author.verifyToFollow"));
+      return;
+    }
+    setFollowingBusy(true);
+    try {
+      const res = await toggleFollow(id);
+      setAuthor((current) => ({
+        ...current,
+        is_following: res.data.following,
+        follower_count: res.data.follower_count
+      }));
+      toast.success(res.data.following ? t("author.followed") : t("author.unfollowed"));
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || t("author.followError"));
+    } finally {
+      setFollowingBusy(false);
+    }
+  };
+
   if (loading) {
     return <div className="flex justify-center py-16"><Spinner size="lg" /></div>;
   }
