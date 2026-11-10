@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outDir = path.join(__dirname, "flyers");
 fs.mkdirSync(outDir, { recursive: true });
 
-const SITE_URL = "kodjo-bib-tg.pages.dev";
+const SITE_URL = "archivia.pages.dev";
 
 const VERSIONS = {
   enseignants: {

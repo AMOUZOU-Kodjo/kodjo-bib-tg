@@ -1,4 +1,4 @@
-const url = process.env.KEEP_ALIVE_URL || "https://kodjo-bib-backend.onrender.com/api/health";
+const url = process.env.KEEP_ALIVE_URL || "https://archivia.onrender.com/api/health";
 const intervalMs = Number(process.env.KEEP_ALIVE_INTERVAL_MS || 0);
 const timeoutMs = Number(process.env.KEEP_ALIVE_TIMEOUT_MS || 30000);
 

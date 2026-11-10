@@ -89,7 +89,7 @@ function escapeHtml(text = "") {
 }
 
 function frontendBaseUrl() {
-  return String(config.frontendUrl || "https://kodjo-bib-tg.pages.dev").replace(/\/+$/, "");
+  return String(config.frontendUrl || "https://archivia.pages.dev").replace(/\/+$/, "");
 }
 
 function backendBaseUrl(req) {

@@ -6,4 +6,4 @@ Disallow: /upload
 Disallow: /verify-email
 Disallow: /share/
 
-Sitemap: https://kodjo-bib-tg.pages.dev/sitemap.xml
+Sitemap: https://archivia.pages.dev/sitemap.xml

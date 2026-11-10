@@ -19,7 +19,7 @@ function cleanText(value, maxLength = 500) {
 }
 
 function siteBase() {
-  return String(config.frontendUrl || "https://kodjo-bib-tg.pages.dev").replace(/\/+$/, "");
+  return String(config.frontendUrl || "https://archivia.pages.dev").replace(/\/+$/, "");
 }
 
 async function getPublicDocuments(limit = 5000) {
