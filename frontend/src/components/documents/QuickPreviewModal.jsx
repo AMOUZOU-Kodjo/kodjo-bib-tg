@@ -6,11 +6,12 @@ import { fetchDocumentViewBlob } from "../../api/documents";
 import { useAuth } from "../../context/AuthContext";
 import { formatCategoryName, getCategoryColor } from "../../utils/document";
 import { formatDate, formatSize } from "../../utils/format";
+import PdfPreview from "./PdfPreview";
 
-function PreviewContent({ mimeType, url }) {
+function PreviewContent({ mimeType, url, title }) {
   const { t } = useTranslation();
   if (mimeType === "application/pdf") {
-    return <iframe src={`${url}#toolbar=0&navpanes=0`} title={t("document.previewFrameTitle")} className="h-full w-full" />;
+    return <PdfPreview src={url} title={title} />;
   }
   if (mimeType?.startsWith("image/")) {
     return <img src={url} alt={t("document.previewFrameTitle")} className="h-full w-full object-contain" />;
@@ -135,7 +136,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
         <div className="relative min-h-[240px] flex-1 overflow-hidden bg-gray-50 dark:bg-slate-950">
           {blobUrl ? (
             <div className="h-[58vh] max-h-[640px]">
-              <PreviewContent mimeType={doc.mime_type} url={blobUrl} />
+              <PreviewContent mimeType={doc.mime_type} url={blobUrl} title={doc.title} />
             </div>
           ) : (
             <div className="relative h-[46vh] max-h-[520px] min-h-[220px]">
