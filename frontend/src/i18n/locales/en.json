@@ -21,6 +21,14 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
   },
+  "categoryBar": {
+    "title": "Categories",
+    "subcategories": "Subcategories",
+    "allDocuments": "All documents",
+    "noSubcategories": "No subcategories yet",
+    "documents": "{{count}} document",
+    "documents_other": "{{count}} documents"
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",

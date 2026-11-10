@@ -21,6 +21,14 @@
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu"
   },
+  "categoryBar": {
+    "title": "Catégories",
+    "subcategories": "Sous-catégories",
+    "allDocuments": "Tous les documents",
+    "noSubcategories": "Aucune sous-catégorie pour le moment",
+    "documents": "{{count}} document",
+    "documents_other": "{{count}} documents"
+  },
   "common": {
     "loading": "Chargement...",
     "save": "Enregistrer",
