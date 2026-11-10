@@ -62,7 +62,9 @@ export default function Author() {
     };
   }, [id, page, liveVersion]);
 
-  const totalPages = Math.max(1, Math.ceil(total / DOCUMENTS_PER_PAGE));
+  const goToPage = (nextPage) => {
+    setPage(Math.min(Math.max(1, nextPage), totalPages));
+  };
 
   const follow = async () => {
     if (!user) return;
