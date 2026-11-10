@@ -338,6 +338,23 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     return res.status(400).json({ error: { code: "INVALID_VISIBILITY", message: "Visibilité invalide" } });
   }
 
+  let privateCreditRequired = false;
+  if (visibility === "private") {
+    const countRes = await query(
+      "SELECT COUNT(*)::int AS c FROM documents WHERE owner_id = $1 AND visibility = 'private'",
+      [req.user.id]
+    );
+    if ((countRes.rows[0]?.c || 0) >= 2) {
+      privateCreditRequired = true;
+      const userRes = await query("SELECT credits FROM users WHERE id = $1", [req.user.id]);
+      if ((userRes.rows[0]?.credits || 0) < 1) {
+        return res.status(402).json({
+          error: { code: "INSUFFICIENT_CREDITS", message: "Crédits insuffisants pour déposer un document privé (max 2 gratuits)" }
+        });
+      }
+    }
+  }
+
   const isPdfUpload = req.file.mimetype === "application/pdf" || req.file.originalname.toLowerCase().endsWith(".pdf");
   let client;
   let uploaded;
@@ -369,7 +386,16 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
       [req.user.id, title, description || null, category || null, categoryId, req.file.originalname, req.file.mimetype, optimizedFile.finalSize, uploaded.public_id, preview?.public_id || null, tags, visibility]
     );
     const doc = docRes.rows[0];
-    const credits = await addCreditsOnUpload(client, req.user.id, doc.id);
+    let credits = await addCreditsOnUpload(client, req.user.id, doc.id);
+    if (privateCreditRequired) {
+      await client.query("UPDATE users SET credits = credits - 1 WHERE id = $1", [req.user.id]);
+      await client.query(
+        "INSERT INTO credit_transactions (user_id, delta, reason, document_id) VALUES ($1, $2, 'private_upload', $3)",
+        [req.user.id, -1, doc.id]
+      );
+      const finalRes = await client.query("SELECT credits FROM users WHERE id = $1", [req.user.id]);
+      credits = finalRes.rows[0]?.credits ?? credits;
+    }
     await client.query("COMMIT");
     committed = true;
     notifyDocumentUpload({ documentId: doc.id }).catch((err) => {
