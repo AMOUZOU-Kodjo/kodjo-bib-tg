@@ -9,7 +9,14 @@ const DEFAULT_CATEGORY_TREE = [
       { name: "TD / TP", slug: "td-tp" },
       { name: "Examens / Annales", slug: "examens-annales" },
       { name: "Rapports / Mémoires", slug: "rapports-memoires" },
-      { name: "Fiches", slug: "fiches" }
+      { name: "Fiches", slug: "fiches" },
+      { name: "Annales & Corrigés", slug: "annales-corriges" },
+      { name: "Révisions", slug: "revisions" },
+      { name: "Méthodologie", slug: "methodologie" },
+      { name: "Orientation & Concours", slug: "orientation-concours" },
+      { name: "Ressources pédagogiques", slug: "ressources-pedagogiques" },
+      { name: "Examens blancs", slug: "examens-blancs" },
+      { name: "Supports de cours", slug: "supports-de-cours" }
     ]
   },
   {
@@ -20,7 +27,14 @@ const DEFAULT_CATEGORY_TREE = [
       { name: "Physique-Chimie", slug: "physique-chimie" },
       { name: "Mathématiques", slug: "mathematiques" },
       { name: "SVT", slug: "svt" },
-      { name: "Informatique", slug: "informatique" }
+      { name: "Informatique", slug: "informatique" },
+      { name: "Astronomie", slug: "astronomie" },
+      { name: "Chimie", slug: "chimie" },
+      { name: "Physique", slug: "physique" },
+      { name: "Biologie", slug: "biologie" },
+      { name: "Technologie", slug: "technologie" },
+      { name: "Mathématiques appliquées", slug: "mathematiques-appliquees" },
+      { name: "Sciences de l'ingénieur", slug: "sciences-ingenieur" }
     ]
   },
   {
@@ -30,7 +44,14 @@ const DEFAULT_CATEGORY_TREE = [
       { name: "Littérature", slug: "litterature" },
       { name: "Philosophie", slug: "philosophie" },
       { name: "Art", slug: "art" },
-      { name: "Divertissement", slug: "divertissement" }
+      { name: "Divertissement", slug: "divertissement" },
+      { name: "Poésie", slug: "poesie" },
+      { name: "Théâtre", slug: "theatre" },
+      { name: "Langues", slug: "langues" },
+      { name: "Culture générale", slug: "culture-generale" },
+      { name: "Écriture créative", slug: "ecriture-creative" },
+      { name: "Critique littéraire", slug: "critique-litteraire" },
+      { name: "Mythologie", slug: "mythologie" }
     ]
   },
   {
@@ -38,7 +59,15 @@ const DEFAULT_CATEGORY_TREE = [
     slug: "histoire-geographie",
     children: [
       { name: "Histoire", slug: "histoire" },
-      { name: "Géographie", slug: "geographie" }
+      { name: "Géographie", slug: "geographie" },
+      { name: "Civilisations", slug: "civilisations" },
+      { name: "Géopolitique", slug: "geopolitique" },
+      { name: "Cartographie", slug: "cartographie" },
+      { name: "Patrimoine", slug: "patrimoine" },
+      { name: "Archéologie", slug: "archeologie" },
+      { name: "Histoire contemporaine", slug: "histoire-contemporaine" },
+      { name: "Histoire ancienne", slug: "histoire-ancienne" },
+      { name: "Relations internationales", slug: "relations-internationales" }
     ]
   },
   {
@@ -46,26 +75,64 @@ const DEFAULT_CATEGORY_TREE = [
     slug: "societe-politique",
     children: [
       { name: "Société", slug: "societe" },
-      { name: "Politique", slug: "politique" }
+      { name: "Politique", slug: "politique" },
+      { name: "Droit", slug: "droit" },
+      { name: "Économie", slug: "economie" },
+      { name: "Citoyenneté", slug: "citoyennete" },
+      { name: "Institutions", slug: "institutions" },
+      { name: "Actualités", slug: "actualites" },
+      { name: "Médias", slug: "medias" },
+      { name: "Débats", slug: "debats" },
+      { name: "Gouvernance", slug: "gouvernance" }
     ]
   },
   {
     name: "Santé & Bien-être",
     slug: "sante-bien-etre",
-    children: [{ name: "Santé", slug: "sante" }]
+    children: [
+      { name: "Santé", slug: "sante" },
+      { name: "Nutrition", slug: "nutrition" },
+      { name: "Psychologie", slug: "psychologie" },
+      { name: "Médecine", slug: "medecine" },
+      { name: "Sport santé", slug: "sport-sante" },
+      { name: "Hygiène", slug: "hygiene" },
+      { name: "Prévention", slug: "prevention" },
+      { name: "Bien-être mental", slug: "bien-etre-mental" },
+      { name: "Premiers secours", slug: "premiers-secours" },
+      { name: "Sommeil", slug: "sommeil" }
+    ]
   },
   {
     name: "Enfance & Loisirs",
     slug: "enfance-loisirs",
     children: [
       { name: "Petite Enfance", slug: "petite-enfance" },
-      { name: "Sport", slug: "sport" }
+      { name: "Sport", slug: "sport" },
+      { name: "Jeux éducatifs", slug: "jeux-educatifs" },
+      { name: "Activités manuelles", slug: "activites-manuelles" },
+      { name: "Contes", slug: "contes" },
+      { name: "Développement", slug: "developpement" },
+      { name: "Parentalité", slug: "parentalite" },
+      { name: "Animation", slug: "animation" },
+      { name: "Créativité", slug: "creativite" },
+      { name: "Éveil", slug: "eveil" }
     ]
   },
   {
     name: "Vie pratique & Administration",
     slug: "vie-pratique-administration",
-    children: [{ name: "CV & Lettres", slug: "cv-lettres" }]
+    children: [
+      { name: "CV & Lettres", slug: "cv-lettres" },
+      { name: "Emploi", slug: "emploi" },
+      { name: "Fiscalité", slug: "fiscalite" },
+      { name: "Logement", slug: "logement" },
+      { name: "Mobilité", slug: "mobilite" },
+      { name: "Budget", slug: "budget" },
+      { name: "Démarches", slug: "demarches" },
+      { name: "Droits", slug: "droits" },
+      { name: "Services publics", slug: "services-publics" },
+      { name: "Entrepreneuriat", slug: "entrepreneuriat" }
+    ]
   }
 ];
 
@@ -115,7 +182,7 @@ export function ensureCategoriesSchema() {
         ALTER TABLE documents ADD COLUMN IF NOT EXISTS category_id UUID REFERENCES categories(id) ON DELETE SET NULL;
         CREATE INDEX IF NOT EXISTS idx_documents_category_id ON documents (category_id);
       `);
-      await seedDefaultCategories();
+      await ensureDefaultCategories();
       await migrateDocumentCategories();
     })().catch((err) => {
       schemaReady = null;
@@ -125,29 +192,34 @@ export function ensureCategoriesSchema() {
   return schemaReady;
 }
 
-async function seedDefaultCategories() {
-  const countRes = await query("SELECT COUNT(*)::int AS total FROM categories");
-  if (countRes.rows[0].total > 0) return;
-
+async function ensureDefaultCategories() {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     for (const [rootIndex, root] of DEFAULT_CATEGORY_TREE.entries()) {
-      const rootRes = await client.query(
-        `INSERT INTO categories (parent_id, name, slug, sort_order)
-         VALUES (NULL, $1, $2, $3)
-         ON CONFLICT (slug) DO NOTHING
-         RETURNING id`,
-        [root.name, root.slug, rootIndex]
-      );
-      let rootId = rootRes.rows[0]?.id;
-      if (!rootId) {
-        const existing = await client.query("SELECT id FROM categories WHERE slug = $1", [root.slug]);
-        rootId = existing.rows[0]?.id;
+      let rootId;
+      const existingRoot = await client.query("SELECT id FROM categories WHERE slug = $1", [root.slug]);
+      if (existingRoot.rows[0]) {
+        rootId = existingRoot.rows[0].id;
+      } else {
+        const rootRes = await client.query(
+          `INSERT INTO categories (parent_id, name, slug, sort_order)
+           VALUES (NULL, $1, $2, $3)
+           ON CONFLICT (slug) DO NOTHING
+           RETURNING id`,
+          [root.name, root.slug, rootIndex]
+        );
+        rootId = rootRes.rows[0]?.id;
+        if (!rootId) {
+          const fallback = await client.query("SELECT id FROM categories WHERE slug = $1", [root.slug]);
+          rootId = fallback.rows[0]?.id;
+        }
       }
       if (!rootId) continue;
 
       for (const [childIndex, child] of (root.children || []).entries()) {
+        const existingChild = await client.query("SELECT id FROM categories WHERE slug = $1", [child.slug]);
+        if (existingChild.rows[0]) continue;
         await client.query(
           `INSERT INTO categories (parent_id, name, slug, sort_order)
            VALUES ($1, $2, $3, $4)
