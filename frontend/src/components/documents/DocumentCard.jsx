@@ -35,9 +35,9 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
           </div>
         )}
 
-        <div className="doc-overlay absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        <div className="doc-overlay pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-        <div className="doc-overlay absolute left-4 top-4 flex flex-wrap gap-2">
+        <div className="doc-overlay pointer-events-none absolute left-4 top-4 flex flex-wrap gap-2">
           <span className={`rounded-full px-3 py-1 text-xs font-medium text-white ${getCategoryColor(doc.category)}`}>
             {doc.category ? formatCategoryName(doc.category, t) : t("document.fallback")}
           </span>
