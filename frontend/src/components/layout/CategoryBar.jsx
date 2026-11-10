@@ -185,7 +185,8 @@ export default function CategoryBar() {
       >
         <div className="mx-auto h-full max-w-7xl px-3 sm:px-6 lg:px-8">
           <div
-            className="hidden h-full items-center justify-start gap-0.5 overflow-x-auto lg:flex xl:justify-center"
+            className="hidden h-full items-center justify-start gap-0.5 overflow-x-auto [&::-webkit-scrollbar]:hidden lg:flex xl:justify-center"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             role="navigation"
             aria-label={t("categoryBar.title")}
           >
@@ -217,7 +218,8 @@ export default function CategoryBar() {
           </div>
 
           <div
-            className="flex h-full items-center gap-1 overflow-x-auto lg:hidden"
+            className="flex h-full items-center gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden lg:hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             role="navigation"
             aria-label={t("categoryBar.title")}
           >
@@ -361,7 +363,8 @@ export default function CategoryBar() {
               </button>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+            <div className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden border-b border-slate-100 px-4 py-3 dark:border-slate-800"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
               {categories.map((root) => {
                 const Icon = getCategoryIcon(root);
                 const isActive = root.id === mobileRoot.id;
