@@ -346,8 +346,8 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     );
     if ((countRes.rows[0]?.c || 0) >= 2) {
       privateCreditRequired = true;
-      const userRes = await query("SELECT credits FROM users WHERE id = $1", [req.user.id]);
-      if ((userRes.rows[0]?.credits || 0) < 1) {
+      const userRes = await query("SELECT paid_credits FROM users WHERE id = $1", [req.user.id]);
+      if ((userRes.rows[0]?.paid_credits || 0) < 1) {
         return res.status(402).json({
           error: { code: "INSUFFICIENT_CREDITS", message: "Crédits insuffisants pour déposer un document privé (max 2 gratuits)" }
         });
@@ -388,13 +388,13 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     const doc = docRes.rows[0];
     let credits = await addCreditsOnUpload(client, req.user.id, doc.id);
     if (privateCreditRequired) {
-      await client.query("UPDATE users SET credits = credits - 1 WHERE id = $1", [req.user.id]);
+      await client.query("UPDATE users SET paid_credits = paid_credits - 1 WHERE id = $1", [req.user.id]);
       await client.query(
         "INSERT INTO credit_transactions (user_id, delta, reason, document_id) VALUES ($1, $2, 'private_upload', $3)",
         [req.user.id, -1, doc.id]
       );
-      const finalRes = await client.query("SELECT credits FROM users WHERE id = $1", [req.user.id]);
-      credits = finalRes.rows[0]?.credits ?? credits;
+      const finalRes = await client.query("SELECT credits, paid_credits FROM users WHERE id = $1", [req.user.id]);
+      credits = (finalRes.rows[0]?.credits || 0) + (finalRes.rows[0]?.paid_credits || 0);
     }
     await client.query("COMMIT");
     committed = true;
@@ -678,7 +678,7 @@ router.post("/:id/download", authRequired, requireVerified, async (req, res, nex
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    const userRes = await client.query("SELECT id, credits FROM users WHERE id = $1 FOR UPDATE", [req.user.id]);
+     const userRes = await client.query("SELECT id, credits, paid_credits FROM users WHERE id = $1 FOR UPDATE", [req.user.id]);
     const docRes = await client.query("SELECT id, owner_id, visibility, cloudinary_public_id, cloudinary_resource_type, original_filename FROM documents WHERE id = $1", [req.params.id]);
     if (docRes.rows.length === 0) {
       await client.query("ROLLBACK");
@@ -696,25 +696,37 @@ router.post("/:id/download", authRequired, requireVerified, async (req, res, nex
       );
       const url = await getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
       await client.query("COMMIT");
-      return res.json({ url, credits: userRes.rows[0].credits, charged: false });
+      return res.json({ url, credits: userRes.rows[0].credits + userRes.rows[0].paid_credits, charged: false });
     }
     const already = await client.query("SELECT 1 FROM downloads WHERE user_id = $1 AND document_id = $2", [req.user.id, req.params.id]);
     if (already.rows.length > 0) {
       const url = await getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
       await client.query("COMMIT");
-      return res.json({ url, credits: userRes.rows[0].credits, charged: false });
+      return res.json({ url, credits: userRes.rows[0].credits + userRes.rows[0].paid_credits, charged: false });
     }
-    if (userRes.rows[0].credits < 1) {
+    if ((userRes.rows[0].credits + userRes.rows[0].paid_credits) < 1) {
       await client.query("ROLLBACK");
       return res.status(403).json({ error: { code: "INSUFFICIENT_CREDITS", message: "Crédits insuffisants. Déposez un document pour en obtenir." } });
     }
-    const creditRes = await client.query("UPDATE users SET credits = credits - 1 WHERE id = $1 RETURNING credits", [req.user.id]);
+    // Deduct from paid credits for private docs, earned first for public docs
+    let newCredits = userRes.rows[0].credits;
+    let newPaid = userRes.rows[0].paid_credits;
+    if (doc.visibility === "private") {
+      newPaid -= 1;
+      await client.query("UPDATE users SET paid_credits = paid_credits - 1 WHERE id = $1", [req.user.id]);
+    } else if (newCredits > 0) {
+      newCredits -= 1;
+      await client.query("UPDATE users SET credits = credits - 1 WHERE id = $1", [req.user.id]);
+    } else {
+      newPaid -= 1;
+      await client.query("UPDATE users SET paid_credits = paid_credits - 1 WHERE id = $1", [req.user.id]);
+    }
     await client.query("INSERT INTO credit_transactions (user_id, delta, reason, document_id) VALUES ($1,-1,'download',$2)", [req.user.id, req.params.id]);
     await client.query("INSERT INTO downloads (user_id, document_id) VALUES ($1,$2)", [req.user.id, req.params.id]);
     await client.query("UPDATE documents SET download_count = download_count + 1 WHERE id = $1", [req.params.id]);
     const url = await getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
     await client.query("COMMIT");
-    res.json({ url, credits: creditRes.rows[0].credits, charged: true });
+    res.json({ url, credits: newCredits + newPaid, charged: true });
   } catch (err) {
     await client.query("ROLLBACK");
     next(err);

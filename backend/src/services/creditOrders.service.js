@@ -102,7 +102,7 @@ export async function reviewCreditOrder({ orderId, adminId, status, note }) {
 
     if (status === "approved") {
       const creditsRes = await client.query(
-        "UPDATE users SET credits = credits + $1 WHERE id = $2 RETURNING credits",
+        "UPDATE users SET paid_credits = paid_credits + $1 WHERE id = $2 RETURNING paid_credits",
         [order.credits, order.user_id]
       );
       await client.query(
@@ -110,7 +110,7 @@ export async function reviewCreditOrder({ orderId, adminId, status, note }) {
          VALUES ($1,$2,'purchase',$3)`,
         [order.user_id, order.credits, order.id]
       );
-      order.new_credits = creditsRes.rows[0]?.credits ?? null;
+      order.new_credits = creditsRes.rows[0]?.paid_credits ?? null;
     }
 
     const updated = await client.query(

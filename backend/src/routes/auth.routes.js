@@ -122,7 +122,7 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
     const email = normalizeEmail(req.body.email);
     const code = normalizeCode(req.body.code);
     if (!email || !EMAIL_RE.test(email) || !/^\d{6}$/.test(code)) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
-    const userRes = await query("SELECT id, email, display_name, email_verified, role, credits, token_version, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE email = $1", [email]);
+    const userRes = await query("SELECT id, email, display_name, email_verified, role, credits + paid_credits AS credits, token_version, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE email = $1", [email]);
     if (userRes.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     const user = userRes.rows[0];
     const codeRes = await query(
@@ -141,7 +141,7 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
     if (claimed.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     await query("UPDATE users SET email_verified = true WHERE id = $1", [user.id]);
     await ensureInitialCredits(user.id);
-    const creditsRes = await query("SELECT credits FROM users WHERE id = $1", [user.id]);
+    const creditsRes = await query("SELECT credits + paid_credits AS credits FROM users WHERE id = $1", [user.id]);
     user.email_verified = true;
     user.credits = creditsRes.rows[0]?.credits ?? 0;
     const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role, tokenVersion: user.token_version }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
@@ -205,7 +205,7 @@ router.post("/login", authLimiter, async (req, res, next) => {
     const email = normalizeEmail(req.body.email);
     const password = normalizePassword(req.body.password);
     if (!email || !password) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Champs manquants" } });
-    const userRes = await query("SELECT id, email, display_name, password_hash, email_verified, role, credits, token_version, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE email = $1", [email]);
+    const userRes = await query("SELECT id, email, display_name, password_hash, email_verified, role, credits + paid_credits AS credits, token_version, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE email = $1", [email]);
     if (userRes.rows.length === 0) return res.status(401).json({ error: { code: "INVALID_CREDENTIALS", message: "Identifiants invalides" } });
     const user = userRes.rows[0];
     const okPass = await bcrypt.compare(password, user.password_hash);
@@ -287,7 +287,7 @@ router.post("/reset-password", authLimiter, async (req, res, next) => {
 
 router.get("/me", authRequired, async (req, res, next) => {
   try {
-    const userRes = await query("SELECT id, email, display_name, email_verified, credits, role, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE id = $1", [req.user.id]);
+    const userRes = await query("SELECT id, email, display_name, email_verified, credits + paid_credits AS credits, role, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE id = $1", [req.user.id]);
     res.json({ user: userRes.rows[0] });
   } catch (err) {
     next(err);

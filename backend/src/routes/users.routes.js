@@ -113,7 +113,7 @@ router.get("/me/favorites", authRequired, async (req, res, next) => {
 
 router.get("/me/credits", authRequired, async (req, res, next) => {
   try {
-    const userRes = await query("SELECT credits FROM users WHERE id = $1", [req.user.id]);
+    const userRes = await query("SELECT credits + paid_credits AS credits FROM users WHERE id = $1", [req.user.id]);
     const hist = await query(
       `SELECT ct.id, ct.delta, ct.reason, ct.document_id, ct.created_at, d.title AS document_title
        FROM credit_transactions ct

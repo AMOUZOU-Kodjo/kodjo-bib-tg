@@ -155,6 +155,7 @@ export function ensureFeatureSchema() {
       );
       CREATE INDEX IF NOT EXISTS idx_admin_audit_created ON admin_audit_log (created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_admin_audit_admin ON admin_audit_log (admin_id, created_at DESC);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS paid_credits INTEGER NOT NULL DEFAULT 0;
     `).catch((err) => {
       featureSchemaReady = null;
       throw err;
