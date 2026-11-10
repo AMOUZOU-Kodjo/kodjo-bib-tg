@@ -184,6 +184,7 @@ export function ensureCategoriesSchema() {
       `);
       await ensureDefaultCategories();
       await migrateDocumentCategories();
+  await migrateDocumentSubcategories();
     })().catch((err) => {
       schemaReady = null;
       throw err;
@@ -235,6 +236,17 @@ async function ensureDefaultCategories() {
   } finally {
     client.release();
   }
+}
+
+async function migrateDocumentSubcategories() {
+  await query(`
+    UPDATE documents d
+    SET category_id = c.id,
+        category = c.name
+    FROM categories c
+    WHERE c.parent_id IS NOT NULL
+      AND lower(trim(coalesce(d.category, ''))) = lower(c.name)
+  `);
 }
 
 async function migrateDocumentCategories() {
