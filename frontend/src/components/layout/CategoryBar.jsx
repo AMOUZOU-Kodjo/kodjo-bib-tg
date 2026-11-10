@@ -162,8 +162,8 @@ export default function CategoryBar() {
   if (loading && categories.length === 0) {
     return (
       <>
-        <div aria-hidden="true" className="h-11" />
-        <div className="fixed inset-x-0 top-[65px] z-40 h-11 border-b border-slate-200/80 bg-white/95 backdrop-blur sm:top-[69px] lg:top-[65px] dark:border-slate-700 dark:bg-slate-900/95">
+        <div aria-hidden="true" className="h-12" />
+        <div className="fixed inset-x-0 top-[65px] z-40 h-12 border-b border-slate-200/80 bg-white/95 pt-1 backdrop-blur sm:top-[69px] lg:top-[65px] dark:border-slate-700 dark:bg-slate-900/95">
           <div className="mx-auto flex h-full max-w-7xl items-center gap-2 overflow-hidden px-3 sm:px-6 lg:px-8">
             {Array.from({ length: 7 }).map((_, index) => (
               <span key={index} className="h-8 w-28 shrink-0 animate-pulse rounded-full bg-slate-100 dark:bg-slate-800" />
@@ -178,10 +178,10 @@ export default function CategoryBar() {
 
   return (
     <>
-      <div aria-hidden="true" className="h-11" />
+      <div aria-hidden="true" className="h-12" />
       <div
         ref={barRef}
-        className="fixed inset-x-0 top-[65px] z-40 h-11 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/90 sm:top-[69px] lg:top-[65px] dark:border-slate-700 dark:bg-slate-900/95"
+        className="fixed inset-x-0 top-[65px] z-40 h-12 border-b border-slate-200/80 bg-white/95 pt-1 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/90 sm:top-[69px] lg:top-[65px] dark:border-slate-700 dark:bg-slate-900/95"
       >
         <div className="mx-auto h-full max-w-7xl px-3 sm:px-6 lg:px-8">
           <div
