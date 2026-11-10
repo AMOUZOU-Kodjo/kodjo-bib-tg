@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { getDocuments, getDocumentCategories } from "../api/documents";
+import { getDocuments } from "../api/documents";
 import { enhanceSearch } from "../api/ai";
 import { DocumentCard } from "../components/documents/DocumentCard";
-import { Search, FileText, Tag, Sparkles, Loader2 } from "lucide-react";
+import { Search, FileText, Tag, Sparkles, Loader2, X } from "lucide-react";
 import { Input, SkeletonCard, EmptyState, Pagination, Reveal } from "../components/ui";
 import { formatCategoryName } from "../utils/document";
-import { findCategoryByName, findCategoryBySlug, findCategoryParent } from "../utils/categories";
+import { findCategoryByName, findCategoryBySlug } from "../utils/categories";
 import useCategories from "../hooks/useCategories";
 import useSeo from "../hooks/useSeo";
 import { useLiveVersion } from "../context/LiveUpdatesContext";
@@ -30,30 +30,16 @@ export default function Documents() {
   const [search, setSearch] = useState(qParam);
   const [sort, setSort] = useState(validSorts.includes(sortParam) ? sortParam : "recent");
   const { categories } = useCategories();
-  const [tagOptions, setTagOptions] = useState([]);
   const [total, setTotal] = useState(0);
-  const [catalogTotal, setCatalogTotal] = useState(0);
   const [page, setPage] = useState(pageParam);
   const [enhancing, setEnhancing] = useState(false);
-  const documentsVersion = useLiveVersion(["documents", "categories"]);
+  const documentsVersion = useLiveVersion(["documents"]);
 
   useSeo({
     title: t("documents.title"),
     description: t("documents.seoDesc", { count: total }),
     url: `${window.location.origin}/documents`
   });
-
-  useEffect(() => {
-    getDocumentCategories()
-      .then((res) => {
-        setTagOptions(res.data.tags || []);
-        setCatalogTotal(res.data.total || 0);
-      })
-      .catch(() => {
-        setTagOptions([]);
-        setCatalogTotal(0);
-      });
-  }, [documentsVersion]);
 
   useEffect(() => {
     setSearch(qParam);
@@ -148,10 +134,6 @@ export default function Documents() {
     () => findCategoryBySlug(categories, categoryParam) || findCategoryByName(categories, categoryParam),
     [categories, categoryParam]
   );
-  const activeRoot = useMemo(
-    () => (selectedCategory ? findCategoryParent(categories, selectedCategory.id) || selectedCategory : null),
-    [categories, selectedCategory]
-  );
 
   const sortOptions = [
     { value: "recent", label: t("documents.sortRecent") },
@@ -205,72 +187,30 @@ export default function Documents() {
         </div>
       </section>
 
-      <nav className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-2 sm:-mx-1 sm:px-1">
-        <button
-          onClick={() => setCategory("")}
-          className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${!categoryParam ? "bg-teal-700 text-white shadow-sm" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"}`}
-        >
-          {t("documents.all")} {catalogTotal || total}
-        </button>
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => setCategory(c.slug)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${activeRoot?.id === c.id ? "bg-teal-700 text-white shadow-sm" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"}`}
-          >
-            {formatCategoryName(c.name, t)} {c.total_count ?? c.document_count ?? 0}
-          </button>
-        ))}
-      </nav>
-
-      {activeRoot?.children?.length > 0 && (
-        <nav className="-mx-4 mb-8 flex gap-2 overflow-x-auto px-4 pb-2 sm:-mx-1 sm:px-1">
-          <button
-            onClick={() => setCategory(activeRoot.slug)}
-            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all ${selectedCategory?.id === activeRoot.id ? "bg-teal-50 text-teal-800 ring-1 ring-teal-300 dark:bg-teal-950/40 dark:text-teal-200 dark:ring-teal-800" : "bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"}`}
-          >
-            {t("documents.all")} · {formatCategoryName(activeRoot.name, t)}
-          </button>
-          {activeRoot.children.map((child) => (
+      {(categoryParam || tagParam) && (
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-gray-500 dark:text-slate-400">{t("documents.activeFilters")}</span>
+          {categoryParam && (
             <button
-              key={child.id}
-              onClick={() => setCategory(child.slug)}
-              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all ${selectedCategory?.id === child.id ? "bg-teal-700 text-white" : "bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700"}`}
+              type="button"
+              onClick={() => setCategory("")}
+              className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-medium text-teal-800 transition-colors hover:bg-teal-100 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-200 dark:hover:bg-teal-950/70"
             >
-              {formatCategoryName(child.name, t)} {child.document_count ?? 0}
-            </button>
-          ))}
-        </nav>
-      )}
-      {!activeRoot?.children?.length && <div className="mb-5" />}
-
-      {tagOptions.length > 0 && (
-        <nav className="-mx-4 mb-8 flex items-center gap-2 overflow-x-auto px-4 pb-2 sm:-mx-1 sm:px-1">
-          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-gray-500 dark:text-slate-400">
-            <Tag className="h-3.5 w-3.5" />
-            {t("documents.keywords")}
-          </span>
-          {tagParam && (
-            <button
-              onClick={() => setTag("")}
-              className="whitespace-nowrap rounded-full border border-teal-200 bg-teal-50 dark:bg-teal-950/40 px-3 py-1.5 text-xs font-medium text-teal-800 dark:text-teal-200"
-            >
-              #{formatCategoryName(tagParam, t)} ×
+              {selectedCategory ? formatCategoryName(selectedCategory.name, t) : formatCategoryName(categoryParam, t)}
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
-          {tagOptions
-            .filter((option) => option.tag !== tagParam)
-            .map((option) => (
-              <button
-                key={option.tag}
-                onClick={() => setTag(option.tag)}
-                className="whitespace-nowrap rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-slate-300 transition-all hover:bg-gray-200 dark:hover:bg-slate-700"
-                title={t("documents.allKeywords")}
-              >
-                #{formatCategoryName(option.tag, t)} {option.count}
-              </button>
-            ))}
-        </nav>
+          {tagParam && (
+            <button
+              type="button"
+              onClick={() => setTag("")}
+              className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-medium text-teal-800 transition-colors hover:bg-teal-100 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-200 dark:hover:bg-teal-950/70"
+            >
+              <Tag className="h-3.5 w-3.5" />#{formatCategoryName(tagParam, t)}
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       )}
 
       {loading ? (
