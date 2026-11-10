@@ -7,6 +7,7 @@ import { config } from "./config/env.js";
 import { query, touchDatabaseActivity } from "./config/db.js";
 import { setupRoutes } from "./routes.js";
 import { originGuard } from "./middlewares/originGuard.js";
+import { liveUpdates } from "./middlewares/liveUpdates.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -53,6 +54,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev", { skip: (req) => req.originalUrl.startsWith("/api/share/") || req.originalUrl.startsWith("/share/") }));
+app.use(liveUpdates);
 app.use((req, res, next) => {
   touchDatabaseActivity();
   next();

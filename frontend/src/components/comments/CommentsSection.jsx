@@ -9,6 +9,7 @@ import CommentForm from "./CommentForm";
 import CommentList from "./CommentList";
 import { Spinner } from "../ui";
 import ReportModal from "../reports/ReportModal";
+import { useLiveVersion } from "../../context/LiveUpdatesContext";
 
 const PAGE_SIZE = 10;
 
@@ -23,6 +24,7 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
   const [loadingMore, setLoadingMore] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [reportComment, setReportComment] = useState(null);
+  const liveVersion = useLiveVersion("comments");
 
   useEffect(() => {
     let active = true;
@@ -43,7 +45,7 @@ export default function CommentsSection({ documentId, initialCount = 0, isOwner 
         if (active) setLoading(false);
       });
     return () => { active = false; };
-  }, [documentId, initialCount, t]);
+  }, [documentId, initialCount, t, liveVersion]);
 
   const submit = async (content) => {
     try {

@@ -7,6 +7,7 @@ import { DocumentCard } from "../components/documents/DocumentCard";
 import useSeo from "../hooks/useSeo";
 import { SkeletonCard, Pagination } from "../components/ui";
 import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
+import { useLiveVersion } from "../context/LiveUpdatesContext";
 
 export default function MyDownloads() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function MyDownloads() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const liveVersion = useLiveVersion(["downloads", "documents"]);
 
   useSeo({
     title: t("downloads.title"),
@@ -50,7 +52,7 @@ export default function MyDownloads() {
     return () => {
       active = false;
     };
-  }, [navigate, t, page]);
+  }, [navigate, t, page, liveVersion]);
 
   const totalPages = Math.max(1, Math.ceil(total / DOCUMENTS_PER_PAGE));
   const goToPage = (nextPage) => {

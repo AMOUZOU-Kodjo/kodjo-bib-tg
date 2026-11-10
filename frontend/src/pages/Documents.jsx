@@ -9,6 +9,7 @@ import { Search, FileText, Tag, Sparkles, Loader2 } from "lucide-react";
 import { Input, SkeletonCard, EmptyState, Pagination, Reveal } from "../components/ui";
 import { formatCategoryName } from "../utils/document";
 import useSeo from "../hooks/useSeo";
+import { useLiveVersion } from "../context/LiveUpdatesContext";
 
 const CATALOG_DOCUMENTS_PER_PAGE = 12;
 
@@ -32,6 +33,7 @@ export default function Documents() {
   const [catalogTotal, setCatalogTotal] = useState(0);
   const [page, setPage] = useState(pageParam);
   const [enhancing, setEnhancing] = useState(false);
+  const documentsVersion = useLiveVersion("documents");
 
   useSeo({
     title: t("documents.title"),
@@ -51,7 +53,7 @@ export default function Documents() {
         setTagOptions([]);
         setCatalogTotal(0);
       });
-  }, []);
+  }, [documentsVersion]);
 
   useEffect(() => {
     setSearch(qParam);
@@ -74,7 +76,7 @@ export default function Documents() {
       })
       .catch(() => setDocs([]))
       .finally(() => setLoading(false));
-  }, [qParam, categoryParam, tagParam, sort, page]);
+  }, [qParam, categoryParam, tagParam, sort, page, documentsVersion]);
 
   const applySearchParam = (next) => {
     const trimmed = search.trim();

@@ -9,6 +9,7 @@ import InstallBanner from "../components/layout/InstallBanner";
 import useSeo from "../hooks/useSeo";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useAuth } from "../context/AuthContext";
+import { useLiveVersion } from "../context/LiveUpdatesContext";
 import { SkeletonCard, Reveal } from "../components/ui";
 
 const HOME_DOCUMENTS_LIMIT = 18;
@@ -46,6 +47,7 @@ export default function Home() {
   const { t } = useTranslation();
   const { allowRegistrations } = useSiteSettings();
   const { user } = useAuth();
+  const documentsVersion = useLiveVersion("documents");
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState([]);
   const [docStats, setDocStats] = useState(null);
@@ -74,7 +76,7 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [documentsVersion]);
 
   useEffect(() => {
     let active = true;
@@ -88,7 +90,7 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [documentsVersion]);
 
   const submitSearch = (e) => {
     e.preventDefault();

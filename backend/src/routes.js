@@ -10,10 +10,12 @@ import reportsRoutes from "./routes/reports.routes.js";
 import seoRoutes from "./routes/seo.routes.js";
 import notificationsRoutes from "./routes/notifications.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
+import eventsRoutes from "./routes/events.routes.js";
 import { globalLimiter } from "./middlewares/rateLimit.js";
 
 export function setupRoutes(app) {
   app.use(globalLimiter);
+  app.use("/api/events", eventsRoutes);
   app.use("/api/auth", authRoutes);
   app.use("/api/documents", documentsRoutes);
   app.use("/api/users", usersRoutes);

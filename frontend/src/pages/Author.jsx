@@ -10,6 +10,7 @@ import { EmptyState, Pagination, Spinner } from "../components/ui";
 import { formatDate } from "../utils/format";
 import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 import useSeo from "../hooks/useSeo";
+import { useLiveVersion } from "../context/LiveUpdatesContext";
 
 export default function Author() {
   const { id } = useParams();
@@ -22,6 +23,7 @@ export default function Author() {
   const [loading, setLoading] = useState(true);
   const [docsLoading, setDocsLoading] = useState(true);
   const [followingBusy, setFollowingBusy] = useState(false);
+  const liveVersion = useLiveVersion(["documents", "users"]);
 
   useSeo({
     title: author ? t("author.seoTitle", { name: author.display_name }) : "Author",
@@ -38,7 +40,7 @@ export default function Author() {
         toast.error(err.response?.data?.error?.message || t("author.notFoundToast"));
       })
       .finally(() => setLoading(false));
-  }, [id, t]);
+  }, [id, t, liveVersion]);
 
   useEffect(() => {
     let active = true;
@@ -58,7 +60,7 @@ export default function Author() {
     return () => {
       active = false;
     };
-  }, [id, page]);
+  }, [id, page, liveVersion]);
 
   const follow = async () => {
     if (!user) return;

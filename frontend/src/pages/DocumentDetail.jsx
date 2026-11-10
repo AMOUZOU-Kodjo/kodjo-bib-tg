@@ -21,6 +21,7 @@ import ShareModal from "../components/documents/ShareModal";
 import { getCategoryColor, formatCategoryName } from "../utils/document";
 import useSeo from "../hooks/useSeo";
 import { getPublicShareUrl } from "../api/share";
+import { useLiveVersion } from "../context/LiveUpdatesContext";
 
 const PdfPreview = lazy(() => import("../components/documents/PdfPreview"));
 
@@ -46,6 +47,8 @@ export default function DocumentDetail() {
   const [translationLang, setTranslationLang] = useState("");
   const [translationLoading, setTranslationLoading] = useState(false);
   const autoPreviewDocRef = useRef(null);
+  const liveVersionRef = useRef(0);
+  const documentsVersion = useLiveVersion("documents");
   const { user, setUser } = useAuth();
 
   useSeo({
@@ -91,6 +94,20 @@ export default function DocumentDetail() {
       .finally(() => setLoading(false));
     viewDocument(id).catch(() => {});
   }, [id]);
+
+  useEffect(() => {
+    if (liveVersionRef.current === documentsVersion) return undefined;
+    liveVersionRef.current = documentsVersion;
+    let active = true;
+    getDocument(id)
+      .then((res) => {
+        if (active) setDoc(res.data.document);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [id, documentsVersion]);
 
   useEffect(() => {
     return () => {

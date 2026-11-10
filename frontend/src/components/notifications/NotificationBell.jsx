@@ -5,6 +5,7 @@ import { Bell, CheckCheck, Inbox } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/notifications";
 import { formatDate } from "../../utils/format";
+import { useLiveVersion } from "../../context/LiveUpdatesContext";
 
 export default function NotificationBell() {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ export default function NotificationBell() {
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unread, setUnread] = useState(0);
+  const liveVersion = useLiveVersion("notifications");
 
   const load = useCallback(() => {
     if (!user) return;
@@ -43,7 +45,7 @@ export default function NotificationBell() {
       window.clearInterval(interval);
       window.removeEventListener("focus", onFocus);
     };
-  }, [user, load]);
+  }, [user, load, liveVersion]);
 
   useEffect(() => {
     setOpen(false);

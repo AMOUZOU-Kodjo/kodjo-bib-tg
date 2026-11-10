@@ -8,20 +8,23 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { QuickPreviewProvider } from "./context/QuickPreviewContext.jsx";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
+import { LiveUpdatesProvider } from "./context/LiveUpdatesContext.jsx";
 import { Toaster } from "react-hot-toast";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <SiteSettingsProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <QuickPreviewProvider>
-              <App />
-            </QuickPreviewProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </SiteSettingsProvider>
+      <LiveUpdatesProvider>
+        <SiteSettingsProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <QuickPreviewProvider>
+                <App />
+              </QuickPreviewProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </SiteSettingsProvider>
+      </LiveUpdatesProvider>
       <Toaster />
     </BrowserRouter>
   </React.StrictMode>

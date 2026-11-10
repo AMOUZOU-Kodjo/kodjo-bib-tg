@@ -7,6 +7,7 @@ import { getNotifications, markAllNotificationsRead, markNotificationRead } from
 import { formatDate } from "../utils/format";
 import { Spinner, EmptyState, Pagination } from "../components/ui";
 import useSeo from "../hooks/useSeo";
+import { useLiveVersion } from "../context/LiveUpdatesContext";
 
 const TYPE_ICONS = {
   new_document: FileText,
@@ -24,6 +25,7 @@ export default function Notifications() {
   const [unread, setUnread] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const liveVersion = useLiveVersion("notifications");
 
   useSeo({
     title: t("notifications.title"),
@@ -50,7 +52,7 @@ export default function Notifications() {
     return () => {
       active = false;
     };
-  }, [page, t]);
+  }, [page, t, liveVersion]);
 
   const openNotification = async (notification) => {
     if (!notification.read_at) {

@@ -10,6 +10,7 @@ import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useAuth } from "../context/AuthContext";
 import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 import useSeo from "../hooks/useSeo";
+import { useLiveVersion } from "../context/LiveUpdatesContext";
 
 const AUDIT_PER_PAGE = 30;
 const USERS_PER_PAGE = 10;
@@ -86,6 +87,7 @@ export default function AdminDashboard() {
   const [savedSettings, setSavedSettings] = useState(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const settingsDirty = savedSettings !== null && settingsKey(settings) !== settingsKey(savedSettings);
+  const liveVersion = useLiveVersion(["admin", "documents", "users", "settings"]);
 
   useSeo({
     title: t("admin.title"),
@@ -95,7 +97,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [liveVersion]);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,7 +113,7 @@ export default function AdminDashboard() {
         if (!cancelled) setAnalyticsLoading(false);
       });
     return () => { cancelled = true; };
-  }, [analyticsDays, analyticsRefresh]);
+  }, [analyticsDays, analyticsRefresh, liveVersion]);
 
   const loadData = async () => {
     setLoading(true);
@@ -391,7 +393,7 @@ export default function AdminDashboard() {
         if (!cancelled) setAuditLoading(false);
       });
     return () => { cancelled = true; };
-  }, [activeTab, auditPage, auditRefresh]);
+  }, [activeTab, auditPage, auditRefresh, liveVersion]);
 
   const cards = [
     { title: t("admin.statsUsers"), value: stats.users, icon: Users, color: "text-blue-600 bg-blue-100" },

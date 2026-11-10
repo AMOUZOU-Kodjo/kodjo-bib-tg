@@ -22,6 +22,7 @@ import { Spinner, EmptyState, Pagination } from "../components/ui";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import { DOCUMENTS_PER_PAGE } from "../utils/pagination";
 import useSeo from "../hooks/useSeo";
+import { useLiveVersion } from "../context/LiveUpdatesContext";
 
 function EditDocumentModal({ doc, onClose, onSaved }) {
   const { t } = useTranslation();
@@ -416,6 +417,7 @@ export default function Profile() {
   const { user, setUser } = useAuth();
   const { creditsParUpload } = useSiteSettings();
   const navigate = useNavigate();
+  const liveVersion = useLiveVersion(["documents", "favorites", "user", "downloads"]);
   const [docs, setDocs] = useState([]);
   const [docsLoading, setDocsLoading] = useState(true);
   const [docsPage, setDocsPage] = useState(1);
@@ -500,7 +502,7 @@ export default function Profile() {
       })
       .catch(() => toast.error(t("profile.loadCreditsError")))
       .finally(() => setCreditsLoading(false));
-  }, [setUser]);
+  }, [setUser, liveVersion]);
 
   useEffect(() => {
     let active = true;
@@ -520,7 +522,7 @@ export default function Profile() {
     return () => {
       active = false;
     };
-  }, [favoritesPage]);
+  }, [favoritesPage, liveVersion]);
 
   const saveName = async (e) => {
     e.preventDefault();

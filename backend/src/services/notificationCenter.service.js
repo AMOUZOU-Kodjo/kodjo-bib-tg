@@ -1,6 +1,7 @@
 import webpush from "web-push";
 import { query } from "../config/db.js";
 import { config } from "../config/env.js";
+import { publishLiveEvent } from "./liveUpdates.service.js";
 
 let pushReady = false;
 if (config.push.publicKey && config.push.privateKey) {
@@ -66,6 +67,7 @@ export async function createNotification({ userId, type, title, message, link, a
      RETURNING id, type, title, message, link, read_at, created_at`,
     [userId, type, clean(title), clean(message, 300) || null, link || null, actorId, documentId]
   );
+  publishLiveEvent("notifications", { notificationId: res.rows[0].id }, { userId });
   sendPushToUser(userId, { title: res.rows[0].title, body: res.rows[0].message, url: link || "/" }).catch((err) => {
     console.error("Échec du push de notification:", err.message);
   });
@@ -99,6 +101,7 @@ export async function notifyFollowersNewDocument({ documentId }) {
   );
 
   const userIds = inserted.rows.map((row) => row.user_id);
+  publishLiveEvent("notifications", { documentId: doc.id }, { userIds });
   await sendPushToUsers(userIds, {
     title: `Nouveau document de ${doc.author_name}`,
     body: doc.title,

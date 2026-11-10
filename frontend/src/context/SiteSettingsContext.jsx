@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import client from "../api/client";
+import { useLiveVersion } from "./LiveUpdatesContext";
 
 const DEFAULTS = {
   siteName: "Archives",
@@ -19,6 +20,7 @@ const SiteSettingsContext = createContext({ ...DEFAULTS, refreshSettings: async 
 
 export function SiteSettingsProvider({ children }) {
   const [settings, setSettings] = useState(DEFAULTS);
+  const settingsVersion = useLiveVersion("settings");
 
   const refreshSettings = useCallback(async () => {
     try {
@@ -31,7 +33,7 @@ export function SiteSettingsProvider({ children }) {
 
   useEffect(() => {
     refreshSettings();
-  }, [refreshSettings]);
+  }, [refreshSettings, settingsVersion]);
 
   useEffect(() => {
     const baseTitle = settings.siteName === "Archives" ? "Archives de Documents" : settings.siteName;
