@@ -414,7 +414,7 @@ export default function DocumentDetail() {
           {(doc.isOwner || user?.role === "admin") && (
             <WhatsAppPublishButton doc={doc} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-2.5 font-medium text-white transition-colors hover:bg-[#1ebe5b] disabled:cursor-not-allowed disabled:opacity-50" />
           )}
-          {!doc.isOwner && !isAdmin && (
+            {!doc.isOwner && (
             <button onClick={openContact} className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 px-6 py-2.5 rounded-xl font-medium hover:bg-teal-50 dark:hover:bg-teal-950/40 border border-teal-200 dark:border-teal-800 transition-colors">
               <Mail className="w-4 h-4" />
               {t("document.contactAuthor")}
