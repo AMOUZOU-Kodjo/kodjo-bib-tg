@@ -204,7 +204,7 @@ export default function Upload() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-4 sm:py-8">
+    <div className="max-w-3xl mx-auto pb-4 sm:pb-8">
       <div className="mb-6 sm:mb-8">
         <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl md:text-4xl">{t("upload.title")}</h1>
         <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("upload.subtitle")}</p>
