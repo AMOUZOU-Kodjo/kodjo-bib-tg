@@ -64,6 +64,7 @@ export default function Footer() {
                   <li><Link to="/profile" className={linkClass}>{t("footer.profile")}</Link></li>
                   <li><Link to="/favorites" className={linkClass}>{t("nav.favorites")}</Link></li>
                   <li><Link to="/downloads" className={linkClass}>{t("nav.downloads")}</Link></li>
+                  <li><Link to="/credits" className={linkClass}>{t("nav.buyCredits")}</Link></li>
                   {!user.email_verified && (
                     <li><Link to="/verify-email" state={{ email: user.email }} className={linkClass}>{t("nav.verifyEmail")}</Link></li>
                   )}

@@ -82,6 +82,10 @@ export default function Navbar() {
                   <Download className="h-4 w-4 shrink-0" />
                   <span className="hidden 2xl:inline">{t("nav.downloads")}</span>
                 </Link>
+                <Link to="/credits" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-teal-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700" title={t("nav.buyCredits")}>
+                  <Coins className="h-4 w-4 shrink-0" />
+                  <span className="hidden 2xl:inline">{t("nav.buyCredits")}</span>
+                </Link>
                 <Link to="/profile" className={desktopLink}>
                   <User className="h-4 w-4 shrink-0" />
                   <span className="hidden 2xl:inline">{t("nav.myProfile")} ({t("nav.credits", { count: user.credits })})</span>
@@ -101,6 +105,10 @@ export default function Navbar() {
                 <Link to="/downloads" className={desktopLink} title={t("nav.downloads")}>
                   <Download className="h-4 w-4 shrink-0" />
                   <span className="hidden 2xl:inline">{t("nav.downloads")}</span>
+                </Link>
+                <Link to="/credits" className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-teal-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700" title={t("nav.buyCredits")}>
+                  <Coins className="h-4 w-4 shrink-0" />
+                  <span className="hidden 2xl:inline">{t("nav.buyCredits")}</span>
                 </Link>
                 <Link to="/profile" className={desktopLink}>
                   <User className="h-4 w-4 shrink-0" />
