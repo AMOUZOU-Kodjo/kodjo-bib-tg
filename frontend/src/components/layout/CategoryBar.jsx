@@ -196,7 +196,7 @@ export default function CategoryBar() {
       >
         <div className="mx-auto h-full max-w-7xl px-3 sm:px-6 lg:px-8">
           <div
-            className="hidden h-full items-center justify-start gap-0.5 overflow-x-auto [&::-webkit-scrollbar]:hidden lg:flex xl:justify-center"
+            className="hidden h-full items-center justify-start gap-0.5 overflow-x-auto [&::-webkit-scrollbar]:hidden lg:flex"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             role="navigation"
             aria-label={t("categoryBar.title")}
