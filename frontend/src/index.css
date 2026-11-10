@@ -50,6 +50,15 @@ a {
   margin-right: calc(50% - 50vw);
 }
 
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .safe-area-bottom {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
