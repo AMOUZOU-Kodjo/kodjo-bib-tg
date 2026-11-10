@@ -67,6 +67,17 @@ const ICON_RULES = [
   [/pratique|administration|emploi|cv/i, BriefcaseBusiness]
 ];
 
+const CATEGORY_IMAGES = {
+  "education-examens": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&h=400&fit=crop",
+  "sciences-techniques": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=500&h=400&fit=crop",
+  "lettres-culture": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=500&h=400&fit=crop",
+  "histoire-geographie": "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=500&h=400&fit=crop",
+  "societe-politique": "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=500&h=400&fit=crop",
+  "sante-bien-etre": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=500&h=400&fit=crop",
+  "enfance-loisirs": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&h=400&fit=crop",
+  "vie-pratique-administration": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=500&h=400&fit=crop"
+};
+
 function getCategoryIcon(category) {
   const configured = ICONS[String(category.icon || "").trim()];
   if (configured) return configured;
@@ -269,6 +280,14 @@ export default function CategoryBar() {
                       {t("categoryBar.documents", { count: countOf(activeRoot) })}
                     </p>
                   </div>
+                </div>
+                <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                  <img
+                    src={CATEGORY_IMAGES[activeRoot.slug] || CATEGORY_IMAGES["education-examens"]}
+                    alt={formatCategoryName(activeRoot.name, t)}
+                    className="aspect-[4/3] w-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
                 <Link
                   to={documentsHref(activeRoot.slug)}
