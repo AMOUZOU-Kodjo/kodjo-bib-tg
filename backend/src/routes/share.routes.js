@@ -97,7 +97,7 @@ function backendBaseUrl(req) {
   return String(configured || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
 }
 
-function buildShareHtml(doc, { shareUrl, ogImageUrl }) {
+function buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl }) {
   const title = escapeHtml(doc.title || "Document partagé");
   const author = escapeHtml(doc.author_name || "Auteur inconnu");
   const description = doc.description
@@ -119,7 +119,7 @@ function buildShareHtml(doc, { shareUrl, ogImageUrl }) {
   <meta property="og:site_name" content="Archives de Documents">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
-  <meta property="og:url" content="${escapeHtml(shareUrl)}">
+  <meta property="og:url" content="${escapeHtml(pageUrl || shareUrl)}">
   <meta property="og:image" content="${escapeHtml(imageUrl)}">
   <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}">
   <meta property="og:image:type" content="image/jpeg">
@@ -132,7 +132,7 @@ function buildShareHtml(doc, { shareUrl, ogImageUrl }) {
   <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
   <meta name="twitter:image:alt" content="${title} - Document partagé par ${author}">
   <meta name="author" content="${author}">
-  <link rel="canonical" href="${escapeHtml(shareUrl)}">
+  <link rel="canonical" href="${escapeHtml(pageUrl || shareUrl)}">
   <meta http-equiv="refresh" content="0;url=${escapeHtml(shareUrl)}">
   <script>window.location.replace(${JSON.stringify(shareUrl)});</script>
 </head>
@@ -211,10 +211,11 @@ router.get("/public/:id", async (req, res, next) => {
     const token = createDocumentShareToken(doc.id, doc.share_version);
     const shareUrl = `${frontendUrl}/share/${token}`;
     const backendOrigin = backendBaseUrl(req);
+    const pageUrl = `${backendOrigin}/share/public/${doc.id}`;
     const ogImageUrl = `${backendOrigin}/share/public/${doc.id}/og-image`;
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl }));
+    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl }));
   } catch (err) {
     next(err);
   }
@@ -247,10 +248,11 @@ router.get("/:token", async (req, res, next) => {
     const frontendUrl = frontendBaseUrl();
     const shareUrl = `${frontendUrl}/share/${req.params.token}`;
     const backendOrigin = backendBaseUrl(req);
+    const pageUrl = `${backendOrigin}/share/${req.params.token}`;
     const ogImageUrl = `${backendOrigin}/share/${req.params.token}/og-image`;
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl }));
+    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl }));
   } catch (err) {
     next(err);
   }
