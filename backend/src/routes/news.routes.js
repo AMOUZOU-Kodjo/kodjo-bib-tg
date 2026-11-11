@@ -43,7 +43,10 @@ router.get("/science", async (req, res, next) => {
       getScientificPublications({
         force: req.query.refresh === "1",
         limit: req.query.limit
-      }).catch(() => null)
+      }).catch((err) => {
+        console.error("[science] OpenAlex:", err?.message || err);
+        return null;
+      })
     ]);
     res.json({
       articles: news.articles,
