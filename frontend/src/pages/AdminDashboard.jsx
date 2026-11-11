@@ -853,7 +853,7 @@ export default function AdminDashboard() {
               </Button>
             </div>
 
-            <div className="mt-5 hidden overflow-x-auto md:block">
+            <div className="mt-5 hidden">
               <table className="w-full min-w-[860px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
@@ -925,7 +925,50 @@ export default function AdminDashboard() {
               </table>
             </div>
 
-            <div className="mt-4 space-y-3 md:hidden">
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {pagedUsers.map((u) => (
+                <article key={u.id} className="rounded-xl border border-gray-200 p-4 dark:border-slate-700">
+                  <div className="flex items-start justify-between gap-2">
+                    <Link to={`/authors/${u.id}`} className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-50 text-sm font-semibold text-teal-700 dark:bg-teal-950/40 dark:text-teal-300">
+                        {(u.display_name || "?").charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-teal-700 hover:underline dark:text-teal-300">{u.display_name}</p>
+                        <p className="truncate text-xs text-gray-500 dark:text-slate-400">{u.email}</p>
+                      </div>
+                    </Link>
+                    <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${u.role === "admin" ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-100" : "bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-200"}`}>
+                      {userRoleLabel(u.role, t)}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-slate-400">
+                    <button type="button" onClick={() => handleToggleVerified(u)} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${u.email_verified ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"}`}>
+                      {u.email_verified ? <MailCheck className="h-3 w-3" /> : <MailX className="h-3 w-3" />}
+                      {u.email_verified ? t("admin.verified") : t("admin.unverified")}
+                    </button>
+                    <span>{t("admin.creditsCount", { count: u.credits })}</span>
+                    <span>{t("admin.uploadsCount", { count: u.uploads || 0 })}</span>
+                    <span>{t("admin.downloadsCount", { count: u.downloads || 0 })}</span>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button type="button" onClick={() => setEditUserId(u.id)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 dark:border-slate-700 dark:text-slate-200">
+                      <Pencil className="h-3.5 w-3.5" /> {t("admin.edit")}
+                    </button>
+                    <button type="button" onClick={() => handleDeleteUser(u)} disabled={u.id === currentUser?.id} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 disabled:opacity-40 dark:border-red-900 dark:text-red-300">
+                      <Trash2 className="h-3.5 w-3.5" /> {t("admin.delete")}
+                    </button>
+                  </div>
+                </article>
+              ))}
+              {pagedUsers.length === 0 && (
+                <p className="col-span-full rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500 dark:border-slate-700 dark:text-slate-400">
+                  {users.length === 0 ? t("admin.noUsersYet") : t("admin.noUsersMatch")}
+                </p>
+              )}
+            </div>
+
+            <div className="mt-4 space-y-3 md:hidden hidden">
               {pagedUsers.map((u) => (
                 <article key={u.id} className="rounded-xl border border-gray-200 p-4 dark:border-slate-700">
                   <div className="flex items-start justify-between gap-2">
