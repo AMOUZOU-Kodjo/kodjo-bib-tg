@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Upload, Search, ArrowRight, CheckCircle, Newspaper } from "lucide-react";
 import heroImg from "../assets/hero.jpg";
 import { getDocuments, getDocumentStats } from "../api/documents";
+import { getNews } from "../api/news";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import InstallBanner from "../components/layout/InstallBanner";
 import NewsTicker from "../components/news/NewsTicker";
@@ -53,6 +54,7 @@ export default function Home() {
   const [recent, setRecent] = useState([]);
   const [docStats, setDocStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [homeNews, setHomeNews] = useState([]);
 
   useSeo({
     title: t("home.seoTitle"),
@@ -92,6 +94,21 @@ export default function Home() {
       active = false;
     };
   }, [documentsVersion]);
+
+  useEffect(() => {
+    let active = true;
+    getNews({ images: 0 })
+      .then((res) => {
+        if (!active) return;
+        setHomeNews((res.data.articles || []).slice(0, 4));
+      })
+      .catch(() => {
+        if (active) setHomeNews([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const submitSearch = (e) => {
     e.preventDefault();
@@ -217,6 +234,43 @@ export default function Home() {
         />
       </Reveal>
 
+      {homeNews.length > 0 && (
+        <section className="py-10 sm:py-12">
+          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl md:text-3xl">{t("home.newsTitle")}</h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("home.newsDesc")}</p>
+            </div>
+            <Link to="/actualites" className="inline-flex shrink-0 items-center gap-1 self-start text-sm font-medium text-teal-700 dark:text-teal-300 hover:underline sm:self-auto">
+              {t("common.seeAll")} <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {homeNews.map((article) => (
+              <Link
+                key={article.id || article.url}
+                to={`/actualites/article?url=${encodeURIComponent(article.url)}`}
+                state={{ article }}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
+              >
+                <div className="aspect-[16/9] overflow-hidden bg-gradient-to-br from-teal-700 via-teal-800 to-slate-900">
+                  {article.image ? (
+                    <img src={article.image} alt={article.title} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Newspaper className="h-8 w-8 text-white/70" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col p-4">
+                  <span className="mb-2 text-xs font-medium text-teal-700 dark:text-teal-300">{article.source}</span>
+                  <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 dark:text-slate-100">{article.title}</h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
     </div>
   );

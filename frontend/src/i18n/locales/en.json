@@ -85,7 +85,9 @@
     "popularDesc": "Documents the community views the most",
     "seoTitle": "Collaborative digital library",
     "seoDesc": "Upload, archive and share your documents for free. Discover useful resources and contribute to a collaborative digital library.",
-    "newsCta": "Togo News"
+    "newsCta": "Togo News",
+    "newsTitle": "Togo News",
+    "newsDesc": "The latest news selected from Togolese media."
   },
   "documents": {
     "title": "Digital library",

@@ -85,7 +85,9 @@
     "popularDesc": "Les documents que la communauté consulte le plus",
     "seoTitle": "Bibliothèque numérique collaborative",
     "seoDesc": "Déposez, archivez et partagez gratuitement vos documents. Découvrez des ressources utiles et contribuez à une bibliothèque numérique collaborative.",
-    "newsCta": "Actualités du Togo"
+    "newsCta": "Actualités du Togo",
+    "newsTitle": "Actualités du Togo",
+    "newsDesc": "Les dernières nouvelles sélectionnées depuis les médias togolais."
   },
   "documents": {
     "title": "Bibliothèque numérique",
