@@ -1316,6 +1316,10 @@
       "divertissement": "Divertissement",
       "philosophie": "Philosophie",
       "histoire": "Histoire"
-    }
+    },
+    "allSources": "Toutes les sources",
+    "favoritesOnly": "Favoris",
+    "addFavorite": "Ajouter aux favoris",
+    "removeFavorite": "Retirer des favoris"
   }
 }

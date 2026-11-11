@@ -29,7 +29,20 @@ const SCIENCE_FEEDS = [
   { name: "The Conversation France", url: "https://theconversation.com/fr/articles.atom", site: "https://theconversation.com/fr", maxItems: 10, keywords: SCIENCE_KEYWORDS }
 ];
 
-const FEEDS = [...TOGO_FEEDS, ...SCIENCE_FEEDS];
+const INTERNATIONAL_FEEDS = [
+  { name: "Jeune Afrique", url: "https://www.jeuneafrique.com/feed/", site: "https://www.jeuneafrique.com", maxItems: 10 },
+  { name: "Le Monde Afrique", url: "https://www.lemonde.fr/afrique/rss_full.xml", site: "https://www.lemonde.fr", maxItems: 10 },
+  { name: "BBC Afrique", url: "https://www.bbc.com/afrique/index.xml", site: "https://www.bbc.com/afrique", maxItems: 10 },
+  { name: "Africanews", url: "https://www.africanews.com/feed/", site: "https://www.africanews.com", maxItems: 10 },
+  { name: "AllAfrica", url: "https://allafrica.com/tools/headlines/rdf/latest/headlines.rdf", site: "https://allafrica.com", maxItems: 10 }
+];
+
+const RESEARCH_FEEDS = [
+  { name: "arXiv CS.AI", url: "https://rss.arxiv.org/rss/cs.AI", site: "https://arxiv.org", maxItems: 10, keywords: ["intelligence", "ia", "machine", "learning", "neural", "model", "data"] },
+  { name: "arXiv q-bio", url: "https://rss.arxiv.org/rss/q-bio", site: "https://arxiv.org", maxItems: 10 }
+];
+
+const FEEDS = [...TOGO_FEEDS, ...SCIENCE_FEEDS, ...INTERNATIONAL_FEEDS, ...RESEARCH_FEEDS];
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const IMAGE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
@@ -70,6 +83,10 @@ let cache = { articles: [], updatedAt: 0 };
 let lightCache = { articles: [], updatedAt: 0 };
 const scienceCache = { articles: [], updatedAt: 0 };
 const scienceLightCache = { articles: [], updatedAt: 0 };
+const worldCache = { articles: [], updatedAt: 0 };
+const worldLightCache = { articles: [], updatedAt: 0 };
+const researchCache = { articles: [], updatedAt: 0 };
+const researchLightCache = { articles: [], updatedAt: 0 };
 const imageCache = new Map();
 const articleCache = new Map();
 
@@ -457,6 +474,24 @@ export function getScienceNews(options = {}) {
   });
 }
 
+export function getWorldNews(options = {}) {
+  return loadNews({
+    feeds: INTERNATIONAL_FEEDS,
+    fullCache: worldCache,
+    lightCache: worldLightCache,
+    ...options
+  });
+}
+
+export function getResearchNews(options = {}) {
+  return loadNews({
+    feeds: RESEARCH_FEEDS,
+    fullCache: researchCache,
+    lightCache: researchLightCache,
+    ...options
+  });
+}
+
 export async function getArticle(url) {
   if (!isAllowedArticleUrl(url)) return null;
 
@@ -491,6 +526,10 @@ export async function getArticle(url) {
 }
 
 export function getNewsSources(category = "togo") {
-  const feeds = category === "science" ? SCIENCE_FEEDS : TOGO_FEEDS;
+  const feeds =
+    category === "science" ? SCIENCE_FEEDS :
+    category === "world" ? INTERNATIONAL_FEEDS :
+    category === "research" ? RESEARCH_FEEDS :
+    TOGO_FEEDS;
   return feeds.map(({ name, site }) => ({ name, site }));
 }

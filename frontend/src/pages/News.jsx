@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, BookOpen, CalendarDays, ExternalLink, FlaskConical, Globe2, Newspaper, RefreshCw, Users } from "lucide-react";
-import { getNews, getScienceNews } from "../api/news";
+import { getNews, getScienceNews, getWorldNews, getResearchNews } from "../api/news";
 import { Pagination } from "../components/ui";
 import useSeo from "../hooks/useSeo";
 import { Reveal, SkeletonCard } from "../components/ui";
@@ -31,7 +31,7 @@ function formatNewsDate(value, locale = "fr") {
   return date.toLocaleDateString(locale === "en" ? "en-GB" : "fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
-function NewsCard({ article }) {
+function NewsCard({ article, isFavorite, onToggleFavorite }) {
   const { t, i18n } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(article.image) && !imageFailed;
@@ -60,6 +60,14 @@ function NewsCard({ article }) {
           <span className="rounded-full bg-teal-50 px-2.5 py-1 font-medium text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">
             {article.source}
           </span>
+          <button
+            type="button"
+            onClick={() => onToggleFavorite(article.url)}
+            aria-label={isFavorite ? t("news.removeFavorite") : t("news.addFavorite")}
+            className={`ml-auto inline-flex items-center justify-center rounded-full p-1 text-sm transition-colors ${isFavorite ? "text-amber-500" : "text-gray-400 hover:text-amber-500"}`}
+          >
+            {isFavorite ? "★" : "☆"}
+          </button>
           {article.publishedAt && (
             <span className="inline-flex items-center gap-1 text-gray-500 dark:text-slate-400">
               <CalendarDays className="h-3.5 w-3.5" />
@@ -153,6 +161,15 @@ export default function News() {
   const [page, setPage] = useState(1);
 
   const selectedCategory = searchParams.get("category") || "all";
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem("archivia_news_favorites") || "[]"));
+    } catch {
+      return new Set();
+    }
+  });
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [selectedSource, setSelectedSource] = useState("all");
 
   useSeo({
     title: t("news.seoTitle"),
@@ -166,14 +183,18 @@ export default function News() {
     setError("");
     try {
       const params = refresh ? { refresh: 1 } : undefined;
-      const [togoRes, scienceRes] = await Promise.all([
+      const [togoRes, scienceRes, worldRes, researchRes] = await Promise.all([
         getNews(params),
-        getScienceNews(params)
+        getScienceNews(params),
+        getWorldNews(params).catch(() => ({ data: { articles: [], sources: [] } })),
+        getResearchNews(params).catch(() => ({ data: { articles: [], sources: [] } }))
       ]);
       const togoArticles = togoRes.data.articles || [];
       const scienceArticles = scienceRes.data.articles || [];
       const publications = scienceRes.data.publications || [];
-      const merged = [...togoArticles, ...scienceArticles, ...publications];
+      const worldArticles = worldRes.data.articles || [];
+      const researchArticles = researchRes.data.articles || [];
+      const merged = [...togoArticles, ...scienceArticles, ...publications, ...worldArticles, ...researchArticles];
       const seen = new Set();
       const unique = merged.filter((item) => {
         const key = item.id || item.url;
@@ -184,7 +205,7 @@ export default function News() {
 
       setArticles(unique);
       const sourceMap = new Map();
-      for (const src of [...(togoRes.data.sources || []), ...(scienceRes.data.sources || [])]) {
+      for (const src of [...(togoRes.data.sources || []), ...(scienceRes.data.sources || []), ...(worldRes.data.sources || []), ...(researchRes.data.sources || [])]) {
         sourceMap.set(src.name, src);
       }
       setSources(Array.from(sourceMap.values()));
@@ -203,9 +224,18 @@ export default function News() {
   }, []);
 
   const filtered = useMemo(() => {
-    if (selectedCategory === "all") return articles;
-    return articles.filter((item) => item.category === selectedCategory);
-  }, [articles, selectedCategory]);
+    let result = articles;
+    if (selectedCategory !== "all") {
+      result = result.filter((item) => item.category === selectedCategory);
+    }
+    if (selectedSource !== "all") {
+      result = result.filter((item) => item.source === selectedSource);
+    }
+    if (showFavoritesOnly) {
+      result = result.filter((item) => favorites.has(item.url));
+    }
+    return result;
+  }, [articles, selectedCategory, selectedSource, showFavoritesOnly, favorites]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -224,6 +254,18 @@ export default function News() {
     if (slug === "all") setSearchParams({}, { replace: true });
     else setSearchParams({ category: slug }, { replace: true });
     setPage(1);
+  };
+
+  const toggleFavorite = (url) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url);
+      else next.add(url);
+      try {
+        localStorage.setItem("archivia_news_favorites", JSON.stringify(Array.from(next)));
+      } catch {}
+      return next;
+    });
   };
 
   return (
@@ -276,6 +318,31 @@ export default function News() {
         })}
       </div>
 
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <select
+          value={selectedSource}
+          onChange={(e) => { setSelectedSource(e.target.value); setPage(1); }}
+          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+        >
+          <option value="all">{t("news.allSources")}</option>
+          {sources.map((source) => (
+            <option key={source.name} value={source.name}>{source.name}</option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() => { setShowFavoritesOnly((v) => !v); setPage(1); }}
+          aria-pressed={showFavoritesOnly}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
+            showFavoritesOnly
+              ? "border-amber-500 bg-amber-500 text-white"
+              : "border-gray-200 bg-white text-gray-700 hover:border-amber-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+          }`}
+        >
+          ★ {t("news.favoritesOnly")}
+        </button>
+      </div>
+
       {updatedAt && (
         <p className="mb-6 text-xs text-gray-500 dark:text-slate-400">
           {t("news.updated", { date: formatNewsDate(updatedAt, i18n.resolvedLanguage) })}
@@ -302,7 +369,7 @@ export default function News() {
                 {item.kind === "publication" || item.external ? (
                   <PublicationCard publication={item} />
                 ) : (
-                  <NewsCard article={item} />
+                  <NewsCard article={item} isFavorite={favorites.has(item.url)} onToggleFavorite={toggleFavorite} />
                 )}
               </Reveal>
             ))}

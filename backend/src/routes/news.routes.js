@@ -1,6 +1,6 @@
 import express from "express";
 import { config } from "../config/env.js";
-import { getArticle, getNews, getNewsSources, getScienceNews } from "../services/news.service.js";
+import { getArticle, getNews, getNewsSources, getScienceNews, getWorldNews, getResearchNews } from "../services/news.service.js";
 import { getScientificPublications } from "../services/science.service.js";
 import { getContentCategories } from "../services/contentCategories.js";
 import { syncNewsToTelegram } from "../services/newsTelegram.service.js";
@@ -53,6 +53,38 @@ router.get("/science", async (req, res, next) => {
       publications: publications?.publications || [],
       updatedAt: news.updatedAt ? new Date(news.updatedAt).toISOString() : null,
       sources: getNewsSources("science")
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/world", async (req, res, next) => {
+  try {
+    const news = await getWorldNews({
+      force: req.query.refresh === "1",
+      includeImages: req.query.images !== "0"
+    });
+    res.json({
+      articles: news.articles,
+      updatedAt: news.updatedAt ? new Date(news.updatedAt).toISOString() : null,
+      sources: getNewsSources("world")
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/research", async (req, res, next) => {
+  try {
+    const news = await getResearchNews({
+      force: req.query.refresh === "1",
+      includeImages: req.query.images !== "0"
+    });
+    res.json({
+      articles: news.articles,
+      updatedAt: news.updatedAt ? new Date(news.updatedAt).toISOString() : null,
+      sources: getNewsSources("research")
     });
   } catch (err) {
     next(err);
