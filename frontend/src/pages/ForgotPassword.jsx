@@ -36,6 +36,7 @@ export default function ForgotPassword() {
       </Link>
       <div className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-8">
         <div className="mb-6 text-center">
+          <img src="/logo.png" alt="Archivia" className="mx-auto mb-4 h-16 w-16 rounded-2xl object-contain" />
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/30">
             <Mail className="w-6 h-6 text-primary-600 dark:text-primary-100" />
           </div>

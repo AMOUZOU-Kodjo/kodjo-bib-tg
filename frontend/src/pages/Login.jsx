@@ -44,6 +44,7 @@ export default function Login() {
     <div className="flex min-h-[calc(100dvh-200px)] items-center justify-center">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center sm:mb-8">
+          <img src="/logo.png" alt="Archivia" className="mx-auto mb-4 h-16 w-16 rounded-2xl object-contain" />
           <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">{t("auth.loginTitle")}</h1>
           <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("auth.loginSubtitle", { site: siteName })}</p>
         </div>
