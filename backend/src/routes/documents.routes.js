@@ -217,8 +217,8 @@ router.get("/", optionalAuth, async (req, res, next) => {
     const offsetIndex = listIndex;
     listParams.push(limitNum, offset);
 
-    const sql = `SELECT d.id, d.title, d.description, d.category_id, COALESCE(c.name, d.category) AS category, c.slug AS category_slug, d.tags, d.visibility, d.original_filename, d.mime_type, d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.view_count, d.download_count, d.like_count, d.comment_count, d.created_at, u.display_name as author_name, u.id as owner_id${likedSelect}
-      FROM documents d JOIN users u ON u.id = d.owner_id LEFT JOIN categories c ON c.id = d.category_id
+    const sql = `SELECT d.id, d.title, d.description, d.category_id, COALESCE(c.name, d.category) AS category, c.slug AS category_slug, p.name AS parent_category, d.tags, d.visibility, d.original_filename, d.mime_type, d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.view_count, d.download_count, d.like_count, d.comment_count, d.created_at, u.display_name as author_name, u.id as owner_id${likedSelect}
+      FROM documents d JOIN users u ON u.id = d.owner_id LEFT JOIN categories c ON c.id = d.category_id LEFT JOIN categories p ON p.id = c.parent_id
       ${whereSql}
       ORDER BY ${order}
       LIMIT $${limitIndex} OFFSET $${offsetIndex}`;
@@ -260,11 +260,12 @@ router.get("/:id", optionalAuth, async (req, res, next) => {
     await ensureCategoriesSchema();
     const [docRes, likedRes, favoriteRes] = await Promise.all([
       query(
-        `SELECT d.*, COALESCE(c.name, d.category) AS resolved_category, c.slug AS category_slug,
+        `SELECT d.*, COALESCE(c.name, d.category) AS resolved_category, c.slug AS category_slug, p.name AS parent_category,
                 u.display_name as author_name, u.id as owner_id
          FROM documents d
          JOIN users u ON u.id = d.owner_id
          LEFT JOIN categories c ON c.id = d.category_id
+         LEFT JOIN categories p ON p.id = c.parent_id
          WHERE d.id = $1`,
         [req.params.id]
       ),

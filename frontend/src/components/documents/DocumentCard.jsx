@@ -13,6 +13,10 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
   const showThumbnail = Boolean(doc.thumbnail) && !thumbnailFailed;
   const views = doc.view_count || 0;
   const downloads = doc.download_count || 0;
+  const categoryLabel = doc.category ? formatCategoryName(doc.category, t) : t("document.fallback");
+  const categoryFullLabel = doc.parent_category
+    ? `${formatCategoryName(doc.parent_category, t)} › ${categoryLabel}`
+    : categoryLabel;
 
   return (
     <article className="group relative h-64 md:h-72 overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -38,8 +42,8 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
         <div className="doc-overlay pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
         <div className="doc-overlay pointer-events-none absolute left-4 top-4 flex flex-wrap gap-2">
-          <span className={`rounded-full px-3 py-1 text-xs font-medium text-white ${getCategoryColor(doc.category)}`}>
-            {doc.category ? formatCategoryName(doc.category, t) : t("document.fallback")}
+          <span title={categoryFullLabel} className={`rounded-full px-3 py-1 text-xs font-medium text-white ${getCategoryColor(doc.category)}`}>
+            {categoryLabel}
           </span>
           {isPrivate && (
             <span className="inline-flex items-center gap-1 rounded-full bg-gray-900/80 px-3 py-1 text-xs font-medium text-white backdrop-blur">
