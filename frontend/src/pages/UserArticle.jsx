@@ -43,7 +43,7 @@ export default function UserArticle() {
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <a
-          href={`https://wa.me/?text=${encodeURIComponent(`${article.title} - ${window.location.origin}/share/news?id=${encodeURIComponent(params.get("id") || "")}`)}`}
+          href={`https://wa.me/?text=${encodeURIComponent(`${article.title} - https://archivia.onrender.com/share/news?id=${encodeURIComponent(params.get("id") || "")}`)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-medium text-white hover:bg-[#1ebe5b]"
@@ -53,7 +53,7 @@ export default function UserArticle() {
         </a>
         <button
           type="button"
-          onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/share/news?id=${encodeURIComponent(params.get("id") || "")}`); } catch {} }}
+          onClick={async () => { try { await navigator.clipboard.writeText(`https://archivia.onrender.com/share/news?id=${encodeURIComponent(params.get("id") || "")}`); } catch {} }}
           className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
         >
           <Copy className="h-4 w-4" />
