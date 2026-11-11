@@ -19,7 +19,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
     : categoryLabel;
 
   return (
-    <article className="group relative h-52 md:h-60 overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <article className="group relative h-44 md:h-52 overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <Link to={`/documents/${doc.id}`} className="block h-full">
         {showThumbnail ? (
           <img
