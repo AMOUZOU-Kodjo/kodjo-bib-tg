@@ -1327,6 +1327,8 @@
     "articleTitle": "Titre de l'article",
     "articleContent": "Contenu de l'article",
     "publish": "Publier",
-    "publishError": "Impossible de publier l'article."
+    "publishError": "Impossible de publier l'article.",
+    "shareWhatsApp": "Partager sur WhatsApp",
+    "copyLink": "Copier le lien"
   }
 }

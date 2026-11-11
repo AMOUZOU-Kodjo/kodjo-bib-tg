@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, CalendarDays, ExternalLink, Loader2, Newspaper } from "lucide-react";
+import { ArrowLeft, CalendarDays, Copy, ExternalLink, Loader2, MessageCircle, Newspaper } from "lucide-react";
 import { getNewsArticle } from "../api/news";
 import useSeo from "../hooks/useSeo";
 
@@ -122,6 +122,28 @@ export default function NewsArticle() {
             className="news-article-content mt-6"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
+
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`${article.title} - ${window.location.href}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-2 text-sm font-medium text-white hover:bg-[#1ebe5b]"
+            >
+              <MessageCircle className="h-4 w-4" />
+              {t("news.shareWhatsApp")}
+            </a>
+            <button
+              type="button"
+              onClick={async () => {
+                try { await navigator.clipboard.writeText(window.location.href); } catch {}
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              <Copy className="h-4 w-4" />
+              {t("news.copyLink")}
+            </button>
+          </div>
 
           <div className="mt-8 flex flex-col gap-3 border-t border-gray-200 pt-6 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
             <p className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
