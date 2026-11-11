@@ -100,7 +100,7 @@ export default function Home() {
     getNews({ images: 0 })
       .then((res) => {
         if (!active) return;
-        setHomeNews((res.data.articles || []).slice(0, 4));
+        setHomeNews((res.data.articles || []).slice(0, 8));
       })
       .catch(() => {
         if (active) setHomeNews([]);
@@ -245,29 +245,31 @@ export default function Home() {
               {t("common.seeAll")} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {homeNews.map((article) => (
-              <Link
-                key={article.id || article.url}
-                to={`/actualites/article?url=${encodeURIComponent(article.url)}`}
-                state={{ article }}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
-              >
-                <div className="aspect-[16/9] overflow-hidden bg-gradient-to-br from-teal-700 via-teal-800 to-slate-900">
-                  {article.image ? (
-                    <img src={article.image} alt={article.title} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <Newspaper className="h-8 w-8 text-white/70" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col p-4">
-                  <span className="mb-2 text-xs font-medium text-teal-700 dark:text-teal-300">{article.source}</span>
-                  <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 dark:text-slate-100">{article.title}</h3>
-                </div>
-              </Link>
-            ))}
+          <div className="relative overflow-hidden">
+            <div className="home-news-marquee flex w-max gap-4">
+              {[...homeNews, ...homeNews].map((article, index) => (
+                <Link
+                  key={`${article.id || article.url}-${index}`}
+                  to={`/actualites/article?url=${encodeURIComponent(article.url)}`}
+                  state={{ article }}
+                  className="group flex w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
+                >
+                  <div className="aspect-[16/9] overflow-hidden bg-gradient-to-br from-teal-700 via-teal-800 to-slate-900">
+                    {article.image ? (
+                      <img src={article.image} alt={article.title} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <Newspaper className="h-8 w-8 text-white/70" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col p-4">
+                    <span className="mb-2 text-xs font-medium text-teal-700 dark:text-teal-300">{article.source}</span>
+                    <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 dark:text-slate-100">{article.title}</h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
       )}
