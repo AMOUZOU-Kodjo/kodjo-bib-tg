@@ -1,5 +1,6 @@
 import express from "express";
 import { ensureFeatureSchema, pool, query } from "../config/db.js";
+import { config } from "../config/env.js";
 import { createNotification, notifyReportUpdate } from "../services/notificationCenter.service.js";
 import { authRequired } from "../middlewares/auth.js";
 import { requireAdmin } from "../middlewares/admin.js";
@@ -864,9 +865,12 @@ router.post("/broadcast", uploadMultiple("attachments", 10), async (req, res, ne
       return res.json({ ok: true, sent: 0, failed: 0, total: 0 });
     }
 
+    const siteUrl = String(config.frontendUrl || "").replace(/\/+$/, "");
+    const brand = "Archives";
     const safeSubject = escapeHtml(subject);
     const safeMessage = escapeHtml(message).replace(/\r?\n/g, "<br>");
-    const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;"><h2>${safeSubject}</h2><p>${safeMessage}</p></div>`;
+    const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;"><h2>${safeSubject}</h2><p>${safeMessage}</p><hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;"><p style="color:#6b7280;font-size:13px;">— L'équipe ${escapeHtml(brand)}<br><a href="${escapeHtml(siteUrl)}">${escapeHtml(siteUrl)}</a></p></div>`;
+    const text = `${message}\n\n— L'équipe ${brand}\n${siteUrl}`;
     const SEND_CONCURRENCY = 5;
     let cursor = 0;
     let sent = 0;
@@ -888,7 +892,7 @@ router.post("/broadcast", uploadMultiple("attachments", 10), async (req, res, ne
             toName: recipient.display_name,
             subject,
             html,
-            text: message,
+            text,
             attachments
           });
           sent++;
