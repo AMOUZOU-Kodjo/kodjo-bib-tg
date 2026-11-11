@@ -1302,6 +1302,20 @@
     "publicationBadge": "Publication",
     "openPublication": "Ouvrir la publication",
     "scienceDisclaimer": "Les actualités et publications sont la propriété de leurs sources respectives. Archivia agrège les flux RSS et les métadonnées OpenAlex.",
-    "tickerLabel": "Fil d'actualités du Togo"
+    "tickerLabel": "Fil d'actualités du Togo",
+    "allCategories": "Toutes",
+    "categories": {
+      "litterature": "Littérature",
+      "sciences": "Sciences",
+      "education": "Éducation",
+      "art": "Art",
+      "societe": "Société",
+      "politique": "Politique",
+      "sante": "Santé",
+      "sport": "Sport",
+      "divertissement": "Divertissement",
+      "philosophie": "Philosophie",
+      "histoire": "Histoire"
+    }
   }
 }

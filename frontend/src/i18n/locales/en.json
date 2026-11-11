@@ -1302,6 +1302,20 @@
     "publicationBadge": "Publication",
     "openPublication": "Open publication",
     "scienceDisclaimer": "News and publications belong to their respective sources. Archivia aggregates RSS feeds and OpenAlex metadata.",
-    "tickerLabel": "Togo news feed"
+    "tickerLabel": "Togo news feed",
+    "allCategories": "All",
+    "categories": {
+      "litterature": "Literature",
+      "sciences": "Science",
+      "education": "Education",
+      "art": "Art",
+      "societe": "Society",
+      "politique": "Politics",
+      "sante": "Health",
+      "sport": "Sport",
+      "divertissement": "Entertainment",
+      "philosophie": "Philosophy",
+      "histoire": "History"
+    }
   }
 }

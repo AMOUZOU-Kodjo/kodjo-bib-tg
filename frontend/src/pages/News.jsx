@@ -1,10 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, BookOpen, CalendarDays, ExternalLink, FlaskConical, Globe2, Newspaper, RefreshCw, Users } from "lucide-react";
 import { getNews, getScienceNews } from "../api/news";
+import { Pagination } from "../components/ui";
 import useSeo from "../hooks/useSeo";
 import { Reveal, SkeletonCard } from "../components/ui";
+
+const CATEGORY_SLUGS = [
+  "all",
+  "litterature",
+  "sciences",
+  "education",
+  "art",
+  "societe",
+  "politique",
+  "sante",
+  "sport",
+  "divertissement",
+  "philosophie",
+  "histoire"
+];
+
+const PAGE_SIZE = 12;
 
 function formatNewsDate(value, locale = "fr") {
   if (!value) return "";
@@ -68,7 +86,6 @@ function NewsCard({ article }) {
   );
 }
 
-
 function PublicationCard({ publication }) {
   const { t, i18n } = useTranslation();
   const authors = publication.authors?.filter(Boolean) || [];
@@ -119,24 +136,28 @@ function PublicationCard({ publication }) {
   );
 }
 
+function categoryLabel(t, slug) {
+  if (slug === "all") return t("news.allCategories");
+  return t(`news.categories.${slug}`, { defaultValue: slug });
+}
+
 export default function News() {
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") === "science" ? "science" : "togo";
-  const [activeTab, setActiveTab] = useState(initialTab);
   const [articles, setArticles] = useState([]);
-  const [publications, setPublications] = useState([]);
   const [sources, setSources] = useState([]);
   const [updatedAt, setUpdatedAt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
-  const isScience = activeTab === "science";
+  const [page, setPage] = useState(1);
+
+  const selectedCategory = searchParams.get("category") || "all";
 
   useSeo({
-    title: isScience ? t("news.scienceSeoTitle") : t("news.seoTitle"),
-    description: isScience ? t("news.scienceSeoDesc") : t("news.seoDesc"),
-    url: `${window.location.origin}/actualites${isScience ? "?tab=science" : ""}`
+    title: t("news.seoTitle"),
+    description: t("news.seoDesc"),
+    url: `${window.location.origin}/actualites${selectedCategory !== "all" ? `?category=${selectedCategory}` : ""}`
   });
 
   const load = async (refresh = false) => {
@@ -145,11 +166,30 @@ export default function News() {
     setError("");
     try {
       const params = refresh ? { refresh: 1 } : undefined;
-      const res = isScience ? await getScienceNews(params) : await getNews(params);
-      setArticles(res.data.articles || []);
-      setPublications(isScience ? res.data.publications || [] : []);
-      setSources(res.data.sources || []);
-      setUpdatedAt(res.data.updatedAt || null);
+      const [togoRes, scienceRes] = await Promise.all([
+        getNews(params),
+        getScienceNews(params)
+      ]);
+      const togoArticles = togoRes.data.articles || [];
+      const scienceArticles = scienceRes.data.articles || [];
+      const publications = scienceRes.data.publications || [];
+      const merged = [...togoArticles, ...scienceArticles, ...publications];
+      const seen = new Set();
+      const unique = merged.filter((item) => {
+        const key = item.id || item.url;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
+
+      setArticles(unique);
+      const sourceMap = new Map();
+      for (const src of [...(togoRes.data.sources || []), ...(scienceRes.data.sources || [])]) {
+        sourceMap.set(src.name, src);
+      }
+      setSources(Array.from(sourceMap.values()));
+      setUpdatedAt(togoRes.data.updatedAt || scienceRes.data.updatedAt || null);
+      setPage(1);
     } catch {
       setError(t("news.error"));
     } finally {
@@ -159,20 +199,31 @@ export default function News() {
   };
 
   useEffect(() => {
-    const tab = searchParams.get("tab") === "science" ? "science" : "togo";
-    setActiveTab(tab);
-  }, [searchParams]);
-
-  useEffect(() => {
-    setArticles([]);
-    setPublications([]);
     load();
-  }, [activeTab]);
+  }, []);
 
-  const changeTab = (tab) => {
-    if (tab === activeTab) return;
-    setActiveTab(tab);
-    setSearchParams(tab === "science" ? { tab: "science" } : {}, { replace: true });
+  const filtered = useMemo(() => {
+    if (selectedCategory === "all") return articles;
+    return articles.filter((item) => item.category === selectedCategory);
+  }, [articles, selectedCategory]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const counts = useMemo(() => {
+    const result = { all: articles.length };
+    for (const slug of CATEGORY_SLUGS) {
+      if (slug === "all") continue;
+      result[slug] = articles.filter((item) => item.category === slug).length;
+    }
+    return result;
+  }, [articles]);
+
+  const changeCategory = (slug) => {
+    if (slug === "all") setSearchParams({}, { replace: true });
+    else setSearchParams({ category: slug }, { replace: true });
+    setPage(1);
   };
 
   return (
@@ -180,15 +231,11 @@ export default function News() {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">
-            {isScience ? <FlaskConical className="h-3.5 w-3.5" /> : <Globe2 className="h-3.5 w-3.5" />}
-            {isScience ? t("news.scienceBadge") : t("news.badge")}
+            <Globe2 className="h-3.5 w-3.5" />
+            {t("news.badge")}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">
-            {isScience ? t("news.scienceTitle") : t("news.title")}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-gray-600 dark:text-slate-400 sm:text-base">
-            {isScience ? t("news.scienceSubtitle") : t("news.subtitle")}
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">{t("news.title")}</h1>
+          <p className="mt-2 max-w-2xl text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("news.subtitle")}</p>
         </div>
         <button
           type="button"
@@ -201,33 +248,32 @@ export default function News() {
         </button>
       </div>
 
-      <div className="mb-6 inline-flex flex-wrap gap-1 rounded-xl border border-gray-200 bg-gray-50 p-1 dark:border-slate-700 dark:bg-slate-800/60">
-        <button
-          type="button"
-          onClick={() => changeTab("togo")}
-          aria-pressed={!isScience}
-          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            !isScience
-              ? "bg-white text-teal-700 shadow-sm dark:bg-slate-700 dark:text-teal-300"
-              : "text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-200"
-          }`}
-        >
-          <Globe2 className="h-4 w-4" />
-          {t("news.tabTogo")}
-        </button>
-        <button
-          type="button"
-          onClick={() => changeTab("science")}
-          aria-pressed={isScience}
-          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            isScience
-              ? "bg-white text-teal-700 shadow-sm dark:bg-slate-700 dark:text-teal-300"
-              : "text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-200"
-          }`}
-        >
-          <FlaskConical className="h-4 w-4" />
-          {t("news.tabScience")}
-        </button>
+      <div className="mb-6 flex flex-wrap gap-2">
+        {CATEGORY_SLUGS.map((slug) => {
+          const count = counts[slug] || 0;
+          const active = selectedCategory === slug;
+          if (slug !== "all" && count === 0) return null;
+          return (
+            <button
+              key={slug}
+              type="button"
+              onClick={() => changeCategory(slug)}
+              aria-pressed={active}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                active
+                  ? "border-teal-700 bg-teal-700 text-white dark:border-teal-500 dark:bg-teal-600"
+                  : "border-gray-200 bg-white text-gray-700 hover:border-teal-300 hover:text-teal-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-teal-500 dark:hover:text-teal-300"
+              }`}
+            >
+              {categoryLabel(t, slug)}
+              {slug !== "all" && (
+                <span className={`rounded-full px-1.5 py-0.5 text-xs ${active ? "bg-white/20" : "bg-gray-100 dark:bg-slate-700"}`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {updatedAt && (
@@ -244,35 +290,27 @@ export default function News() {
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
           {error}
         </div>
-      ) : articles.length === 0 && (!isScience || publications.length === 0) ? (
+      ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
           {t("news.empty")}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {articles.map((article, index) => (
-            <Reveal key={article.id} delay={Math.min(index * 40, 240)}>
-              <NewsCard article={article} />
-            </Reveal>
-          ))}
-        </div>
-      )}
-
-
-      {isScience && publications.length > 0 && (
-        <section className="mt-10">
-          <div className="mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">{t("news.publicationsTitle")}</h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">{t("news.publicationsSubtitle")}</p>
-          </div>
+        <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {publications.map((publication, index) => (
-              <Reveal key={publication.id} delay={Math.min(index * 40, 240)}>
-                <PublicationCard publication={publication} />
+            {paginated.map((item, index) => (
+              <Reveal key={item.id || item.url} delay={Math.min(index * 40, 240)}>
+                {item.kind === "publication" || item.external ? (
+                  <PublicationCard publication={item} />
+                ) : (
+                  <NewsCard article={item} />
+                )}
               </Reveal>
             ))}
           </div>
-        </section>
+          <div className="mt-8">
+            <Pagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
+          </div>
+        </>
       )}
 
       {sources.length > 0 && (
@@ -285,7 +323,7 @@ export default function News() {
               </a>
             ))}
           </div>
-          <p className="mt-4 text-xs text-gray-400 dark:text-slate-500">{t(isScience ? "news.scienceDisclaimer" : "news.disclaimer")}</p>
+          <p className="mt-4 text-xs text-gray-400 dark:text-slate-500">{t("news.disclaimer")}</p>
         </div>
       )}
     </div>

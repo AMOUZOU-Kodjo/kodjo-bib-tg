@@ -1,4 +1,5 @@
 import { config } from "../config/env.js";
+import { classifyContent, getContentCategories } from "./contentCategories.js";
 
 const OPENALEX_URL = "https://api.openalex.org/works";
 const CACHE_TTL_MS = 30 * 60 * 1000;
@@ -16,6 +17,45 @@ function reconstructAbstract(invertedIndex) {
     }
   }
   return words.filter(Boolean).join(" ");
+}
+
+const OPENALEX_FIELD_MAP = [
+  [/medicine|health|clinical|nursing|pharmacy|dentistry|veterinary/i, "sante"],
+  [/agricultural|biological|ecology|environment|earth|planetary|physics|chemistry|mathematics|computer|engineering|materials|energy/i, "sciences"],
+  [/business|management|economics|finance|accounting/i, "societe"],
+  [/psychology|social|sociology|political|law|education|arts|humanities|history|philosophy|literature|linguistics/i, "societe"]
+];
+
+function mapOpenAlexCategory(work) {
+  const topic = work.primary_topic || {};
+  const domain = (topic.domain || {}).display_name || "";
+  const field = (topic.field || {}).display_name || "";
+  const subfield = (topic.subfield || {}).display_name || "";
+  const haystack = `${domain} ${field} ${subfield}`;
+
+  if (/health sciences/i.test(domain)) return "sante";
+  if (/life sciences/i.test(domain)) {
+    if (/medicine|health/i.test(field)) return "sante";
+    return "sciences";
+  }
+  if (/physical sciences/i.test(domain)) return "sciences";
+  if (/social sciences/i.test(domain)) {
+    if (/education/i.test(field)) return "education";
+    if (/arts|humanities/i.test(field)) {
+      if (/history/i.test(field)) return "histoire";
+      if (/philosophy/i.test(field)) return "philosophie";
+      if (/literature|linguistics/i.test(field)) return "litterature";
+      return "art";
+    }
+    if (/psychology/i.test(field)) return "sante";
+    return "societe";
+  }
+
+  for (const [pattern, slug] of OPENALEX_FIELD_MAP) {
+    if (pattern.test(haystack)) return slug;
+  }
+
+  return classifyContent(work.title || work.display_name || "", reconstructAbstract(work.abstract_inverted_index));
 }
 
 function toPublication(work) {
@@ -39,7 +79,8 @@ function toPublication(work) {
     authors,
     doi: work.doi || null,
     external: true,
-    kind: "publication"
+    kind: "publication",
+    category: mapOpenAlexCategory(work)
   };
 }
 
@@ -61,7 +102,7 @@ export async function getScientificPublications({ force = false, limit = 12 } = 
     ].join(","),
     sort: "publication_date:desc",
     "per-page": String(safeLimit),
-    select: "id,doi,title,display_name,publication_date,primary_location,authorships,abstract_inverted_index"
+    select: "id,doi,title,display_name,publication_date,primary_location,authorships,abstract_inverted_index,primary_topic"
   });
   if (config.contactEmail) params.set("mailto", config.contactEmail);
 

@@ -1,4 +1,5 @@
 import { config } from "../config/env.js";
+import { classifyContent } from "./contentCategories.js";
 
 const TOGO_FEEDS = [
   { name: "Togo Officiel", url: "https://www.republiquetogolaise.tg/obrss/feed-rtg", site: "https://www.republiquetogolaise.tg" },
@@ -166,7 +167,8 @@ function parseFeed(xml, feed) {
       image,
       source: feed.name,
       sourceUrl: feed.site,
-      publishedAt: parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : null
+      publishedAt: parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : null,
+      category: classifyContent(title, description)
     }];
   });
   return feed.maxItems ? articles.slice(0, feed.maxItems) : articles;

@@ -2,6 +2,7 @@ import express from "express";
 import { config } from "../config/env.js";
 import { getArticle, getNews, getNewsSources, getScienceNews } from "../services/news.service.js";
 import { getScientificPublications } from "../services/science.service.js";
+import { getContentCategories } from "../services/contentCategories.js";
 import { syncNewsToTelegram } from "../services/newsTelegram.service.js";
 
 const router = express.Router();
@@ -16,6 +17,10 @@ router.get("/article", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+router.get("/categories", (_req, res) => {
+  res.json({ categories: getContentCategories() });
 });
 
 function isTelegramSyncAuthorized(req) {
