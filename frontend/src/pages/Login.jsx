@@ -43,10 +43,12 @@ export default function Login() {
   return (
     <div className="flex min-h-[calc(100dvh-200px)] items-center justify-center">
       <div className="w-full max-w-md">
-        <div className="mb-6 text-center sm:mb-8">
-          <img src="/logo.png" alt="Archivia" className="mx-auto mb-4 h-16 w-16 rounded-2xl object-contain" />
-          <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">{t("auth.loginTitle")}</h1>
-          <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("auth.loginSubtitle", { site: siteName })}</p>
+        <div className="mb-6 sm:mb-8">
+          <div className="mb-2 flex items-center justify-center gap-3">
+            <img src="/logo.png" alt="Archivia" className="h-10 w-10 rounded-xl object-contain" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">{t("auth.loginTitle")}</h1>
+          </div>
+          <p className="text-center text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("auth.loginSubtitle", { site: siteName })}</p>
         </div>
         <div className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-8">
           <form onSubmit={submit} className="space-y-6">

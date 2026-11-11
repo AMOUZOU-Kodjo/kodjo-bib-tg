@@ -36,11 +36,13 @@ export default function ForgotPassword() {
       </Link>
       <div className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-8">
         <div className="mb-6 text-center">
-          <img src="/logo.png" alt="Archivia" className="mx-auto mb-4 h-16 w-16 rounded-2xl object-contain" />
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/30">
             <Mail className="w-6 h-6 text-primary-600 dark:text-primary-100" />
           </div>
-          <h1 className="mb-2 text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">{t("auth.forgotTitle")}</h1>
+          <div className="mb-2 flex items-center justify-center gap-3">
+            <img src="/logo.png" alt="Archivia" className="h-10 w-10 rounded-xl object-contain" />
+            <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl">{t("auth.forgotTitle")}</h1>
+          </div>
           <p className="text-sm text-gray-600 dark:text-slate-400 sm:text-base">
             {sent ? t("auth.forgotSentDesc") : t("auth.forgotDesc")}
           </p>
