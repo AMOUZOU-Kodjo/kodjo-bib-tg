@@ -929,7 +929,11 @@
     "reference": "Référence",
     "amount": "Montant",
     "operator": "Opérateur",
-    "note": "Note"
+    "note": "Note",
+    "uploads": "Téléversements",
+    "downloads": "Téléchargements",
+    "uploadsCount": "{{count}} téléversements",
+    "downloadsCount": "{{count}} téléchargements"
   },
   "creditsPage": {
     "title": "Acheter des crédits",

@@ -929,7 +929,11 @@
     "reference": "Reference",
     "amount": "Amount",
     "operator": "Operator",
-    "note": "Note"
+    "note": "Note",
+    "uploads": "Uploads",
+    "downloads": "Downloads",
+    "uploadsCount": "{{count}} uploads",
+    "downloadsCount": "{{count}} downloads"
   },
   "creditsPage": {
     "title": "Buy credits",

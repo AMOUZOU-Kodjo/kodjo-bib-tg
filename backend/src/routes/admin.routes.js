@@ -470,7 +470,13 @@ router.get("/export/:type", async (req, res, next) => {
 router.get("/users", async (req, res, next) => {
   try {
     const users = await query(
-      "SELECT id, email, display_name, email_verified, credits, role, created_at FROM users ORDER BY created_at DESC"
+      `SELECT u.id, u.email, u.display_name, u.email_verified, u.credits, u.role, u.created_at,
+              COALESCE(up.total, 0)::int AS uploads,
+              COALESCE(dl.total, 0)::int AS downloads
+       FROM users u
+       LEFT JOIN (SELECT owner_id, COUNT(*)::int AS total FROM documents GROUP BY owner_id) up ON up.owner_id = u.id
+       LEFT JOIN (SELECT user_id, COUNT(*)::int AS total FROM downloads GROUP BY user_id) dl ON dl.user_id = u.id
+       ORDER BY u.created_at DESC`
     );
     res.json({ users: users.rows });
   } catch (err) {

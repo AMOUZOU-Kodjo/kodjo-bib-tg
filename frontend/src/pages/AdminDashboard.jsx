@@ -860,6 +860,8 @@ export default function AdminDashboard() {
                     <th className="px-3 py-3 font-semibold">{t("admin.user")}</th>
                     <th className="px-3 py-3 font-semibold">{t("admin.role")}</th>
                     <th className="px-3 py-3 font-semibold">{t("admin.credits")}</th>
+                    <th className="px-3 py-3 font-semibold">{t("admin.uploads")}</th>
+                    <th className="px-3 py-3 font-semibold">{t("admin.downloads")}</th>
                     <th className="px-3 py-3 font-semibold">{t("admin.status")}</th>
                     <th className="px-3 py-3 font-semibold">{t("admin.registeredAt")}</th>
                     <th className="px-3 py-3 text-right font-semibold">{t("admin.actions")}</th>
@@ -874,7 +876,7 @@ export default function AdminDashboard() {
                             {(u.display_name || "?").charAt(0).toUpperCase()}
                           </span>
                           <div className="min-w-0">
-                            <p className="truncate font-medium text-gray-900 dark:text-slate-100">{u.display_name}</p>
+                            <Link to={`/authors/${u.id}`} className="truncate font-medium text-teal-700 hover:underline dark:text-teal-300">{u.display_name}</Link>
                             <p className="truncate text-xs text-gray-500 dark:text-slate-400">{u.email}</p>
                           </div>
                         </div>
@@ -886,6 +888,8 @@ export default function AdminDashboard() {
                         </span>
                       </td>
                       <td className="px-3 py-3 text-gray-700 dark:text-slate-300">{u.credits}</td>
+                      <td className="px-3 py-3 text-gray-700 dark:text-slate-300">{u.uploads || 0}</td>
+                      <td className="px-3 py-3 text-gray-700 dark:text-slate-300">{u.downloads || 0}</td>
                       <td className="px-3 py-3">
                         <button
                           type="button"
@@ -912,7 +916,7 @@ export default function AdminDashboard() {
                   ))}
                   {pagedUsers.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-3 py-10 text-center text-sm text-gray-500 dark:text-slate-400">
+                      <td colSpan={8} className="px-3 py-10 text-center text-sm text-gray-500 dark:text-slate-400">
                         {users.length === 0 ? t("admin.noUsersYet") : t("admin.noUsersMatch")}
                       </td>
                     </tr>
@@ -926,7 +930,7 @@ export default function AdminDashboard() {
                 <article key={u.id} className="rounded-xl border border-gray-200 p-4 dark:border-slate-700">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-gray-900 dark:text-slate-100">{u.display_name}</p>
+                      <Link to={`/authors/${u.id}`} className="truncate font-semibold text-teal-700 hover:underline dark:text-teal-300">{u.display_name}</Link>
                       <p className="truncate text-xs text-gray-500 dark:text-slate-400">{u.email}</p>
                     </div>
                     <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${u.role === "admin" ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-100" : "bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-200"}`}>
@@ -939,6 +943,8 @@ export default function AdminDashboard() {
                       {u.email_verified ? t("admin.verified") : t("admin.unverified")}
                     </button>
                     <span>{t("admin.creditsCount", { count: u.credits })}</span>
+                    <span>{t("admin.uploadsCount", { count: u.uploads || 0 })}</span>
+                    <span>{t("admin.downloadsCount", { count: u.downloads || 0 })}</span>
                     <span>{t("admin.registeredOn", { date: formatDate(u.created_at) })}</span>
                   </div>
                   <div className="mt-3 flex gap-2">
