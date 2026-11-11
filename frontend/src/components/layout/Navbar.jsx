@@ -7,7 +7,7 @@ import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
 import NotificationBell from "../notifications/NotificationBell";
 import {
-  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart, Download, Languages, Coins
+  Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart, Download, Languages, Coins, Newspaper
 } from "lucide-react";
 import { Moon, Sun } from "lucide-react";
 
@@ -59,6 +59,10 @@ export default function Navbar() {
             <Link to="/documents" className={desktopLink}>
               <BookOpen className="h-4 w-4 shrink-0" />
               <span>{t("nav.catalog")}</span>
+            </Link>
+            <Link to="/actualites" className={desktopLink} title={t("nav.news")}>
+              <Newspaper className="h-4 w-4 shrink-0" />
+              <span className="hidden xl:inline">{t("nav.news")}</span>
             </Link>
             {user ? (
               <>
@@ -189,6 +193,10 @@ export default function Navbar() {
               <Link to="/documents" onClick={closeMenu} className={mobileLink}>
                 <BookOpen className="h-4 w-4 shrink-0" />
                 {t("nav.catalog")}
+              </Link>
+              <Link to="/actualites" onClick={closeMenu} className={mobileLink}>
+                <Newspaper className="h-4 w-4 shrink-0" />
+                {t("nav.news")}
               </Link>
 
               {user ? (

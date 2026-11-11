@@ -6,6 +6,7 @@ import AdminRoute from "./routes/AdminRoute";
 import { useEffect } from "react";
 
 const Home = lazy(() => import("./pages/Home"));
+const News = lazy(() => import("./pages/News"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
@@ -56,6 +57,7 @@ export default function App() {
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/actualites" element={<News />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/documents/:id" element={<DocumentDetail />} />
           <Route path="/authors/:id" element={<Author />} />

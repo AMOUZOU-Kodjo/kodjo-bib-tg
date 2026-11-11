@@ -19,7 +19,8 @@
     "library": "Bibliothèque",
     "credits": "{{count}} cr.",
     "openMenu": "Ouvrir le menu",
-    "closeMenu": "Fermer le menu"
+    "closeMenu": "Fermer le menu",
+    "news": "Actualités"
   },
   "categoryBar": {
     "title": "Catégories",
@@ -83,7 +84,8 @@
     "popularTitle": "Les plus consultés",
     "popularDesc": "Les documents que la communauté consulte le plus",
     "seoTitle": "Bibliothèque numérique collaborative",
-    "seoDesc": "Déposez, archivez et partagez gratuitement vos documents. Découvrez des ressources utiles et contribuez à une bibliothèque numérique collaborative."
+    "seoDesc": "Déposez, archivez et partagez gratuitement vos documents. Découvrez des ressources utiles et contribuez à une bibliothèque numérique collaborative.",
+    "newsCta": "Actualités du Togo"
   },
   "documents": {
     "title": "Bibliothèque numérique",
@@ -1268,5 +1270,19 @@
     "reports": "Rapports / Mémoires",
     "sheets": "Fiches",
     "cvLetters": "CV & Lettres"
+  },
+  "news": {
+    "seoTitle": "Actualités du Togo",
+    "seoDesc": "Les dernières actualités du Togo sélectionnées depuis les médias nationaux.",
+    "badge": "Veille info Togo",
+    "title": "Actualités du Togo",
+    "subtitle": "Suivez l'actualité nationale en direct, agrégée depuis plusieurs médias togolais.",
+    "readMore": "Lire l’article",
+    "refresh": "Actualiser",
+    "updated": "Dernière mise à jour : {{date}}",
+    "error": "Impossible de charger les actualités pour le moment. Veuillez réessayer.",
+    "empty": "Aucune actualité disponible pour le moment.",
+    "sources": "Sources",
+    "disclaimer": "Les articles sont la propriété de leurs médias respectifs. Archivia ne fait qu'agréger leurs flux RSS."
   }
 }

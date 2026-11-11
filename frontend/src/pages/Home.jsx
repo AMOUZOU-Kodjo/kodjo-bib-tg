@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Upload, Search, ArrowRight, CheckCircle } from "lucide-react";
+import { Upload, Search, ArrowRight, CheckCircle, Newspaper } from "lucide-react";
 import heroImg from "../assets/hero.jpg";
 import { getDocuments, getDocumentStats } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
@@ -139,6 +139,10 @@ export default function Home() {
                   <Search className="w-3.5 h-3.5" />
                   {t("home.explore")}
                   <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link to="/actualites" className="flex w-full items-center justify-center gap-1.5 rounded-md border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-white/20 sm:w-auto sm:text-sm">
+                  <Newspaper className="w-3.5 h-3.5" />
+                  {t("home.newsCta")}
                 </Link>
                 {user ? (
                   <Link to="/upload" className="flex w-full items-center justify-center gap-1.5 rounded-md border border-white/30 bg-white/10 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-white/20 sm:w-auto sm:text-sm">

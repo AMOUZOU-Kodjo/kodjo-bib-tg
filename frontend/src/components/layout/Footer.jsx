@@ -52,6 +52,7 @@ export default function Footer() {
             <ul className="mt-4 space-y-3">
               <li><Link to="/" className={linkClass}>{t("footer.home")}</Link></li>
               <li><Link to="/documents" className={linkClass}>{t("footer.catalog")}</Link></li>
+              <li><Link to="/actualites" className={linkClass}>{t("nav.news")}</Link></li>
               <li><Link to="/upload" className={linkClass}>{t("footer.upload")}</Link></li>
             </ul>
           </div>

@@ -19,7 +19,8 @@
     "library": "Library",
     "credits": "{{count}} cr.",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "news": "News"
   },
   "categoryBar": {
     "title": "Categories",
@@ -83,7 +84,8 @@
     "popularTitle": "Most viewed",
     "popularDesc": "Documents the community views the most",
     "seoTitle": "Collaborative digital library",
-    "seoDesc": "Upload, archive and share your documents for free. Discover useful resources and contribute to a collaborative digital library."
+    "seoDesc": "Upload, archive and share your documents for free. Discover useful resources and contribute to a collaborative digital library.",
+    "newsCta": "Togo News"
   },
   "documents": {
     "title": "Digital library",
@@ -1268,5 +1270,19 @@
     "reports": "Reports / Theses",
     "sheets": "Study sheets",
     "cvLetters": "CV & Cover letters"
+  },
+  "news": {
+    "seoTitle": "Togo News",
+    "seoDesc": "The latest news from Togo curated from national media outlets.",
+    "badge": "Togo news watch",
+    "title": "Togo News",
+    "subtitle": "Follow national news live, aggregated from several Togolese media outlets.",
+    "readMore": "Read article",
+    "refresh": "Refresh",
+    "updated": "Last updated: {{date}}",
+    "error": "Unable to load the news right now. Please try again.",
+    "empty": "No news available at the moment.",
+    "sources": "Sources",
+    "disclaimer": "Articles belong to their respective media outlets. Archivia only aggregates their RSS feeds."
   }
 }

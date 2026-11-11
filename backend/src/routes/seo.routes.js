@@ -79,6 +79,7 @@ router.get("/sitemap.xml", async (req, res) => {
   const staticPages = [
     { path: "/", lastmod: today, changefreq: "daily", priority: "1.0" },
     { path: "/documents", lastmod: today, changefreq: "daily", priority: "0.9" },
+    { path: "/actualites", lastmod: today, changefreq: "hourly", priority: "0.7" },
     { path: "/contact", lastmod: today, changefreq: "monthly", priority: "0.5" },
     { path: "/mentions-legales", lastmod: today, changefreq: "yearly", priority: "0.3" },
     { path: "/confidentialite", lastmod: today, changefreq: "yearly", priority: "0.3" },
