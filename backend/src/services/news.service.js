@@ -48,8 +48,8 @@ const CACHE_TTL_MS = 10 * 60 * 1000;
 const IMAGE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const IMAGE_FAILURE_TTL_MS = 10 * 60 * 1000;
 const ARTICLE_CACHE_TTL_MS = 60 * 60 * 1000;
-const MAX_IMAGE_FETCHES = 40;
-const IMAGE_FETCH_CONCURRENCY = 8;
+const MAX_IMAGE_FETCHES = 12;
+const IMAGE_FETCH_CONCURRENCY = 6;
 const USER_AGENT = `Mozilla/5.0 (compatible; ArchiviaNewsBot/1.0; +${config.frontendUrl})`;
 
 const CONTENT_CLASSES = [
@@ -210,7 +210,7 @@ async function fetchFeed(feed) {
       "User-Agent": USER_AGENT,
       Accept: "application/rss+xml, application/atom+xml, application/xml, text/xml"
     },
-    signal: AbortSignal.timeout(12000)
+    signal: AbortSignal.timeout(8000)
   });
   if (!response.ok) throw new Error(`${feed.name}: HTTP ${response.status}`);
   const xml = await response.text();
@@ -392,7 +392,7 @@ async function fetchPageImage(url) {
     if (Date.now() - cached.fetchedAt < ttl) return cached.image;
   }
   try {
-    const html = await fetchText(url, 6000);
+    const html = await fetchText(url, 4000);
     const image = extractPageMeta(html, url).image;
     imageCache.set(url, { image, fetchedAt: Date.now(), failed: !image });
     return image;
@@ -420,6 +420,18 @@ async function enrichMissingImages(articles) {
 }
 
 async function loadNews({ feeds, fullCache, lightCache, force = false, includeImages = true }) {
+  const store = includeImages ? fullCache : lightCache;
+
+  if (!force && store.articles.length > 0 && Date.now() - store.updatedAt < CACHE_TTL_MS) {
+    return store;
+  }
+
+  // Stale-while-revalidate: return cached data immediately, refresh in background.
+  if (!force && store.articles.length > 0) {
+    loadNews({ feeds, fullCache, lightCache, force: true, includeImages }).catch(() => {});
+    return store;
+  }
+
   if (!includeImages && !force && fullCache.articles.length > 0 && Date.now() - fullCache.updatedAt < CACHE_TTL_MS) {
     return fullCache;
   }
@@ -430,11 +442,6 @@ async function loadNews({ feeds, fullCache, lightCache, force = false, includeIm
     fullCache.articles = articles;
     fullCache.updatedAt = Date.now();
     return fullCache;
-  }
-
-  const store = includeImages ? fullCache : lightCache;
-  if (!force && store.articles.length > 0 && Date.now() - store.updatedAt < CACHE_TTL_MS) {
-    return store;
   }
 
   const results = await Promise.allSettled(feeds.map(fetchFeed));
