@@ -9,7 +9,7 @@ import { sendEmail } from "../services/email.service.js";
 import { deleteAvatar, deleteRaw, deletePreview, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
 import { reviewCreditOrder } from "../services/creditOrders.service.js";
 import { createCategory, deleteCategory, ensureCategoriesSchema, getCategoryTree, updateCategory } from "../services/categories.service.js";
-import { uploadMultiple } from "../middlewares/upload.js";
+import { uploadAttachmentsMultiple } from "../middlewares/upload.js";
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -836,7 +836,7 @@ router.patch("/reports/:id", async (req, res, next) => {
 
 
 
-router.post("/broadcast", uploadMultiple("attachments", 10), async (req, res, next) => {
+router.post("/broadcast", uploadAttachmentsMultiple("attachments", 10), async (req, res, next) => {
   try {
     const subject = String(req.body.subject || "").replace(/[\r\n]+/g, " ").trim();
     const message = String(req.body.message || "").trim();

@@ -76,8 +76,36 @@ const fileFilter = (req, file, cb) => {
   cb(error, !error);
 };
 
+
+const ALLOWED_ATTACHMENTS = new Map([
+  ...ALLOWED_UPLOADS,
+  [".jpg", new Set(["image/jpeg", "image/jpg", "image/pjpeg"])],
+  [".jpeg", new Set(["image/jpeg", "image/jpg", "image/pjpeg"])],
+  [".png", new Set(["image/png"])],
+  [".webp", new Set(["image/webp"])],
+  [".gif", new Set(["image/gif"])]
+]);
+
+export function validateAttachmentFile(file) {
+  const extension = path.extname(String(file?.originalname || "")).toLowerCase();
+  const mimeType = String(file?.mimetype || "").toLowerCase().split(";")[0].trim();
+  const allowedMimeTypes = ALLOWED_ATTACHMENTS.get(extension);
+  if (!allowedMimeTypes || !allowedMimeTypes.has(mimeType)) {
+    const err = new Error("Type de fichier non autorisé");
+    err.status = 400;
+    err.code = "INVALID_FILE_TYPE";
+    return err;
+  }
+  return null;
+}
+
 const avatarFileFilter = (req, file, cb) => {
   const error = validateAvatarFile(file);
+  cb(error, !error);
+};
+
+const attachmentFileFilter = (req, file, cb) => {
+  const error = validateAttachmentFile(file);
   cb(error, !error);
 };
 
@@ -147,6 +175,34 @@ export function uploadMultiple(fieldName, maxFiles = 10) {
       const uploader = multer({
         storage,
         fileFilter,
+        limits: { fileSize: maxSizeMb * 1024 * 1024, files: maxFiles }
+      });
+      uploader.array(fieldName, maxFiles)(req, res, (err) => {
+        if (!err) return next();
+        if (err.code === "LIMIT_FILE_SIZE") {
+          err.message = `Fichier trop volumineux. Taille maximale : ${maxSizeMb} Mo.`;
+        }
+        if (err.code === "LIMIT_FILE_COUNT") {
+          err.message = `Trop de fichiers. Maximum : ${maxFiles}.`;
+        }
+        next(err);
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+}
+
+
+export function uploadAttachmentsMultiple(fieldName, maxFiles = 10) {
+  return async (req, res, next) => {
+    try {
+      const settings = await getSettings();
+      const configuredMaxSizeMb = Number(settings.maxUploadSizeMb) || fallbackMaxSizeMb;
+      const maxSizeMb = Math.min(Math.max(configuredMaxSizeMb, 1), 100);
+      const uploader = multer({
+        storage,
+        fileFilter: attachmentFileFilter,
         limits: { fileSize: maxSizeMb * 1024 * 1024, files: maxFiles }
       });
       uploader.array(fieldName, maxFiles)(req, res, (err) => {
