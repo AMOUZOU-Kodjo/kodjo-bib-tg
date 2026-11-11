@@ -88,6 +88,12 @@ export default function Login() {
               )}
             </Button>
           </form>
+          <div className="mt-4">
+            <a href={(import.meta.env.VITE_API_URL || "http://localhost:4000/api") + "/auth/google"} className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+              <span>G</span> Continuer avec Google
+            </a>
+          </div>
+
           <div className="mt-6 text-center space-y-2">
             <Link to="/forgot-password" className="text-sm text-primary-600 dark:text-primary-100 hover:text-primary-700 dark:hover:text-primary-100 font-medium">
               {t("auth.forgot")}

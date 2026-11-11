@@ -40,6 +40,11 @@ export const config = {
     channelId: process.env.TELEGRAM_CHANNEL_ID || "@kodjobibtg",
     adminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID || null
   },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || "",
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL || ""
+  },
   push: {
     publicKey: process.env.VAPID_PUBLIC_KEY,
     privateKey: process.env.VAPID_PRIVATE_KEY,

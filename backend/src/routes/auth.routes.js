@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -297,3 +298,84 @@ router.get("/me", authRequired, async (req, res, next) => {
 });
 
 export default router;
+
+router.get("/google", async (req, res) => {
+  if (!config.google.clientId || !config.google.callbackUrl) {
+    return res.status(503).json({ error: { code: "GOOGLE_NOT_CONFIGURED", message: "Connexion Google non configurée" } });
+  }
+  const state = crypto.randomUUID();
+  res.cookie("oauth_state", state, { httpOnly: true, sameSite: "lax", secure: config.nodeEnv === "production", maxAge: 10 * 60 * 1000 });
+  const params = new URLSearchParams({
+    client_id: config.google.clientId,
+    redirect_uri: config.google.callbackUrl,
+    response_type: "code",
+    scope: "openid email profile",
+    state,
+    access_type: "offline",
+    prompt: "select_account"
+  });
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
+});
+
+router.get("/google/callback", async (req, res, next) => {
+  try {
+    const code = String(req.query.code || "");
+    const state = String(req.query.state || "");
+    if (!code || !state || state !== req.cookies?.oauth_state) {
+      return res.status(400).redirect(`${config.frontendUrl}/login?error=oauth_state`);
+    }
+    res.clearCookie("oauth_state", { httpOnly: true, sameSite: "lax", secure: config.nodeEnv === "production" });
+
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: config.google.clientId,
+        client_secret: config.google.clientSecret,
+        redirect_uri: config.google.callbackUrl,
+        grant_type: "authorization_code"
+      })
+    });
+    if (!tokenRes.ok) return res.status(400).redirect(`${config.frontendUrl}/login?error=oauth_token`);
+    const tokenData = await tokenRes.json();
+    const profileRes = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    if (!profileRes.ok) return res.status(400).redirect(`${config.frontendUrl}/login?error=oauth_profile`);
+    const profile = await profileRes.json();
+    const email = String(profile.email || "").trim().toLowerCase();
+    const displayName = String(profile.name || profile.given_name || email.split("@")[0] || "Utilisateur").trim().slice(0, 60);
+    if (!email) return res.status(400).redirect(`${config.frontendUrl}/login?error=oauth_email`);
+
+    let userRes = await query("SELECT id, email, display_name, email_verified, role, credits + paid_credits AS credits, token_version, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at FROM users WHERE email = $1", [email]);
+    let user;
+    if (userRes.rows.length === 0) {
+      const { allowRegistrations, creditsInitiaux } = await getSettings();
+      if (!allowRegistrations) return res.status(403).redirect(`${config.frontendUrl}/login?error=registrations_closed`);
+      const randomHash = await bcrypt.hash(crypto.randomUUID(), 10);
+      const inserted = await query(
+        "INSERT INTO users (email, display_name, password_hash, email_verified, credits) VALUES ($1,$2,$3,true,$4) RETURNING id, email, display_name, email_verified, role, credits + paid_credits AS credits, token_version, notify_email, notify_new_documents, notify_document_updates, avatar_url, created_at",
+        [email, displayName, randomHash, creditsInitiaux]
+      );
+      user = inserted.rows[0];
+      if (creditsInitiaux > 0) {
+        await query("INSERT INTO credit_transactions (user_id, delta, reason) VALUES ($1,$2,'initial')", [user.id, creditsInitiaux]);
+      }
+      const { sendWelcomeMessage } = await import("../services/welcome.service.js");
+      sendWelcomeMessage({ userId: user.id }).catch(() => {});
+    } else {
+      user = userRes.rows[0];
+      if (!user.email_verified) {
+        await query("UPDATE users SET email_verified = true WHERE id = $1", [user.id]);
+        user.email_verified = true;
+      }
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email, displayName: user.display_name, emailVerified: true, role: user.role, tokenVersion: user.token_version }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+    res.cookie("token", token, { httpOnly: true, sameSite: config.nodeEnv === "production" ? "none" : "lax", secure: config.nodeEnv === "production" });
+    res.redirect(`${config.frontendUrl}/`);
+  } catch (err) {
+    next(err);
+  }
+});
