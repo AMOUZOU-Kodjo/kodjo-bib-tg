@@ -134,6 +134,12 @@ export function ensureFeatureSchema() {
       CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON notifications (user_id, created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications (user_id, created_at DESC) WHERE read_at IS NULL;
 
+      CREATE TABLE IF NOT EXISTS news_telegram_sent (
+        url TEXT PRIMARY KEY,
+        sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+      CREATE INDEX IF NOT EXISTS idx_news_telegram_sent_at ON news_telegram_sent (sent_at DESC);
+
       CREATE TABLE IF NOT EXISTS push_subscriptions (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

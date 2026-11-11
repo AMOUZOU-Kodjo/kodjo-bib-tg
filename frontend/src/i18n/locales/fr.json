@@ -1290,6 +1290,18 @@
     "openSource": "Ouvrir sur le site source",
     "fallbackNotice": "Le contenu complet n'a pas pu être extrait. Consulte l'article original sur le site source.",
     "sourceNotice": "Article publié par {{source}}.",
+    "tabTogo": "Togo",
+    "tabScience": "Science & Recherche",
+    "scienceSeoTitle": "Science & Recherche",
+    "scienceSeoDesc": "Actualités scientifiques et publications de recherche liées au Togo et à l'Afrique.",
+    "scienceBadge": "Veille scientifique",
+    "scienceTitle": "Science & Recherche",
+    "scienceSubtitle": "Découvrez les actualités scientifiques et les publications de recherche liées au Togo et à l'Afrique.",
+    "publicationsTitle": "Publications récentes",
+    "publicationsSubtitle": "Travaux de recherche affiliés à des institutions togolaises, via OpenAlex.",
+    "publicationBadge": "Publication",
+    "openPublication": "Ouvrir la publication",
+    "scienceDisclaimer": "Les actualités et publications sont la propriété de leurs sources respectives. Archivia agrège les flux RSS et les métadonnées OpenAlex.",
     "tickerLabel": "Fil d'actualités du Togo"
   }
 }

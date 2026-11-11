@@ -1,6 +1,6 @@
 import { config } from "../config/env.js";
 
-const FEEDS = [
+const TOGO_FEEDS = [
   { name: "Togo Officiel", url: "https://www.republiquetogolaise.tg/obrss/feed-rtg", site: "https://www.republiquetogolaise.tg" },
   { name: "Togo-Presse", url: "https://togopresse.tg/feed/", site: "https://togopresse.tg" },
   { name: "Icilome", url: "https://icilome.com/feed/", site: "https://icilome.com" },
@@ -8,13 +8,35 @@ const FEEDS = [
   { name: "Togo En Live", url: "https://togoenlive.tg/feed", site: "https://togoenlive.tg" }
 ];
 
+const SCIENCE_KEYWORDS = [
+  "science", "scientifique", "recherche", "étude", "etude", "santé", "sante",
+  "médecine", "medecine", "maladie", "vaccin", "climat", "environnement",
+  "biodiversité", "biodiversite", "agriculture", "technologie", "numérique",
+  "numerique", "intelligence artificielle", "énergie", "energie", "eau",
+  "océan", "ocean", "espace", "chercheur", "université", "universite"
+];
+
+const SCIENCE_FEEDS = [
+  { name: "OMS Afrique", url: "https://www.afro.who.int/rss.xml", site: "https://www.afro.who.int", maxItems: 10, exclude: ["newsletter"] },
+  { name: "IRD", url: "https://www.ird.fr/rss.xml", site: "https://www.ird.fr", maxItems: 10, exclude: ["/intranet/", "retraite", "doctorant", "candidature", "concours", "appel à projets", "pouvoir d'achat"] },
+  { name: "CNRS", url: "https://www.cnrs.fr/fr/rss/news.rss", site: "https://www.cnrs.fr", maxItems: 10, exclude: ["test seb", "/newsletter/"] },
+  { name: "ScienceDaily", url: "https://www.sciencedaily.com/rss/all.xml", site: "https://www.sciencedaily.com", maxItems: 10 },
+  { name: "Phys.org", url: "https://phys.org/rss-feed/", site: "https://phys.org", maxItems: 10 },
+  { name: "Nature", url: "https://www.nature.com/nature.rss", site: "https://www.nature.com", maxItems: 10 },
+  { name: "Science", url: "https://www.science.org/rss/news_current.xml", site: "https://www.science.org", maxItems: 10 },
+  { name: "The Conversation Afrique", url: "https://theconversation.com/africa/articles.atom", site: "https://theconversation.com/africa", maxItems: 10, keywords: SCIENCE_KEYWORDS },
+  { name: "The Conversation France", url: "https://theconversation.com/fr/articles.atom", site: "https://theconversation.com/fr", maxItems: 10, keywords: SCIENCE_KEYWORDS }
+];
+
+const FEEDS = [...TOGO_FEEDS, ...SCIENCE_FEEDS];
+
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const IMAGE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const IMAGE_FAILURE_TTL_MS = 10 * 60 * 1000;
 const ARTICLE_CACHE_TTL_MS = 60 * 60 * 1000;
 const MAX_IMAGE_FETCHES = 40;
 const IMAGE_FETCH_CONCURRENCY = 8;
-const USER_AGENT = `ArchiviaNewsBot/1.0 (+${config.frontendUrl})`;
+const USER_AGENT = `Mozilla/5.0 (compatible; ArchiviaNewsBot/1.0; +${config.frontendUrl})`;
 
 const CONTENT_CLASSES = [
   "entry-content",
@@ -45,6 +67,8 @@ const ALLOWED_HOSTS = new Set(
 
 let cache = { articles: [], updatedAt: 0 };
 let lightCache = { articles: [], updatedAt: 0 };
+const scienceCache = { articles: [], updatedAt: 0 };
+const scienceLightCache = { articles: [], updatedAt: 0 };
 const imageCache = new Map();
 const articleCache = new Map();
 
@@ -117,12 +141,20 @@ function parseFeed(xml, feed) {
     ...xml.matchAll(/<entry\b[^>]*>([\s\S]*?)<\/entry>/gi)
   ].map((match) => match[1]);
 
-  return blocks.flatMap((block) => {
+  const articles = blocks.flatMap((block) => {
     const title = stripHtml(firstTag(block, ["title"]));
     const url = extractLink(block);
     if (!title || !url) return [];
     const rawContent = firstTag(block, ["content:encoded", "description", "summary", "content"]);
     const description = stripHtml(rawContent).slice(0, 320);
+    if (feed.keywords?.length) {
+      const haystack = `${title} ${description}`.toLowerCase();
+      if (!feed.keywords.some((keyword) => haystack.includes(keyword))) return [];
+    }
+    if (feed.exclude?.length) {
+      const haystack = `${title} ${description} ${url}`.toLowerCase();
+      if (feed.exclude.some((term) => haystack.includes(term))) return [];
+    }
     const image = extractImage(block, rawContent);
     const rawDate = stripHtml(firstTag(block, ["pubDate", "published", "updated", "dc:date"]));
     const parsedDate = rawDate ? new Date(rawDate) : null;
@@ -137,6 +169,7 @@ function parseFeed(xml, feed) {
       publishedAt: parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : null
     }];
   });
+  return feed.maxItems ? articles.slice(0, feed.maxItems) : articles;
 }
 
 async function fetchText(url, timeout = 12000) {
@@ -321,8 +354,13 @@ function sanitizeArticleHtml(html, baseUrl) {
 
 function findFeedForUrl(value) {
   try {
-    const host = normalizeHost(new URL(value).hostname);
-    return FEEDS.find((feed) => normalizeHost(new URL(feed.site).hostname) === host);
+    const url = new URL(value);
+    const host = normalizeHost(url.hostname);
+    const candidates = FEEDS.filter((feed) => normalizeHost(new URL(feed.site).hostname) === host);
+    return candidates.find((feed) => {
+      const sitePath = new URL(feed.site).pathname.replace(/\/$/, "");
+      return sitePath && url.pathname.startsWith(sitePath);
+    }) || candidates[0] || null;
   } catch {
     return null;
   }
@@ -362,24 +400,25 @@ async function enrichMissingImages(articles) {
   );
 }
 
-export async function getNews({ force = false, includeImages = true } = {}) {
-  if (!includeImages && !force && cache.articles.length > 0 && Date.now() - cache.updatedAt < CACHE_TTL_MS) {
-    return cache;
+async function loadNews({ feeds, fullCache, lightCache, force = false, includeImages = true }) {
+  if (!includeImages && !force && fullCache.articles.length > 0 && Date.now() - fullCache.updatedAt < CACHE_TTL_MS) {
+    return fullCache;
   }
 
   if (includeImages && !force && lightCache.articles.length > 0 && Date.now() - lightCache.updatedAt < CACHE_TTL_MS) {
     const articles = lightCache.articles.map((article) => ({ ...article }));
     await enrichMissingImages(articles);
-    cache = { articles, updatedAt: Date.now() };
-    return cache;
+    fullCache.articles = articles;
+    fullCache.updatedAt = Date.now();
+    return fullCache;
   }
 
-  const store = includeImages ? cache : lightCache;
+  const store = includeImages ? fullCache : lightCache;
   if (!force && store.articles.length > 0 && Date.now() - store.updatedAt < CACHE_TTL_MS) {
     return store;
   }
 
-  const results = await Promise.allSettled(FEEDS.map(fetchFeed));
+  const results = await Promise.allSettled(feeds.map(fetchFeed));
   const merged = results.flatMap((result) => (result.status === "fulfilled" ? result.value : []));
   const seen = new Set();
   const articles = merged
@@ -397,11 +436,23 @@ export async function getNews({ force = false, includeImages = true } = {}) {
   }
 
   if (articles.length > 0) {
-    const next = { articles, updatedAt: Date.now() };
-    if (includeImages) cache = next;
-    else lightCache = next;
+    store.articles = articles;
+    store.updatedAt = Date.now();
   }
-  return includeImages ? cache : lightCache;
+  return store;
+}
+
+export function getNews(options = {}) {
+  return loadNews({ feeds: TOGO_FEEDS, fullCache: cache, lightCache, ...options });
+}
+
+export function getScienceNews(options = {}) {
+  return loadNews({
+    feeds: SCIENCE_FEEDS,
+    fullCache: scienceCache,
+    lightCache: scienceLightCache,
+    ...options
+  });
 }
 
 export async function getArticle(url) {
@@ -437,6 +488,7 @@ export async function getArticle(url) {
   }
 }
 
-export function getNewsSources() {
-  return FEEDS.map(({ name, site }) => ({ name, site }));
+export function getNewsSources(category = "togo") {
+  const feeds = category === "science" ? SCIENCE_FEEDS : TOGO_FEEDS;
+  return feeds.map(({ name, site }) => ({ name, site }));
 }

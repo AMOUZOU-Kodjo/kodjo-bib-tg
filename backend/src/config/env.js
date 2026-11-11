@@ -38,7 +38,9 @@ export const config = {
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN,
     channelId: process.env.TELEGRAM_CHANNEL_ID || "@kodjobibtg",
-    adminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID || null
+    adminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID || null,
+    newsSyncSecret: process.env.TELEGRAM_NEWS_SYNC_SECRET || "",
+    newsMaxPerRun: positiveNumber(process.env.TELEGRAM_NEWS_MAX_PER_RUN, 3)
   },
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || "",

@@ -30,6 +30,15 @@ function buildCaption({ title, description, authorName, category, siteName, docu
   return lines.join("\n");
 }
 
+function buildNewsCaption({ title, description, source, siteName, articleUrl }) {
+  const lines = [`<b>Actualité${siteName ? ` — ${escapeHtml(siteName)}` : ""}</b>`, ""];
+  lines.push(`<b>${escapeHtml(title)}</b>`);
+  if (source) lines.push("", `Source : ${escapeHtml(source)}`);
+  if (description) lines.push("", escapeHtml(truncate(description, 300)));
+  lines.push("", `<a href="${escapeHtml(articleUrl)}">Lire sur Archivia</a>`);
+  return lines.join("\n");
+}
+
 async function callTelegram(method, payload) {
   const response = await fetch(`${TELEGRAM_API}/bot${config.telegram.botToken}/${method}`, {
     method: "POST",
@@ -111,6 +120,52 @@ export async function notifyTelegramDocument({
       return { ok: true, method: "sendPhoto" };
     } catch (err) {
       console.error("[telegram] échec de l'envoi de la miniature, repli sur le texte:", err.message);
+    }
+  }
+
+  await callTelegram("sendMessage", {
+    ...payload,
+    text: caption,
+    disable_web_page_preview: false
+  });
+  return { ok: true, method: "sendMessage" };
+}
+
+export async function notifyTelegramNews({
+  title,
+  description,
+  source,
+  siteName,
+  articleUrl,
+  sourceUrl,
+  imageUrl
+}) {
+  if (!isTelegramConfigured()) {
+    console.warn("[telegram] TELEGRAM_BOT_TOKEN manquant, publication ignorée");
+    return { skipped: true };
+  }
+
+  const caption = buildNewsCaption({
+    title,
+    description,
+    source,
+    siteName,
+    articleUrl
+  });
+  const keyboard = [[{ text: "Lire sur Archivia", url: articleUrl }]];
+  if (sourceUrl) keyboard.push([{ text: "Voir la source", url: sourceUrl }]);
+  const payload = {
+    chat_id: config.telegram.channelId,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: keyboard }
+  };
+
+  if (imageUrl) {
+    try {
+      await callTelegram("sendPhoto", { ...payload, photo: imageUrl, caption });
+      return { ok: true, method: "sendPhoto" };
+    } catch (err) {
+      console.error("[telegram] échec de l'envoi de l'image d'actualité, repli sur le texte:", err.message);
     }
   }
 

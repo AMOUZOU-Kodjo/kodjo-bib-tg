@@ -1290,6 +1290,18 @@
     "openSource": "Open on source website",
     "fallbackNotice": "The full content could not be extracted. Read the original article on the source website.",
     "sourceNotice": "Article published by {{source}}.",
+    "tabTogo": "Togo",
+    "tabScience": "Science & Research",
+    "scienceSeoTitle": "Science & Research",
+    "scienceSeoDesc": "Scientific news and research publications linked to Togo and Africa.",
+    "scienceBadge": "Science watch",
+    "scienceTitle": "Science & Research",
+    "scienceSubtitle": "Explore scientific news and research publications linked to Togo and Africa.",
+    "publicationsTitle": "Recent publications",
+    "publicationsSubtitle": "Research affiliated with Togolese institutions, via OpenAlex.",
+    "publicationBadge": "Publication",
+    "openPublication": "Open publication",
+    "scienceDisclaimer": "News and publications belong to their respective sources. Archivia aggregates RSS feeds and OpenAlex metadata.",
     "tickerLabel": "Togo news feed"
   }
 }
