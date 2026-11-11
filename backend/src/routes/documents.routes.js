@@ -528,10 +528,10 @@ router.get("/:id/share", authRequired, requireVerified, async (req, res, next) =
       );
       const up2 = await query("SELECT share_version FROM documents WHERE id = $1", [doc.id]);
       const token = createDocumentShareToken(doc.id, up2.rows[0].share_version);
-      return res.json({ enabled: true, url: getDocumentShareUrl(token) });
+      return res.json({ enabled: true, url: getDocumentShareUrl(token, req) });
     }
     const token = createDocumentShareToken(doc.id, doc.share_version);
-    res.json({ enabled: true, url: getDocumentShareUrl(token) });
+    res.json({ enabled: true, url: getDocumentShareUrl(token, req) });
   } catch (err) {
     next(err);
   }
@@ -558,7 +558,7 @@ router.post("/:id/share", authRequired, requireVerified, async (req, res, next) 
       [rotate, doc.id]
     );
     const token = createDocumentShareToken(doc.id, up.rows[0].share_version);
-    res.json({ enabled: true, url: getDocumentShareUrl(token) });
+    res.json({ enabled: true, url: getDocumentShareUrl(token, req) });
   } catch (err) {
     next(err);
   }

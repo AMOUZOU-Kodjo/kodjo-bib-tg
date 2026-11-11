@@ -19,11 +19,16 @@ export function verifyDocumentShareToken(token) {
   return payload;
 }
 
-export function getDocumentShareUrl(token) {
-  const backendBase =
+export function getDocumentShareUrl(token, req = null) {
+  let backendBase =
     process.env.BACKEND_PUBLIC_URL ||
     process.env.RENDER_EXTERNAL_URL ||
-    process.env.API_BASE_URL ||
-    config.frontendUrl;
+    process.env.API_BASE_URL;
+  if (!backendBase && req) {
+    backendBase = `${req.protocol}://${req.get("host")}`;
+  }
+  if (!backendBase) {
+    backendBase = config.frontendUrl;
+  }
   return `${String(backendBase).replace(/\/$/, "")}/share/${token}`;
 }
