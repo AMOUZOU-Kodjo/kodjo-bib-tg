@@ -30,7 +30,9 @@ export function originGuard(req, res, next) {
   if (/^Bearer\s+/i.test(req.headers.authorization || "")) return next();
 
   const requestOrigin = getRequestOrigin(req);
-  if (requestOrigin && allowedOrigins.has(requestOrigin)) return next();
+  // Native/mobile clients (including simulators) often send no Origin/Referer.
+  if (!requestOrigin) return next();
+  if (allowedOrigins.has(requestOrigin)) return next();
 
   return res.status(403).json({
     error: {
