@@ -1,5 +1,4 @@
 import express from "express";
-import { Readable } from "node:stream";
 import { query } from "../config/db.js";
 import { getDocumentThumbnailUrl, getSignedDownloadUrl } from "../services/cloudinary.service.js";
 import { streamDocumentFile } from "../services/documentStream.service.js";
@@ -97,7 +96,16 @@ function backendBaseUrl(req) {
   return String(configured || `${req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
 }
 
-function buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl }) {
+function isSocialCrawler(req) {
+  const ua = String(req.headers["user-agent"] || "").toLowerCase();
+  return [
+    "facebookexternalhit", "facebot", "twitterbot", "linkedinbot",
+    "whatsapp", "telegrambot", "slackbot", "discordbot", "pinterest",
+    "embedly", "quora link preview", "outbrain", "vkshare", "w3c_validator"
+  ].some((bot) => ua.includes(bot));
+}
+
+function buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl, redirect = true }) {
   const title = escapeHtml(doc.title || "Document partagé");
   const author = escapeHtml(doc.author_name || "Auteur inconnu");
   const description = doc.description
@@ -133,8 +141,8 @@ function buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl }) {
   <meta name="twitter:image:alt" content="${title} - Document partagé par ${author}">
   <meta name="author" content="${author}">
   <link rel="canonical" href="${escapeHtml(pageUrl || shareUrl)}">
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(shareUrl)}">
-  <script>window.location.replace(${JSON.stringify(shareUrl)});</script>
+  ${redirect ? `<meta http-equiv="refresh" content="0;url=${escapeHtml(shareUrl)}">
+  <script>window.location.replace(${JSON.stringify(shareUrl)});</script>` : ""}
 </head>
 <body></body>
 </html>`;
@@ -153,7 +161,9 @@ async function sendOgImage(doc, res) {
   if (!response.ok) return res.status(404).end();
 
   const contentType = response.headers.get("content-type") || "image/jpeg";
+  const buffer = Buffer.from(await response.arrayBuffer());
   res.setHeader("Content-Type", contentType);
+  res.setHeader("Content-Length", buffer.length);
   res.setHeader(
     "Cache-Control",
     doc.visibility === "public"
@@ -163,13 +173,7 @@ async function sendOgImage(doc, res) {
   res.setHeader("Referrer-Policy", "no-referrer");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  if (!response.body) return res.end();
-
-  Readable.fromWeb(response.body)
-    .on("error", () => {
-      if (!res.destroyed) res.destroy();
-    })
-    .pipe(res);
+  res.send(buffer);
 }
 
 function sendNotFound(req, res) {
@@ -215,7 +219,7 @@ router.get("/public/:id", async (req, res, next) => {
     const ogImageUrl = `${backendOrigin}/share/public/${doc.id}/og-image`;
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl }));
+    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl, redirect: !isSocialCrawler(req) }));
   } catch (err) {
     next(err);
   }
@@ -252,7 +256,7 @@ router.get("/:token", async (req, res, next) => {
     const ogImageUrl = `${backendOrigin}/share/${req.params.token}/og-image`;
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl }));
+    res.send(buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl, redirect: !isSocialCrawler(req) }));
   } catch (err) {
     next(err);
   }
