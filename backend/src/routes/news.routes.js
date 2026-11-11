@@ -1,5 +1,7 @@
 import express from "express";
 import { authRequired } from "../middlewares/auth.js";
+import { uploadSingle } from "../middlewares/upload.js";
+import { uploadArticleImage } from "../services/cloudinary.service.js";
 import { config } from "../config/env.js";
 import { getArticle, getNews, getNewsSources, getScienceNews, getWorldNews, getResearchNews } from "../services/news.service.js";
 import { getScientificPublications } from "../services/science.service.js";
@@ -163,6 +165,16 @@ router.post("/user-articles", authRequired, async (req, res, next) => {
       imageUrl: imageUrl ? String(imageUrl).trim() : null
     });
     res.status(201).json({ article });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/user-articles/image", authRequired, uploadSingle("image"), async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "Image requise" });
+    const result = await uploadArticleImage(req.file.buffer, req.user.id);
+    res.json({ url: result.secure_url });
   } catch (err) {
     next(err);
   }

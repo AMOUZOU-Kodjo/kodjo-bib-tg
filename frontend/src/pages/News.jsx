@@ -180,6 +180,7 @@ export default function News() {
   const [publishContent, setPublishContent] = useState("");
   const [publishCategory, setPublishCategory] = useState("societe");
   const [publishing, setPublishing] = useState(false);
+  const [publishImage, setPublishImage] = useState(null);
 
   useSeo({
     title: t("news.seoTitle"),
@@ -434,6 +435,12 @@ export default function News() {
                 <option key={slug} value={slug}>{t(`news.categories.${slug}`)}</option>
               ))}
             </select>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPublishImage(e.target.files?.[0] || null)}
+              className="mb-3 w-full text-sm text-gray-700 dark:text-slate-200"
+            />
             <textarea
               value={publishContent}
               onChange={(e) => setPublishContent(e.target.value)}
@@ -451,10 +458,20 @@ export default function News() {
                 onClick={async () => {
                   setPublishing(true);
                   try {
-                    await client.post("/news/user-articles", { title: publishTitle, content: publishContent, category: publishCategory });
+                    let imageUrl = null;
+                    if (publishImage) {
+                      const formData = new FormData();
+                      formData.append("image", publishImage);
+                      const uploadRes = await client.post("/news/user-articles/image", formData, {
+                        headers: { "Content-Type": "multipart/form-data" }
+                      });
+                      imageUrl = uploadRes.data.url;
+                    }
+                    await client.post("/news/user-articles", { title: publishTitle, content: publishContent, category: publishCategory, imageUrl });
                     setShowPublish(false);
                     setPublishTitle("");
                     setPublishContent("");
+                    setPublishImage(null);
                     await load(true);
                   } catch {
                     alert(t("news.publishError"));

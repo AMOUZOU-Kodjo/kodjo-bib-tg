@@ -71,6 +71,29 @@ export function uploadAvatar(fileBuffer, userId) {
   });
 }
 
+export function uploadArticleImage(fileBuffer, userId) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "image",
+        folder: "archives/articles",
+        public_id: `article-${userId}-${randomUUID()}`,
+        overwrite: false,
+        invalidate: true,
+        transformation: [
+          { width: 1200, crop: "limit" },
+          { quality: "auto:good", fetch_format: "auto" }
+        ]
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    stream.end(fileBuffer);
+  });
+}
+
 export async function deleteAvatar(publicId) {
   if (!publicId) return;
   try {
