@@ -8,6 +8,7 @@ import { useEffect } from "react";
 const Home = lazy(() => import("./pages/Home"));
 const News = lazy(() => import("./pages/News"));
 const NewsArticle = lazy(() => import("./pages/NewsArticle"));
+const UserArticle = lazy(() => import("./pages/UserArticle"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));

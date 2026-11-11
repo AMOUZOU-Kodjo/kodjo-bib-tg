@@ -311,7 +311,7 @@ export default function News() {
         </button>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
         {CATEGORY_SLUGS.map((slug) => {
           const count = counts[slug] || 0;
           const active = selectedCategory === slug;
