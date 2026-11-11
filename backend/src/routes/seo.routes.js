@@ -64,7 +64,6 @@ Disallow: /admin
 Disallow: /profile
 Disallow: /upload
 Disallow: /verify-email
-Disallow: /share/
 Disallow: /api/
 
 Sitemap: ${siteBase()}/sitemap.xml
