@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { config } from "../config/env.js";
 
-export async function sendEmail({ to, toName, subject, html, text, replyTo }) {
+export async function sendEmail({ to, toName, subject, html, text, replyTo, attachments = [] }) {
   if (!config.brevo.apiKey) {
     if (config.nodeEnv === "production") {
       const error = new Error("Service e-mail non configuré");
@@ -30,7 +30,15 @@ export async function sendEmail({ to, toName, subject, html, text, replyTo }) {
         subject,
         htmlContent: html,
         ...(text ? { textContent: text } : {}),
-        replyTo: replyTo ? { email: replyTo.email, name: replyTo.name } : undefined
+        replyTo: replyTo ? { email: replyTo.email, name: replyTo.name } : undefined,
+        ...(Array.isArray(attachments) && attachments.length > 0
+          ? {
+              attachment: attachments.map((file) => ({
+                name: file.filename || file.name || "piece-jointe",
+                content: Buffer.isBuffer(file.content) ? file.content.toString("base64") : String(file.content || "")
+              }))
+            }
+          : {})
       })
     });
     if (!res.ok) {

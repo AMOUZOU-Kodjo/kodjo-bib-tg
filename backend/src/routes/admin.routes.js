@@ -4,9 +4,11 @@ import { createNotification, notifyReportUpdate } from "../services/notification
 import { authRequired } from "../middlewares/auth.js";
 import { requireAdmin } from "../middlewares/admin.js";
 import { getSettings, normalizeCreditPacks, saveSettings } from "../services/settings.service.js";
+import { sendEmail } from "../services/email.service.js";
 import { deleteAvatar, deleteRaw, deletePreview, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
 import { reviewCreditOrder } from "../services/creditOrders.service.js";
 import { createCategory, deleteCategory, ensureCategoriesSchema, getCategoryTree, updateCategory } from "../services/categories.service.js";
+import { uploadMultiple } from "../middlewares/upload.js";
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -830,5 +832,97 @@ router.patch("/reports/:id", async (req, res, next) => {
     next(err);
   }
 });
+
+
+
+router.post("/broadcast", uploadMultiple("attachments", 10), async (req, res, next) => {
+  try {
+    const subject = String(req.body.subject || "").replace(/[\r\n]+/g, " ").trim();
+    const message = String(req.body.message || "").trim();
+    if (!subject || subject.length > 120) {
+      return res.status(400).json({ error: { code: "INVALID_SUBJECT", message: "Objet invalide (1 à 120 caractères)" } });
+    }
+    if (!message || message.length > 10000) {
+      return res.status(400).json({ error: { code: "INVALID_MESSAGE", message: "Message invalide (1 à 10000 caractères)" } });
+    }
+    const files = Array.isArray(req.files) ? req.files : [];
+    const totalSize = files.reduce((sum, file) => sum + (file.size || 0), 0);
+    if (totalSize > 15 * 1024 * 1024) {
+      return res.status(413).json({ error: { code: "ATTACHMENTS_TOO_LARGE", message: "Pièces jointes trop volumineuses (max 15 Mo au total)" } });
+    }
+    const attachments = files.map((file) => ({
+      filename: file.originalname,
+      content: file.buffer,
+      contentType: file.mimetype
+    }));
+
+    const usersRes = await query(
+      "SELECT id, email, display_name FROM users WHERE email_verified = true ORDER BY created_at ASC"
+    );
+    const recipients = usersRes.rows;
+    if (recipients.length === 0) {
+      return res.json({ ok: true, sent: 0, failed: 0, total: 0 });
+    }
+
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message).replace(/\r?\n/g, "<br>");
+    const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;"><h2>${safeSubject}</h2><p>${safeMessage}</p></div>`;
+    const SEND_CONCURRENCY = 5;
+    let cursor = 0;
+    let sent = 0;
+    let failed = 0;
+
+    const worker = async () => {
+      while (cursor < recipients.length) {
+        const recipient = recipients[cursor++];
+        try {
+          await createNotification({
+            userId: recipient.id,
+            type: "admin_broadcast",
+            title: subject,
+            message: message.slice(0, 300),
+            link: "/"
+          });
+          await sendEmail({
+            to: recipient.email,
+            toName: recipient.display_name,
+            subject,
+            html,
+            text: message,
+            attachments
+          });
+          sent++;
+        } catch (err) {
+          failed++;
+          console.error(`Échec de l'envoi broadcast à ${recipient.email}:`, err.message);
+        }
+      }
+    };
+
+    await Promise.all(Array.from({ length: Math.min(SEND_CONCURRENCY, recipients.length) }, worker));
+
+    await audit(req, "broadcast.send", "broadcast", null, {
+      subject,
+      recipients: recipients.length,
+      sent,
+      failed,
+      attachments: files.map((file) => file.originalname)
+    });
+
+    res.json({ ok: true, sent, failed, total: recipients.length });
+  } catch (err) {
+    next(err);
+  }
+});
+
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
+}
 
 export default router;

@@ -21,3 +21,5 @@ export const getAdminAudit = (params) => client.get("/admin/audit", { params });
 export const getAdminCreditOrders = (params) => client.get("/admin/credit-orders", { params });
 export const reviewAdminCreditOrder = (id, data) => client.patch(`/admin/credit-orders/${id}`, data);
 export const exportAdminData = (type) => client.get(`/admin/export/${type}`, { responseType: "blob" });
+
+export const broadcastAdmin = (formData) => client.post("/admin/broadcast", formData, { headers: { "Content-Type": "multipart/form-data" } });

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getStats, getAdminAnalytics, getUsers, updateUser, deleteUserAdmin, getAllDocuments, deleteDocumentAdmin, bulkDeleteDocuments, bulkUpdateDocumentsVisibility, getAdminSettings, updateAdminSettings, getAdminReports, updateAdminReportStatus, getAdminAudit, exportAdminData, getAdminCreditOrders, reviewAdminCreditOrder } from "../api/admin";
-import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil, Coins, Save, RotateCcw, Wallet, Plus, Smartphone, FolderTree } from "lucide-react";
+import { getStats, getAdminAnalytics, getUsers, updateUser, deleteUserAdmin, getAllDocuments, deleteDocumentAdmin, bulkDeleteDocuments, bulkUpdateDocumentsVisibility, getAdminSettings, updateAdminSettings, getAdminReports, updateAdminReportStatus, getAdminAudit, exportAdminData, getAdminCreditOrders, reviewAdminCreditOrder, broadcastAdmin } from "../api/admin";
+import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil, Coins, Save, RotateCcw, Wallet, Plus, Smartphone, FolderTree, Mail } from "lucide-react";
 import { Card, Button, Input, Select, Pagination, Toggle } from "../components/ui";
 import CategoryManager from "../components/categories/CategoryManager";
 import toast from "react-hot-toast";
@@ -61,6 +61,10 @@ export default function AdminDashboard() {
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditRefresh, setAuditRefresh] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
+  const [broadcastSubject, setBroadcastSubject] = useState("");
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [broadcastFiles, setBroadcastFiles] = useState([]);
+  const [broadcastLoading, setBroadcastLoading] = useState(false);
   const [searchUser, setSearchUser] = useState("");
   const [usersPage, setUsersPage] = useState(1);
   const [editUserId, setEditUserId] = useState(null);
@@ -539,6 +543,7 @@ export default function AdminDashboard() {
     { id: "orders", label: t("admin.orders"), icon: Wallet },
     { id: "audit", label: t("admin.audit"), icon: History },
     { id: "settings", label: t("admin.settings"), icon: Settings },
+    { id: "broadcast", label: "Message global", icon: Mail },
   ];
 
   return (
@@ -1484,6 +1489,60 @@ export default function AdminDashboard() {
             </div>
           )}
         </Card>
+      )}
+
+      {activeTab === "broadcast" && (
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-slate-100">Message global</h2>
+          <div className="space-y-4">
+            <input
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+              placeholder="Objet"
+              value={broadcastSubject}
+              onChange={(e) => setBroadcastSubject(e.target.value)}
+            />
+            <textarea
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+              rows={6}
+              placeholder="Message"
+              value={broadcastMessage}
+              onChange={(e) => setBroadcastMessage(e.target.value)}
+            />
+            <input
+              type="file"
+              multiple
+              onChange={(e) => setBroadcastFiles(Array.from(e.target.files || []))}
+              className="block w-full text-sm text-gray-600 dark:text-slate-300"
+            />
+            <Button
+              onClick={async () => {
+                if (!broadcastSubject.trim() || !broadcastMessage.trim()) {
+                  toast.error("Objet et message requis");
+                  return;
+                }
+                setBroadcastLoading(true);
+                try {
+                  const formData = new FormData();
+                  formData.append("subject", broadcastSubject.trim());
+                  formData.append("message", broadcastMessage.trim());
+                  broadcastFiles.forEach((file) => formData.append("attachments", file));
+                  const res = await broadcastAdmin(formData);
+                  toast.success(`Envoyé: ${res.data.sent}/${res.data.total}`);
+                  setBroadcastSubject("");
+                  setBroadcastMessage("");
+                  setBroadcastFiles([]);
+                } catch (err) {
+                  toast.error(err.response?.data?.error?.message || "Échec de l'envoi");
+                } finally {
+                  setBroadcastLoading(false);
+                }
+              }}
+              disabled={broadcastLoading}
+            >
+              {broadcastLoading ? "Envoi..." : "Envoyer à tous"}
+            </Button>
+          </div>
+        </div>
       )}
 
       {activeTab === "settings" && (

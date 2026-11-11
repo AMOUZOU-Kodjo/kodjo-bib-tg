@@ -136,3 +136,31 @@ export function uploadAvatarSingle(fieldName = "avatar") {
     });
   };
 }
+
+
+export function uploadMultiple(fieldName, maxFiles = 10) {
+  return async (req, res, next) => {
+    try {
+      const settings = await getSettings();
+      const configuredMaxSizeMb = Number(settings.maxUploadSizeMb) || fallbackMaxSizeMb;
+      const maxSizeMb = Math.min(Math.max(configuredMaxSizeMb, 1), 100);
+      const uploader = multer({
+        storage,
+        fileFilter,
+        limits: { fileSize: maxSizeMb * 1024 * 1024, files: maxFiles }
+      });
+      uploader.array(fieldName, maxFiles)(req, res, (err) => {
+        if (!err) return next();
+        if (err.code === "LIMIT_FILE_SIZE") {
+          err.message = `Fichier trop volumineux. Taille maximale : ${maxSizeMb} Mo.`;
+        }
+        if (err.code === "LIMIT_FILE_COUNT") {
+          err.message = `Trop de fichiers. Maximum : ${maxFiles}.`;
+        }
+        next(err);
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+}
