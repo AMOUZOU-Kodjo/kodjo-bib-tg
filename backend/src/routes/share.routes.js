@@ -17,6 +17,57 @@ router.use((req, res, next) => {
   next();
 });
 
+router.get("/news", async (req, res, next) => {
+  try {
+    const id = String(req.query.id || "").trim();
+    const url = String(req.query.url || "").trim();
+    let article = null;
+    let pageUrl = `${frontendBaseUrl()}/actualites`;
+    if (id) {
+      article = await getUserArticle(id);
+      pageUrl = `${frontendBaseUrl()}/actualites/article-utilisateur?id=${encodeURIComponent(id)}`;
+    } else if (url) {
+      article = await getArticle(url);
+      pageUrl = `${frontendBaseUrl()}/actualites/article?url=${encodeURIComponent(url)}`;
+    }
+    if (!article) return res.redirect(302, pageUrl);
+
+    const title = escapeHtml(article.title || "Actualité");
+    const description = escapeHtml(article.description || "").slice(0, 200);
+    const image = article.image || `${frontendBaseUrl()}/og-image.png`;
+    const backendOrigin = backendBaseUrl(req);
+    const shareUrl = `${backendOrigin}/share/news?${id ? `id=${encodeURIComponent(id)}` : `url=${encodeURIComponent(url)}`}`;
+
+    const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${title}</title>
+  <meta name="description" content="${description}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Archivia">
+  <meta property="og:title" content="${title}">
+  <meta property="og:description" content="${description}">
+  <meta property="og:url" content="${escapeHtml(shareUrl)}">
+  <meta property="og:image" content="${escapeHtml(image)}">
+  <meta property="og:image:secure_url" content="${escapeHtml(image)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${title}">
+  <meta name="twitter:description" content="${description}">
+  <meta name="twitter:image" content="${escapeHtml(image)}">
+  <meta http-equiv="refresh" content="0;url=${escapeHtml(pageUrl)}">
+  <script>window.location.replace(${JSON.stringify(pageUrl)});</script>
+</head>
+<body></body>
+</html>`;
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(html);
+  } catch (err) {
+    next(err);
+  }
+});
+
 async function loadSharedDocument(token) {
   let payload;
   try {
@@ -291,55 +342,5 @@ router.get("/:token/download", authRequired, async (req, res, next) => {
 });
 
 
-router.get("/news", async (req, res, next) => {
-  try {
-    const id = String(req.query.id || "").trim();
-    const url = String(req.query.url || "").trim();
-    let article = null;
-    let pageUrl = `${frontendBaseUrl()}/actualites`;
-    if (id) {
-      article = await getUserArticle(id);
-      pageUrl = `${frontendBaseUrl()}/actualites/article-utilisateur?id=${encodeURIComponent(id)}`;
-    } else if (url) {
-      article = await getArticle(url);
-      pageUrl = `${frontendBaseUrl()}/actualites/article?url=${encodeURIComponent(url)}`;
-    }
-    if (!article) return res.redirect(302, pageUrl);
-
-    const title = escapeHtml(article.title || "Actualité");
-    const description = escapeHtml(article.description || "").slice(0, 200);
-    const image = article.image || `${frontendBaseUrl()}/og-image.png`;
-    const backendOrigin = backendBaseUrl(req);
-    const shareUrl = `${backendOrigin}/share/news?${id ? `id=${encodeURIComponent(id)}` : `url=${encodeURIComponent(url)}`}`;
-
-    const html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${title}</title>
-  <meta name="description" content="${description}">
-  <meta property="og:type" content="article">
-  <meta property="og:site_name" content="Archivia">
-  <meta property="og:title" content="${title}">
-  <meta property="og:description" content="${description}">
-  <meta property="og:url" content="${escapeHtml(shareUrl)}">
-  <meta property="og:image" content="${escapeHtml(image)}">
-  <meta property="og:image:secure_url" content="${escapeHtml(image)}">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${title}">
-  <meta name="twitter:description" content="${description}">
-  <meta name="twitter:image" content="${escapeHtml(image)}">
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(pageUrl)}">
-  <script>window.location.replace(${JSON.stringify(pageUrl)});</script>
-</head>
-<body></body>
-</html>`;
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send(html);
-  } catch (err) {
-    next(err);
-  }
-});
 
 export default router;
