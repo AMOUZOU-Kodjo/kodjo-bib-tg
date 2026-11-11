@@ -1320,6 +1320,11 @@
     "allSources": "Toutes les sources",
     "favoritesOnly": "Favoris",
     "addFavorite": "Ajouter aux favoris",
-    "removeFavorite": "Retirer des favoris"
+    "removeFavorite": "Retirer des favoris",
+    "publishArticle": "Publier un article",
+    "articleTitle": "Titre de l'article",
+    "articleContent": "Contenu de l'article",
+    "publish": "Publier",
+    "publishError": "Impossible de publier l'article."
   }
 }

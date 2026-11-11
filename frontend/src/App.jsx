@@ -60,6 +60,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/actualites" element={<News />} />
           <Route path="/actualites/article" element={<NewsArticle />} />
+            <Route path="/actualites/article-utilisateur" element={<UserArticle />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/documents/:id" element={<DocumentDetail />} />
           <Route path="/authors/:id" element={<Author />} />

@@ -1,7 +1,9 @@
 import express from "express";
+import { authRequired } from "../middlewares/auth.js";
 import { config } from "../config/env.js";
 import { getArticle, getNews, getNewsSources, getScienceNews, getWorldNews, getResearchNews } from "../services/news.service.js";
 import { getScientificPublications } from "../services/science.service.js";
+import { createUserArticle, getUserArticle, listUserArticles } from "../services/userArticles.service.js";
 import { getContentCategories } from "../services/contentCategories.js";
 import { syncNewsToTelegram } from "../services/newsTelegram.service.js";
 
@@ -120,6 +122,47 @@ router.get("/", async (req, res, next) => {
       updatedAt: news.updatedAt ? new Date(news.updatedAt).toISOString() : null,
       sources: getNewsSources()
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/user-articles", async (req, res, next) => {
+  try {
+    const articles = await listUserArticles({ limit: req.query.limit });
+    res.json({ articles });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/user-article", async (req, res, next) => {
+  try {
+    const id = String(req.query.id || "").trim();
+    if (!id) return res.status(400).json({ error: "Paramètre id requis" });
+    const article = await getUserArticle(id);
+    if (!article) return res.status(404).json({ error: "Article introuvable" });
+    res.json({ article });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/user-articles", authRequired, async (req, res, next) => {
+  try {
+    const { title, content, category, imageUrl } = req.body || {};
+    if (!title || !content) {
+      return res.status(400).json({ error: "Titre et contenu requis" });
+    }
+    const article = await createUserArticle({
+      userId: req.user.id,
+      authorName: req.user.displayName || req.user.email,
+      title: String(title).trim(),
+      content: String(content).trim(),
+      category: category ? String(category).trim() : null,
+      imageUrl: imageUrl ? String(imageUrl).trim() : null
+    });
+    res.status(201).json({ article });
   } catch (err) {
     next(err);
   }

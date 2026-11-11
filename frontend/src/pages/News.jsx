@@ -3,8 +3,10 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, BookOpen, CalendarDays, ExternalLink, FlaskConical, Globe2, Newspaper, RefreshCw, Users } from "lucide-react";
 import { getNews, getScienceNews, getWorldNews, getResearchNews } from "../api/news";
+import client from "../api/client";
 import { Pagination } from "../components/ui";
 import useSeo from "../hooks/useSeo";
+import { useAuth } from "../context/AuthContext";
 import { Reveal, SkeletonCard } from "../components/ui";
 
 const CATEGORY_SLUGS = [
@@ -35,7 +37,9 @@ function NewsCard({ article, isFavorite, onToggleFavorite }) {
   const { t, i18n } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(article.image) && !imageFailed;
-  const articlePath = `/actualites/article?url=${encodeURIComponent(article.url)}`;
+  const articlePath = String(article.url || "").startsWith("/")
+    ? article.url
+    : `/actualites/article?url=${encodeURIComponent(article.url)}`;
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800">
@@ -151,6 +155,7 @@ function categoryLabel(t, slug) {
 
 export default function News() {
   const { t, i18n } = useTranslation();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [articles, setArticles] = useState([]);
   const [sources, setSources] = useState([]);
@@ -170,6 +175,11 @@ export default function News() {
   });
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [selectedSource, setSelectedSource] = useState("all");
+  const [showPublish, setShowPublish] = useState(false);
+  const [publishTitle, setPublishTitle] = useState("");
+  const [publishContent, setPublishContent] = useState("");
+  const [publishCategory, setPublishCategory] = useState("societe");
+  const [publishing, setPublishing] = useState(false);
 
   useSeo({
     title: t("news.seoTitle"),
@@ -183,18 +193,20 @@ export default function News() {
     setError("");
     try {
       const params = refresh ? { refresh: 1 } : undefined;
-      const [togoRes, scienceRes, worldRes, researchRes] = await Promise.all([
+      const [togoRes, scienceRes, worldRes, researchRes, userRes] = await Promise.all([
         getNews(params),
         getScienceNews(params),
         getWorldNews(params).catch(() => ({ data: { articles: [], sources: [] } })),
-        getResearchNews(params).catch(() => ({ data: { articles: [], sources: [] } }))
+        getResearchNews(params).catch(() => ({ data: { articles: [], sources: [] } })),
+        client.get("/news/user-articles").catch(() => ({ data: { articles: [] } }))
       ]);
       const togoArticles = togoRes.data.articles || [];
       const scienceArticles = scienceRes.data.articles || [];
       const publications = scienceRes.data.publications || [];
       const worldArticles = worldRes.data.articles || [];
       const researchArticles = researchRes.data.articles || [];
-      const merged = [...togoArticles, ...scienceArticles, ...publications, ...worldArticles, ...researchArticles];
+      const userArticles = userRes.data.articles || [];
+      const merged = [...togoArticles, ...scienceArticles, ...publications, ...worldArticles, ...researchArticles, ...userArticles];
       const seen = new Set();
       const unique = merged.filter((item) => {
         const key = item.id || item.url;
@@ -279,6 +291,15 @@ export default function News() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">{t("news.title")}</h1>
           <p className="mt-2 max-w-2xl text-sm text-gray-600 dark:text-slate-400 sm:text-base">{t("news.subtitle")}</p>
         </div>
+        {user && (
+          <button
+            type="button"
+            onClick={() => setShowPublish(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800"
+          >
+            ✎ {t("news.publishArticle")}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => load(true)}
@@ -393,6 +414,63 @@ export default function News() {
           <p className="mt-4 text-xs text-gray-400 dark:text-slate-500">{t("news.disclaimer")}</p>
         </div>
       )}
+      {showPublish && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-800">
+            <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-slate-100">{t("news.publishArticle")}</h2>
+            <input
+              type="text"
+              value={publishTitle}
+              onChange={(e) => setPublishTitle(e.target.value)}
+              placeholder={t("news.articleTitle")}
+              className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+            />
+            <select
+              value={publishCategory}
+              onChange={(e) => setPublishCategory(e.target.value)}
+              className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+            >
+              {["litterature","sciences","education","art","societe","politique","sante","sport","divertissement","philosophie","histoire"].map((slug) => (
+                <option key={slug} value={slug}>{t(`news.categories.${slug}`)}</option>
+              ))}
+            </select>
+            <textarea
+              value={publishContent}
+              onChange={(e) => setPublishContent(e.target.value)}
+              placeholder={t("news.articleContent")}
+              rows={8}
+              className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+            />
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setShowPublish(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm dark:border-slate-600 dark:text-slate-200">
+                {t("common.cancel")}
+              </button>
+              <button
+                type="button"
+                disabled={publishing}
+                onClick={async () => {
+                  setPublishing(true);
+                  try {
+                    await client.post("/news/user-articles", { title: publishTitle, content: publishContent, category: publishCategory });
+                    setShowPublish(false);
+                    setPublishTitle("");
+                    setPublishContent("");
+                    await load(true);
+                  } catch {
+                    alert(t("news.publishError"));
+                  } finally {
+                    setPublishing(false);
+                  }
+                }}
+                className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800 disabled:opacity-50"
+              >
+                {t("news.publish")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
