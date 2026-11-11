@@ -1277,12 +1277,19 @@
     "badge": "Togo news watch",
     "title": "Togo News",
     "subtitle": "Follow national news live, aggregated from several Togolese media outlets.",
-    "readMore": "Read article",
+    "readMore": "Read on Archivia",
     "refresh": "Refresh",
     "updated": "Last updated: {{date}}",
     "error": "Unable to load the news right now. Please try again.",
     "empty": "No news available at the moment.",
     "sources": "Sources",
-    "disclaimer": "Articles belong to their respective media outlets. Archivia only aggregates their RSS feeds."
+    "disclaimer": "Articles belong to their respective media outlets. Archivia only aggregates their RSS feeds.",
+    "back": "Back to news",
+    "articleLoading": "Loading article…",
+    "articleError": "Unable to load this article. You can read it directly on the source website.",
+    "openSource": "Open on source website",
+    "fallbackNotice": "The full content could not be extracted. Read the original article on the source website.",
+    "sourceNotice": "Article published by {{source}}.",
+    "tickerLabel": "Togo news feed"
   }
 }

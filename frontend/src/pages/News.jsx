@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CalendarDays, ExternalLink, Globe2, Newspaper, RefreshCw } from "lucide-react";
+import { ArrowRight, CalendarDays, Globe2, Newspaper, RefreshCw } from "lucide-react";
 import { getNews } from "../api/news";
 import useSeo from "../hooks/useSeo";
 import { Reveal, SkeletonCard } from "../components/ui";
@@ -16,15 +17,17 @@ function NewsCard({ article }) {
   const { t, i18n } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(article.image) && !imageFailed;
+  const articlePath = `/actualites/article?url=${encodeURIComponent(article.url)}`;
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800">
-      <a href={article.url} target="_blank" rel="noopener noreferrer" className="block aspect-[16/9] overflow-hidden bg-gradient-to-br from-teal-700 via-teal-800 to-slate-900">
+      <Link to={articlePath} state={{ article }} className="block aspect-[16/9] overflow-hidden bg-gradient-to-br from-teal-700 via-teal-800 to-slate-900">
         {showImage ? (
           <img
             src={article.image}
             alt={article.title}
             loading="lazy"
+            referrerPolicy="no-referrer"
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={() => setImageFailed(true)}
           />
@@ -33,7 +36,7 @@ function NewsCard({ article }) {
             <Newspaper className="h-10 w-10 text-white/70" />
           </div>
         )}
-      </a>
+      </Link>
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
           <span className="rounded-full bg-teal-50 px-2.5 py-1 font-medium text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">
@@ -47,19 +50,19 @@ function NewsCard({ article }) {
           )}
         </div>
         <h2 className="mb-2 line-clamp-2 text-base font-semibold text-gray-900 dark:text-slate-100">
-          <a href={article.url} target="_blank" rel="noopener noreferrer" className="hover:text-teal-700 dark:hover:text-teal-300">
+          <Link to={articlePath} state={{ article }} className="hover:text-teal-700 dark:hover:text-teal-300">
             {article.title}
-          </a>
+          </Link>
         </h2>
         {article.description && (
           <p className="mb-4 line-clamp-3 text-sm leading-relaxed text-gray-600 dark:text-slate-400">
             {article.description}
           </p>
         )}
-        <a href={article.url} target="_blank" rel="noopener noreferrer" className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-teal-700 hover:underline dark:text-teal-300">
+        <Link to={articlePath} state={{ article }} className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-teal-700 hover:underline dark:text-teal-300">
           {t("news.readMore")}
-          <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </article>
   );

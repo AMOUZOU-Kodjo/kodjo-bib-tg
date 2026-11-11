@@ -7,6 +7,7 @@ import { useEffect } from "react";
 
 const Home = lazy(() => import("./pages/Home"));
 const News = lazy(() => import("./pages/News"));
+const NewsArticle = lazy(() => import("./pages/NewsArticle"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
@@ -58,6 +59,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/actualites" element={<News />} />
+          <Route path="/actualites/article" element={<NewsArticle />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/documents/:id" element={<DocumentDetail />} />
           <Route path="/authors/:id" element={<Author />} />

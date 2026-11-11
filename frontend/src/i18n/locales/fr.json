@@ -1277,12 +1277,19 @@
     "badge": "Veille info Togo",
     "title": "Actualités du Togo",
     "subtitle": "Suivez l'actualité nationale en direct, agrégée depuis plusieurs médias togolais.",
-    "readMore": "Lire l’article",
+    "readMore": "Lire sur Archivia",
     "refresh": "Actualiser",
     "updated": "Dernière mise à jour : {{date}}",
     "error": "Impossible de charger les actualités pour le moment. Veuillez réessayer.",
     "empty": "Aucune actualité disponible pour le moment.",
     "sources": "Sources",
-    "disclaimer": "Les articles sont la propriété de leurs médias respectifs. Archivia ne fait qu'agréger leurs flux RSS."
+    "disclaimer": "Les articles sont la propriété de leurs médias respectifs. Archivia ne fait qu'agréger leurs flux RSS.",
+    "back": "Retour aux actualités",
+    "articleLoading": "Chargement de l'article…",
+    "articleError": "Impossible de charger cet article. Tu peux le lire directement sur le site source.",
+    "openSource": "Ouvrir sur le site source",
+    "fallbackNotice": "Le contenu complet n'a pas pu être extrait. Consulte l'article original sur le site source.",
+    "sourceNotice": "Article publié par {{source}}.",
+    "tickerLabel": "Fil d'actualités du Togo"
   }
 }

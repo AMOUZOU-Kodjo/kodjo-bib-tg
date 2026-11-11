@@ -6,6 +6,7 @@ import heroImg from "../assets/hero.jpg";
 import { getDocuments, getDocumentStats } from "../api/documents";
 import { DocumentCard } from "../components/documents/DocumentCard";
 import InstallBanner from "../components/layout/InstallBanner";
+import NewsTicker from "../components/news/NewsTicker";
 import useSeo from "../hooks/useSeo";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useAuth } from "../context/AuthContext";
@@ -200,6 +201,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <NewsTicker />
 
       <InstallBanner />
 
