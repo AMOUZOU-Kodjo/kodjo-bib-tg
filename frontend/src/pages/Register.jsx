@@ -50,7 +50,7 @@ export default function Register() {
 
   if (!allowRegistrations) {
     return (
-      <div className="flex min-h-[calc(100dvh-200px)] items-center justify-center">
+      <div className="flex min-h-[calc(100dvh-120px)] py-8 items-center justify-center">
         <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-8">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
             <Lock className="h-6 w-6" />
@@ -68,7 +68,7 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-[calc(100dvh-200px)] items-center justify-center">
+    <div className="flex min-h-[calc(100dvh-120px)] py-8 items-center justify-center">
       <div className="w-full max-w-md">
         <div className="mb-6 sm:mb-8">
           <div className="mb-2 flex items-center justify-center gap-3">

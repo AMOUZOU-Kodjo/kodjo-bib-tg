@@ -41,7 +41,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-200px)] items-center justify-center">
+    <div className="flex min-h-[calc(100dvh-120px)] py-8 items-center justify-center">
       <div className="w-full max-w-md">
         <div className="mb-6 sm:mb-8">
           <div className="mb-2 flex items-center justify-center gap-3">

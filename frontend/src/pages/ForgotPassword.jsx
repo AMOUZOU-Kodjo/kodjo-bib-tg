@@ -29,7 +29,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="mx-auto max-w-md py-6 sm:py-10">
+    <div className="mx-auto max-w-md py-10 sm:py-14">
       <Link to="/login" className="mb-6 inline-flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-100">
         <ArrowLeft className="w-4 h-4" />
         {t("auth.backToLogin")}
