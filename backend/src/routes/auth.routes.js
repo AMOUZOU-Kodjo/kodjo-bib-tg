@@ -8,6 +8,7 @@ import { authLimiter } from "../middlewares/rateLimit.js";
 import { sendEmail, generateCode, hashCode } from "../services/email.service.js";
 import { buildVerificationEmail } from "../services/emailTemplates.js";
 import { ensureInitialCredits } from "../services/credits.service.js";
+import { sendWelcomeMessage } from "../services/welcome.service.js";
 import { getSettings } from "../services/settings.service.js";
 
 const router = express.Router();
@@ -141,6 +142,7 @@ router.post("/verify-email", authLimiter, async (req, res, next) => {
     if (claimed.rows.length === 0) return res.status(400).json({ error: { code: "INVALID_CODE", message: "Code invalide" } });
     await query("UPDATE users SET email_verified = true WHERE id = $1", [user.id]);
     await ensureInitialCredits(user.id);
+    sendWelcomeMessage({ userId: user.id }).catch(() => {});
     const creditsRes = await query("SELECT credits + paid_credits AS credits FROM users WHERE id = $1", [user.id]);
     user.email_verified = true;
     user.credits = creditsRes.rows[0]?.credits ?? 0;

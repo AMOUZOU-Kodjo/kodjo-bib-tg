@@ -13,6 +13,7 @@ import { enqueuePdfCompression } from "../services/pdfCompressionQueue.service.j
 import { isR2Configured } from "../services/r2.service.js";
 import { notifyDocumentUpload } from "../services/notifications.service.js";
 import { notifyFollowersNewDocument } from "../services/notificationCenter.service.js";
+import { sendFirstPublicationThanks } from "../services/welcome.service.js";
 import { streamDocumentFile } from "../services/documentStream.service.js";
 import { createDocumentShareToken, getDocumentShareUrl } from "../services/share.service.js";
 import { config } from "../config/env.js";
@@ -403,6 +404,9 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     });
     notifyFollowersNewDocument({ documentId: doc.id }).catch((err) => {
       console.error("Échec des notifications aux abonnés:", err.message);
+    });
+    sendFirstPublicationThanks({ userId: req.user.id, documentId: doc.id }).catch((err) => {
+      console.error("Échec du message de remerciement:", err.message);
     });
     const backgroundCompression = deferPdfCompression
       ? enqueuePdfCompression({
