@@ -73,7 +73,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
           </div>
           {doc.price != null && doc.seller_whatsapp && (
             <a
-              href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${Number(doc.price).toLocaleString("fr-FR")} FCFA.\nAperçu: ${doc.thumbnail || ""}`)}`}
+              href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${Number(doc.price).toLocaleString("fr-FR")} FCFA.\nAperçu: ${typeof window !== "undefined" ? `${window.location.origin}/documents/${doc.id}` : ""}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
