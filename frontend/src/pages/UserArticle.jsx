@@ -32,7 +32,7 @@ export default function UserArticle() {
       "author": { "@type": "Person", "name": article.author || "Auteur" },
       "publisher": {
         "@type": "Organization",
-        "name": "Archives de Documents",
+        "name": "Archivia",
         "logo": { "@type": "ImageObject", "url": `${seoOrigin}/logo.png` }
       },
       "mainEntityOfPage": { "@type": "WebPage", "@id": seoUrl },

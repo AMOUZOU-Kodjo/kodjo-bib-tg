@@ -42,7 +42,7 @@ export default function NewsArticle() {
       "author": { "@type": "Organization", "name": seoArticle.source || "Archives de Documents" },
       "publisher": {
         "@type": "Organization",
-        "name": "Archives de Documents",
+        "name": "Archivia",
         "logo": { "@type": "ImageObject", "url": `${seoOrigin}/logo.png` }
       },
       "mainEntityOfPage": { "@type": "WebPage", "@id": seoUrl },

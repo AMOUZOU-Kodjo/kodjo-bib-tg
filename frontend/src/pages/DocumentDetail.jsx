@@ -74,7 +74,7 @@ export default function DocumentDetail() {
           "author": { "@type": "Person", "name": doc.author_name || "Auteur inconnu" },
           "publisher": {
             "@type": "Organization",
-            "name": "Archives de Documents",
+            "name": "Archivia",
             "logo": { "@type": "ImageObject", "url": `${seoOrigin}/logo.png` }
           },
           "encodingFormat": doc.mime_type || undefined,

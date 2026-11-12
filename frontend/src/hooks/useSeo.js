@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 
-const DEFAULT_TITLE = "Archives de Documents — Partage et archivage collaboratif";
+const DEFAULT_TITLE = "Archivia — Archives de Documents | Partage et archivage collaboratif";
 const DEFAULT_DESCRIPTION = "Plateforme collaborative gratuite pour archiver, classer et partager des documents.";
-const DEFAULT_IMAGE = "/og-image.png";
+const DEFAULT_IMAGE = "/og-image-v2.png";
 
 function setMeta(attribute, key, content) {
   if (!content) return;
@@ -45,7 +45,7 @@ export default function useSeo({ title, description, image, url, type = "website
   const jsonLdString = jsonLd ? JSON.stringify(jsonLd) : "";
 
   useEffect(() => {
-    const resolvedTitle = title ? `${title} — Archives de Documents` : DEFAULT_TITLE;
+    const resolvedTitle = title ? `${title} — Archivia` : DEFAULT_TITLE;
     const resolvedDescription = String(description || DEFAULT_DESCRIPTION).replace(/\s+/g, " ").trim().slice(0, 160);
     const resolvedUrl = url || window.location.href;
     const resolvedImage = new URL(image || DEFAULT_IMAGE, window.location.origin).href;
