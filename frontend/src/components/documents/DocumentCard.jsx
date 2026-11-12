@@ -51,6 +51,11 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               {t("common.private")}
             </span>
           )}
+          {doc.price != null && (
+            <span className="rounded-full bg-amber-500/90 px-3 py-1 text-xs font-bold text-white backdrop-blur">
+              {doc.price} FCFA
+            </span>
+          )}
         </div>
 
         <div className="doc-overlay absolute inset-x-0 bottom-0 p-5">
@@ -66,6 +71,17 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               {downloads}
             </span>
           </div>
+          {doc.price != null && doc.seller_whatsapp && (
+            <a
+              href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${doc.price} FCFA.\nAperçu: ${doc.thumbnail || ""}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1ebe5b]"
+            >
+              {t("document.order")}
+            </a>
+          )}
           {doc.tags?.length > 0 && (
             <p className="mt-1.5 line-clamp-1 text-[10px] font-medium text-teal-200">
               #{doc.tags.slice(0, 3).join(" #")}

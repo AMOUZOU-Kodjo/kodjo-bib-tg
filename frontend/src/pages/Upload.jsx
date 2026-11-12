@@ -36,6 +36,8 @@ export default function Upload() {
   const [categoryId, setCategoryId] = useState("");
   const [tags, setTags] = useState("");
   const [visibility, setVisibility] = useState("public");
+  const [price, setPrice] = useState("");
+  const [sellerWhatsapp, setSellerWhatsapp] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
@@ -165,6 +167,8 @@ export default function Upload() {
     if (category) formData.append("category", category);
     if (tags.trim()) formData.append("tags", tags.trim());
     formData.append("visibility", visibility);
+    if (price.trim()) formData.append("price", price.trim());
+    if (sellerWhatsapp.trim()) formData.append("sellerWhatsapp", sellerWhatsapp.trim());
     setLoading(true);
     setProgress(0);
     try {
@@ -456,6 +460,17 @@ export default function Upload() {
                     <span className="mt-0.5 block text-xs text-gray-500 dark:text-slate-400">{t("upload.privateDesc")}</span>
                   </span>
                 </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.price")}</label>
+                <Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder={t("upload.pricePlaceholder")} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.sellerWhatsapp")}</label>
+                <Input type="text" value={sellerWhatsapp} onChange={(e) => setSellerWhatsapp(e.target.value)} placeholder={t("upload.sellerWhatsappPlaceholder")} />
               </div>
             </div>
 

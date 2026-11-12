@@ -181,6 +181,8 @@ export function ensureCategoriesSchema() {
 
         ALTER TABLE documents ADD COLUMN IF NOT EXISTS category_id UUID REFERENCES categories(id) ON DELETE SET NULL;
         CREATE INDEX IF NOT EXISTS idx_documents_category_id ON documents (category_id);
+        ALTER TABLE documents ADD COLUMN IF NOT EXISTS price NUMERIC(10,2);
+        ALTER TABLE documents ADD COLUMN IF NOT EXISTS seller_whatsapp TEXT;
       `);
       await ensureDefaultCategories();
       await migrateDocumentCategories();

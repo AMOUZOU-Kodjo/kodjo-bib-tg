@@ -310,6 +310,9 @@ router.get("/:id", optionalAuth, async (req, res, next) => {
 router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("file"), async (req, res, next) => {
   if (!req.file) return res.status(400).json({ error: { code: "NO_FILE", message: "Fichier requis" } });
   const { visibility = "public" } = req.body;
+  const priceRaw = asString(req.body.price).trim();
+  const price = priceRaw ? Number(priceRaw) : null;
+  const sellerWhatsapp = asString(req.body.sellerWhatsapp).trim() || null;
   const title = asString(req.body.title).trim();
   const description = asString(req.body.description).trim();
   let category = asString(req.body.category).trim();
@@ -332,6 +335,7 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
       category = selectedCategory.name;
     }
   }
+  if (priceRaw && (!Number.isFinite(price) || price < 0)) return res.status(400).json({ error: { code: "INVALID_PRICE", message: "Prix invalide" } });
   if (!title) return res.status(400).json({ error: { code: "MISSING_FIELDS", message: "Titre requis" } });
   if (title.length > 200) return res.status(400).json({ error: { code: "TITLE_TOO_LONG", message: "Le titre ne doit pas dépasser 200 caractères" } });
   if (description.length > 5000) return res.status(400).json({ error: { code: "DESCRIPTION_TOO_LONG", message: "La description ne doit pas dépasser 5000 caractères" } });
@@ -383,9 +387,9 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     client = await pool.connect();
     await client.query("BEGIN");
     const docRes = await client.query(
-      `INSERT INTO documents (owner_id, title, description, category, category_id, original_filename, mime_type, size_bytes, cloudinary_public_id, cloudinary_resource_type, preview_public_id, tags, visibility)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'raw',$10,$11,$12) RETURNING *`,
-      [req.user.id, title, description || null, category || null, categoryId, req.file.originalname, req.file.mimetype, optimizedFile.finalSize, uploaded.public_id, preview?.public_id || null, tags, visibility]
+      `INSERT INTO documents (owner_id, title, description, category, category_id, original_filename, mime_type, size_bytes, cloudinary_public_id, cloudinary_resource_type, preview_public_id, tags, visibility, price, seller_whatsapp)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'raw',$10,$11,$12,$13,$14) RETURNING *`,
+      [req.user.id, title, description || null, category || null, categoryId, req.file.originalname, req.file.mimetype, optimizedFile.finalSize, uploaded.public_id, preview?.public_id || null, tags, visibility, price, sellerWhatsapp]
     );
     const doc = docRes.rows[0];
     let credits = await addCreditsOnUpload(client, req.user.id, doc.id);

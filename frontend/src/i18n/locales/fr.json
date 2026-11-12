@@ -172,7 +172,11 @@
     "submitting": "Envoi en cours...",
     "submit": "Déposer le document",
     "privateNote": "Ce document restera privé. Vous pourrez générer un lien de partage depuis votre profil.",
-    "publicNote": "En déposant ce document, vous acceptez qu'il soit partagé avec la communauté."
+    "publicNote": "En déposant ce document, vous acceptez qu'il soit partagé avec la communauté.",
+    "price": "Prix (optionnel)",
+    "pricePlaceholder": "Ex: 5000",
+    "sellerWhatsapp": "WhatsApp du vendeur",
+    "sellerWhatsappPlaceholder": "+228..."
   },
   "document": {
     "aiSummary": "Résumé IA",
@@ -269,7 +273,8 @@
     "fullDetails": "Fiche complète",
     "shareAria": "Partager {{title}}",
     "editAria": "Modifier {{title}}",
-    "deleteAria": "Supprimer {{title}}"
+    "deleteAria": "Supprimer {{title}}",
+    "order": "Commander"
   },
   "footer": {
     "tagline": "Plateforme collaborative gratuite d'archivage et de partage de documents.",

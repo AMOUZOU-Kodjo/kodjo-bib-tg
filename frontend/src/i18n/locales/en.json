@@ -172,7 +172,11 @@
     "submitting": "Uploading...",
     "submit": "Upload document",
     "privateNote": "This document will remain private. You can generate a share link from your profile.",
-    "publicNote": "By uploading this document, you agree to share it with the community."
+    "publicNote": "By uploading this document, you agree to share it with the community.",
+    "price": "Price (optional)",
+    "pricePlaceholder": "e.g. 5000",
+    "sellerWhatsapp": "Seller WhatsApp",
+    "sellerWhatsappPlaceholder": "+228..."
   },
   "document": {
     "aiSummary": "AI summary",
@@ -269,7 +273,8 @@
     "fullDetails": "Full details",
     "shareAria": "Share {{title}}",
     "editAria": "Edit {{title}}",
-    "deleteAria": "Delete {{title}}"
+    "deleteAria": "Delete {{title}}",
+    "order": "Order"
   },
   "footer": {
     "tagline": "Free collaborative platform for archiving and sharing documents.",
