@@ -72,7 +72,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/upload" element={<ProtectedRoute requireVerified={false}><Upload /></ProtectedRoute>} />
-            <Route path="/vendre" element={<ProtectedRoute requireVerified={false}><Upload selling /></ProtectedRoute>} />
+            {SALES_ENABLED && <Route path="/vendre" element={<ProtectedRoute requireVerified={false}><Upload selling /></ProtectedRoute>} />}
           <Route path="/profile" element={<ProtectedRoute requireVerified={false}><Profile /></ProtectedRoute>} />
           <Route path="/credits" element={<ProtectedRoute requireVerified={false}><BuyCredits /></ProtectedRoute>} />
           <Route path="/favorites" element={<ProtectedRoute requireVerified={false}><Favorites /></ProtectedRoute>} />

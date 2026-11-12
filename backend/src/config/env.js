@@ -56,7 +56,8 @@ export const config = {
   maxFileSizeMb: positiveNumber(process.env.MAX_FILE_SIZE_MB, 10),
   creditsInitiaux: nonNegativeInt(process.env.CREDITS_INITIAUX, 0),
   creditsParUpload: nonNegativeInt(process.env.CREDITS_PAR_UPLOAD, 2),
-  publicBrowsing: process.env.PUBLIC_BROWSING !== "false"
+  publicBrowsing: process.env.PUBLIC_BROWSING !== "false",
+  salesEnabled: process.env.SALES_ENABLED === "true"
 };
 
 if (!config.databaseUrl) {

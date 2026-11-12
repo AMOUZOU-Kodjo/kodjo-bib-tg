@@ -302,7 +302,7 @@ router.get("/:token", async (req, res, next) => {
 
     const accept = req.headers.accept || "";
     if (accept.includes("application/json")) {
-      const isPaid = Number(doc.price) > 0;
+      const isPaid = config.salesEnabled && Number(doc.price) > 0;
       return res.json({
         document: {
           ...serializeSharedDocument(doc),
@@ -342,7 +342,7 @@ router.get("/:token/download", authRequired, async (req, res, next) => {
   try {
     const doc = await loadSharedDocument(req.params.token);
     if (!doc) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lien de partage invalide ou expiré" } });
-    if (Number(doc.price) > 0 && doc.__sharePayload?.allowDownload !== true) {
+    if (config.salesEnabled && Number(doc.price) > 0 && doc.__sharePayload?.allowDownload !== true) {
       return res.status(403).json({
         error: {
           code: "PAID_DOCUMENT",

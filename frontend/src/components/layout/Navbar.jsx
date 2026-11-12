@@ -78,10 +78,12 @@ export default function Navbar() {
                   <Upload className="h-4 w-4 shrink-0" />
                   <span className="hidden 2xl:inline">{t("nav.upload")}</span>
                 </Link>
-                <Link to="/vendre" className={desktopLink} title={t("nav.sell")}>
-                  <DollarSign className="h-4 w-4 shrink-0" />
-                  <span className="hidden 2xl:inline">{t("nav.sell")}</span>
-                </Link>
+                {SALES_ENABLED && (
+                  <Link to="/vendre" className={desktopLink} title={t("nav.sell")}>
+                    <DollarSign className="h-4 w-4 shrink-0" />
+                    <span className="hidden 2xl:inline">{t("nav.sell")}</span>
+                  </Link>
+                )}
                 <Link to="/favorites" className={desktopLink} title={t("nav.favorites")}>
                   <Heart className="h-4 w-4 shrink-0" />
                   <span className="hidden 2xl:inline">{t("nav.favorites")}</span>
@@ -218,10 +220,12 @@ export default function Navbar() {
                         <Upload className="h-4 w-4 shrink-0" />
                         {t("nav.uploadDoc")}
                       </Link>
-                      <Link to="/vendre" onClick={closeMenu} className={mobileLink}>
-                        <DollarSign className="h-4 w-4 shrink-0" />
-                        {t("nav.sellDoc")}
-                      </Link>
+                      {SALES_ENABLED && (
+                        <Link to="/vendre" onClick={closeMenu} className={mobileLink}>
+                          <DollarSign className="h-4 w-4 shrink-0" />
+                          {t("nav.sellDoc")}
+                        </Link>
+                      )}
                       <Link to="/favorites" onClick={closeMenu} className={mobileLink}>
                         <Heart className="h-4 w-4 shrink-0" />
                         {t("nav.favorites")}

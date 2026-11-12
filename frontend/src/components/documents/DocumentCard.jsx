@@ -5,14 +5,15 @@ import { Download, Eye, FileText, Lock, Pencil, Share2, Trash2 } from "lucide-re
 import { getCategoryColor, formatCategoryName } from "../../utils/document";
 import { useQuickPreview } from "../../context/QuickPreviewContext";
 import { getPublicShareUrl } from "../../api/share";
+import { SALES_ENABLED } from "../../config/features";
 
 export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false }) {
   const { t } = useTranslation();
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const { openPreview } = useQuickPreview();
   const isPrivate = doc.visibility === "private";
-  const hasPrice = doc.price != null && Number(doc.price) > 0;
-  const canOrder = hasPrice && Boolean(doc.seller_whatsapp);
+  const hasPrice = SALES_ENABLED && doc.price != null && Number(doc.price) > 0;
+  const canOrder = SALES_ENABLED && hasPrice && Boolean(doc.seller_whatsapp);
   const showThumbnail = Boolean(doc.thumbnail) && !thumbnailFailed;
   const views = doc.view_count || 0;
   const downloads = doc.download_count || 0;

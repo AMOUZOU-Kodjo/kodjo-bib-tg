@@ -21,6 +21,7 @@ import ShareModal from "../components/documents/ShareModal";
 import { getCategoryColor, formatCategoryName } from "../utils/document";
 import useSeo from "../hooks/useSeo";
 import { getPublicShareUrl } from "../api/share";
+import { SALES_ENABLED } from "../config/features";
 import { useLiveVersion } from "../context/LiveUpdatesContext";
 
 const PdfPreview = lazy(() => import("../components/documents/PdfPreview"));
@@ -322,7 +323,7 @@ export default function DocumentDetail() {
   const isAdmin = user?.role === "admin" && !doc.isOwner;
   const showViewCount = doc.visibility !== "private" && !doc.isOwner;
   const isPdfDoc = doc.mime_type === "application/pdf" || doc.original_filename?.toLowerCase().endsWith(".pdf");
-  const isPaid = Number(doc.price) > 0;
+  const isPaid = SALES_ENABLED && Number(doc.price) > 0;
   const canDownloadPaid = !isPaid || doc.isOwner || user?.role === "admin";
 
   return (
