@@ -20,7 +20,9 @@
     "credits": "{{count}} cr.",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "news": "News"
+    "news": "News",
+    "sell": "Sell",
+    "sellDoc": "Sell a document"
   },
   "categoryBar": {
     "title": "Categories",
@@ -176,7 +178,10 @@
     "price": "Price (optional)",
     "pricePlaceholder": "e.g. 5000",
     "sellerWhatsapp": "Seller WhatsApp",
-    "sellerWhatsappPlaceholder": "+228..."
+    "sellerWhatsappPlaceholder": "+228...",
+    "priceRequired": "Price required to sell",
+    "sellTitle": "Sell a document",
+    "sellSubtitle": "Upload a document for sale and set its price."
   },
   "document": {
     "aiSummary": "AI summary",
