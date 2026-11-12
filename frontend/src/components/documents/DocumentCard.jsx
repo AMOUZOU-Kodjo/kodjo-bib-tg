@@ -10,6 +10,8 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const { openPreview } = useQuickPreview();
   const isPrivate = doc.visibility === "private";
+  const hasPrice = doc.price != null && Number(doc.price) > 0;
+  const canOrder = hasPrice && Boolean(doc.seller_whatsapp);
   const showThumbnail = Boolean(doc.thumbnail) && !thumbnailFailed;
   const views = doc.view_count || 0;
   const downloads = doc.download_count || 0;
@@ -41,7 +43,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
 
         <div className="doc-overlay pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-        <div className="doc-overlay pointer-events-none absolute left-4 top-4 flex flex-wrap gap-2">
+        <div className={`doc-overlay pointer-events-none absolute left-4 flex flex-wrap gap-2 ${hasPrice ? "top-12" : "top-4"}`}>
           <span title={categoryFullLabel} className={`rounded-full px-3 py-1 text-xs font-medium text-white ${getCategoryColor(doc.category)}`}>
             {categoryLabel}
           </span>
@@ -51,14 +53,9 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               {t("common.private")}
             </span>
           )}
-          {doc.price != null && Number(doc.price) > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/90 px-3 py-1 text-xs font-bold text-white backdrop-blur">
-              {t("document.forSale")} · {Number(doc.price).toLocaleString("fr-FR")} FCFA
-            </span>
-          )}
         </div>
 
-        <div className="doc-overlay absolute inset-x-0 bottom-0 p-5">
+        <div className={`doc-overlay absolute inset-x-0 bottom-0 p-5 ${canOrder ? "pr-24" : ""}`}>
           <p className="mb-1 line-clamp-2 text-sm font-medium text-white">{doc.title}</p>
           <p className="text-xs text-gray-300">{doc.author_name}</p>
           <div className="mt-2 flex items-center gap-3 border-t border-white/15 pt-2 text-[10px] text-gray-200">
@@ -71,17 +68,6 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               {downloads}
             </span>
           </div>
-          {doc.price != null && doc.seller_whatsapp && (
-            <a
-              href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${Number(doc.price).toLocaleString("fr-FR")} FCFA.\nAperçu: ${typeof window !== "undefined" ? `${window.location.origin}/documents/${doc.id}` : ""}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1ebe5b]"
-            >
-              {t("document.order")}
-            </a>
-          )}
           {doc.tags?.length > 0 && (
             <p className="mt-1.5 line-clamp-1 text-[10px] font-medium text-teal-200">
               #{doc.tags.slice(0, 3).join(" #")}
@@ -90,6 +76,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
         </div>
       </Link>
 
+        {!canOrder && (
         <div className="doc-stats-badge pointer-events-none absolute bottom-4 right-4 z-10 items-center gap-2 rounded-full border border-white/15 bg-black/65 px-2.5 py-1 text-[10px] font-medium text-white shadow-sm backdrop-blur transition-opacity">
           <span className="inline-flex items-center gap-1" title={t("document.viewCount", { count: views })}>
             <Eye className="h-3 w-3" />
@@ -100,6 +87,25 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
             {downloads}
           </span>
         </div>
+        )}
+
+        {hasPrice && (
+          <span className="pointer-events-none absolute left-4 top-4 z-20 inline-flex items-center gap-1 rounded-full bg-amber-500/95 px-3 py-1 text-xs font-bold text-white shadow-sm backdrop-blur">
+            {t("document.forSale")} · {Number(doc.price).toLocaleString("fr-FR")} FCFA
+          </span>
+        )}
+
+        {canOrder && (
+          <a
+            href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${Number(doc.price).toLocaleString("fr-FR")} FCFA.\nAperçu: ${typeof window !== "undefined" ? `${window.location.origin}/documents/${doc.id}` : ""}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="absolute bottom-4 right-4 z-20 inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-[#1ebe5b]"
+          >
+            {t("document.order")}
+          </a>
+        )}
 
         <div className="absolute right-4 top-4 z-10 flex gap-1.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
           <button
