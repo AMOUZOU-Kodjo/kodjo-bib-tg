@@ -515,13 +515,16 @@ router.patch("/:id", authRequired, requireVerified, async (req, res, next) => {
 router.get("/:id/share", authRequired, requireVerified, async (req, res, next) => {
   try {
     const docRes = await query(
-      "SELECT id, owner_id, visibility, share_enabled, share_version FROM documents WHERE id = $1",
+      "SELECT id, owner_id, visibility, share_enabled, share_version, price FROM documents WHERE id = $1",
       [req.params.id]
     );
     if (docRes.rows.length === 0) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     const doc = docRes.rows[0];
     if (doc.visibility === "private" && doc.owner_id !== req.user.id) {
       return res.status(403).json({ error: { code: "FORBIDDEN", message: "Interdit" } });
+    }
+    if (Number(doc.price) > 0 && doc.owner_id !== req.user.id) {
+      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Seul le propriétaire peut partager le lien de téléchargement" } });
     }
     if (doc.visibility === "private" && !doc.share_enabled) {
       return res.json({ enabled: false, visibility: doc.visibility });
@@ -532,10 +535,10 @@ router.get("/:id/share", authRequired, requireVerified, async (req, res, next) =
         [doc.id]
       );
       const up2 = await query("SELECT share_version FROM documents WHERE id = $1", [doc.id]);
-      const token = createDocumentShareToken(doc.id, up2.rows[0].share_version);
+      const token = createDocumentShareToken(doc.id, up2.rows[0].share_version, { allowDownload: Number(doc.price) > 0 });
       return res.json({ enabled: true, url: getDocumentShareUrl(token, req) });
     }
-    const token = createDocumentShareToken(doc.id, doc.share_version);
+    const token = createDocumentShareToken(doc.id, doc.share_version, { allowDownload: Number(doc.price) > 0 });
     res.json({ enabled: true, url: getDocumentShareUrl(token, req) });
   } catch (err) {
     next(err);
@@ -545,13 +548,16 @@ router.get("/:id/share", authRequired, requireVerified, async (req, res, next) =
 router.post("/:id/share", authRequired, requireVerified, async (req, res, next) => {
   try {
     const docRes = await query(
-      "SELECT id, owner_id, visibility, share_version FROM documents WHERE id = $1",
+      "SELECT id, owner_id, visibility, share_version, price FROM documents WHERE id = $1",
       [req.params.id]
     );
     if (docRes.rows.length === 0) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
     const doc = docRes.rows[0];
     if (doc.visibility === "private" && doc.owner_id !== req.user.id) {
       return res.status(403).json({ error: { code: "FORBIDDEN", message: "Interdit" } });
+    }
+    if (Number(doc.price) > 0 && doc.owner_id !== req.user.id) {
+      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Seul le propriétaire peut partager le lien de téléchargement" } });
     }
     const rotate = req.body?.rotate === true;
     const up = await query(
@@ -562,7 +568,7 @@ router.post("/:id/share", authRequired, requireVerified, async (req, res, next) 
        RETURNING share_version`,
       [rotate, doc.id]
     );
-    const token = createDocumentShareToken(doc.id, up.rows[0].share_version);
+    const token = createDocumentShareToken(doc.id, up.rows[0].share_version, { allowDownload: Number(doc.price) > 0 });
     res.json({ enabled: true, url: getDocumentShareUrl(token, req) });
   } catch (err) {
     next(err);
@@ -688,7 +694,7 @@ router.post("/:id/download", authRequired, requireVerified, async (req, res, nex
   try {
     await client.query("BEGIN");
      const userRes = await client.query("SELECT id, credits, paid_credits FROM users WHERE id = $1 FOR UPDATE", [req.user.id]);
-    const docRes = await client.query("SELECT id, owner_id, visibility, cloudinary_public_id, cloudinary_resource_type, original_filename FROM documents WHERE id = $1", [req.params.id]);
+    const docRes = await client.query("SELECT id, owner_id, visibility, cloudinary_public_id, cloudinary_resource_type, original_filename, price FROM documents WHERE id = $1", [req.params.id]);
     if (docRes.rows.length === 0) {
       await client.query("ROLLBACK");
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Document introuvable" } });
@@ -706,6 +712,15 @@ router.post("/:id/download", authRequired, requireVerified, async (req, res, nex
       const url = await getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
       await client.query("COMMIT");
       return res.json({ url, credits: userRes.rows[0].credits + userRes.rows[0].paid_credits, charged: false });
+    }
+    if (Number(doc.price) > 0) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({
+        error: {
+          code: "PAID_DOCUMENT",
+          message: "Ce document est en vente. Le téléchargement est possible uniquement via le lien fourni par le vendeur."
+        }
+      });
     }
     const already = await client.query("SELECT 1 FROM downloads WHERE user_id = $1 AND document_id = $2", [req.user.id, req.params.id]);
     if (already.rows.length > 0) {

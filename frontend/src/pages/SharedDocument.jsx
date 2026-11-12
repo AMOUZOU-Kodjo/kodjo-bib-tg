@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { Calendar, Copy, Download, ExternalLink, FileText, Lock, User } from "lucide-react";
+import { Calendar, Copy, Download, ExternalLink, FileText, Lock, MessageCircle, User } from "lucide-react";
 import { getSharedDocument, downloadSharedDocument, getSharedFileUrl, getPublicShareUrl } from "../api/share";
 import { useAuth } from "../context/AuthContext";
 import { formatSize, formatDate } from "../utils/format";
@@ -151,14 +151,35 @@ export default function SharedDocument() {
             </div>
           </div>
 
-          <button
-            onClick={download}
-            disabled={downloading}
-            className="w-full flex items-center justify-center gap-2 bg-teal-700 text-white px-6 py-3 rounded-xl font-medium hover:bg-teal-800 transition-colors mb-3 disabled:opacity-50"
-          >
-            <Download className="w-5 h-5" />
-            {downloading ? t("share.preparing") : user ? t("share.download") : t("share.loginToDownload")}
-          </button>
+          {doc.canDownload === false ? (
+            <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+              <p className="font-semibold">{t("share.paidTitle")}</p>
+              <p className="mt-1 text-xs">{t("share.paidHint")}</p>
+              {doc.price != null && (
+                <p className="mt-2 text-lg font-bold">{Number(doc.price).toLocaleString("fr-FR")} FCFA</p>
+              )}
+              {doc.seller_whatsapp && (
+                <a
+                  href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${Number(doc.price || 0).toLocaleString("fr-FR")} FCFA.\nAperçu: ${getPublicShareUrl(doc.id)}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 font-semibold text-white hover:bg-[#1ebe5b]"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  {t("document.order")}
+                </a>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={download}
+              disabled={downloading}
+              className="w-full flex items-center justify-center gap-2 bg-teal-700 text-white px-6 py-3 rounded-xl font-medium hover:bg-teal-800 transition-colors mb-3 disabled:opacity-50"
+            >
+              <Download className="w-5 h-5" />
+              {downloading ? t("share.preparing") : user ? t("share.download") : t("share.loginToDownload")}
+            </button>
+          )}
           <button
             onClick={copyLink}
             className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700 transition-colors"

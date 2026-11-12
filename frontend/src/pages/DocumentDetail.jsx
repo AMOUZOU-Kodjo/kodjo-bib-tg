@@ -9,7 +9,7 @@ import {
 import { summarizeDocument, translateText } from "../api/ai";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { FileText, Heart, Eye, Download, Calendar, User, ChevronRight, Share2, Maximize2, Mail, Lock, Shield, Bookmark, Flag, Sparkles, Loader2, Languages } from "lucide-react";
+import { FileText, Heart, Eye, Download, Calendar, User, ChevronRight, Share2, Maximize2, Mail, Lock, Shield, Bookmark, Flag, Sparkles, Loader2, Languages, MessageCircle } from "lucide-react";
 import { formatSize, formatDate } from "../utils/format";
 import { ReadingProgress } from "../components/ui";
 import ContactModal from "../components/contact/ContactModal";
@@ -162,6 +162,10 @@ export default function DocumentDetail() {
   }, [doc?.id, loadPreview, user?.email_verified, user?.id]);
 
   const download = async () => {
+    if (isPaid && !doc.isOwner && user?.role !== "admin") {
+      toast.error(t("document.paidDownloadBlocked"));
+      return;
+    }
     if (!user) {
       promptLogin(t("document.loginToDownload"));
       return;
@@ -318,6 +322,8 @@ export default function DocumentDetail() {
   const isAdmin = user?.role === "admin" && !doc.isOwner;
   const showViewCount = doc.visibility !== "private" && !doc.isOwner;
   const isPdfDoc = doc.mime_type === "application/pdf" || doc.original_filename?.toLowerCase().endsWith(".pdf");
+  const isPaid = Number(doc.price) > 0;
+  const canDownloadPaid = !isPaid || doc.isOwner || user?.role === "admin";
 
   return (
     <div>
@@ -358,8 +364,8 @@ export default function DocumentDetail() {
                   <p className="mt-4 text-[10px] uppercase tracking-widest text-gray-400">{doc.original_filename?.split('.').pop() || "DOC"}</p>
                 </div>
               )}
-              <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium text-white bg-teal-700">
-                {t("document.free")}
+              <span className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium text-white ${isPaid ? "bg-amber-600" : "bg-teal-700"}`}>
+                {isPaid ? `${t("document.forSale")} · ${Number(doc.price).toLocaleString("fr-FR")} FCFA` : t("document.free")}
               </span>
             </div>
           </div>
@@ -379,17 +385,37 @@ export default function DocumentDetail() {
             <FileText className="w-5 h-5" />
             {previewLoading ? t("common.loading") : showPreview ? t("document.refreshPreview") : user?.email_verified ? t("document.loadPreview") : t("document.verifyEmail")}
           </button>
-          <button onClick={download} className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700 transition-colors mb-3">
-            <Download className="w-5 h-5" />
-            {t("common.download")}
-          </button>
+          {canDownloadPaid ? (
+            <button onClick={download} className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-900 border border-gray-200 dark:border-slate-700 transition-colors mb-3">
+              <Download className="w-5 h-5" />
+              {t("common.download")}
+            </button>
+          ) : doc.seller_whatsapp ? (
+            <a
+              href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${Number(doc.price).toLocaleString("fr-FR")} FCFA.\nAperçu: ${getPublicShareUrl(doc.id)}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#1ebe5b] transition-colors mb-3"
+            >
+              <MessageCircle className="w-5 h-5" />
+              {t("document.order")}
+            </a>
+          ) : (
+            <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-center text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+              {t("document.paidDownloadBlocked")}
+            </div>
+          )}
           <button
             onClick={share}
             disabled={doc.visibility !== "public" && !user?.email_verified}
             className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Share2 className="w-4 h-4" />
-            {doc.visibility !== "public" && user && !user.email_verified ? t("document.verifyToShare") : t("document.shareLink")}
+            {doc.visibility !== "public" && user && !user.email_verified
+              ? t("document.verifyToShare")
+              : isPaid && doc.isOwner
+                ? t("document.shareDownloadLink")
+                : t("document.shareLink")}
           </button>
           {doc.visibility === "public" && (
             <button

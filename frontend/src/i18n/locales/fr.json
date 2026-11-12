@@ -283,7 +283,9 @@
     "editAria": "Modifier {{title}}",
     "deleteAria": "Supprimer {{title}}",
     "order": "Commander",
-    "forSale": "À vendre"
+    "forSale": "À vendre",
+    "paidDownloadBlocked": "Document en vente : téléchargement réservé au lien partagé par le propriétaire.",
+    "shareDownloadLink": "Lien de téléchargement"
   },
   "footer": {
     "tagline": "Plateforme collaborative gratuite d'archivage et de partage de documents.",
@@ -545,7 +547,9 @@
     "previewUnavailable": "L’aperçu de la première page n’est pas disponible pour ce format.",
     "firstPage": "Aperçu de la première page",
     "showDocument": "Afficher le document",
-    "noPreview": "L'aperçu n'est pas disponible pour ce format. Utilisez le bouton de téléchargement."
+    "noPreview": "L'aperçu n'est pas disponible pour ce format. Utilisez le bouton de téléchargement.",
+    "paidTitle": "Document en vente",
+    "paidHint": "Le téléchargement est réservé. Contactez le vendeur sur WhatsApp ; il vous enverra le lien de téléchargement après paiement."
   },
   "legal": {
     "home": "Accueil",

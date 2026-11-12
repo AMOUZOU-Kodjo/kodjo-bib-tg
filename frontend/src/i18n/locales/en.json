@@ -283,7 +283,9 @@
     "editAria": "Edit {{title}}",
     "deleteAria": "Delete {{title}}",
     "order": "Order",
-    "forSale": "For sale"
+    "forSale": "For sale",
+    "paidDownloadBlocked": "Document for sale: download is restricted to the link shared by the owner.",
+    "shareDownloadLink": "Download link"
   },
   "footer": {
     "tagline": "Free collaborative platform for archiving and sharing documents.",
@@ -545,7 +547,9 @@
     "previewUnavailable": "The first-page preview is not available for this format.",
     "firstPage": "First-page preview",
     "showDocument": "Show document",
-    "noPreview": "Preview is not available for this format. Use the download button."
+    "noPreview": "Preview is not available for this format. Use the download button.",
+    "paidTitle": "Document for sale",
+    "paidHint": "Download is restricted. Contact the seller on WhatsApp; they will send the download link after payment."
   },
   "legal": {
     "home": "Home",

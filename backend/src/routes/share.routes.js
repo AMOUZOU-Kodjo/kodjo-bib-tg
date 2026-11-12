@@ -87,10 +87,11 @@ async function loadSharedDocument(token) {
   if (doc.visibility === "private") {
     if (!doc.share_enabled) return null;
     if (doc.share_version !== payload.shareVersion) return null;
-    return doc;
+    return { ...doc, __sharePayload: payload };
   }
   if (doc.visibility === "public") {
-    return doc;
+    if (doc.share_version !== payload.shareVersion) return null;
+    return { ...doc, __sharePayload: payload };
   }
   return null;
 }
@@ -127,6 +128,8 @@ function serializeSharedDocument(doc) {
     created_at: doc.created_at,
     view_count: doc.view_count,
     download_count: doc.download_count,
+    price: doc.price,
+    seller_whatsapp: doc.seller_whatsapp,
     thumbnail
   };
 }
@@ -299,7 +302,13 @@ router.get("/:token", async (req, res, next) => {
 
     const accept = req.headers.accept || "";
     if (accept.includes("application/json")) {
-      return res.json({ document: serializeSharedDocument(doc) });
+      const isPaid = Number(doc.price) > 0;
+      return res.json({
+        document: {
+          ...serializeSharedDocument(doc),
+          canDownload: !isPaid || doc.__sharePayload?.allowDownload === true
+        }
+      });
     }
 
     const frontendUrl = frontendBaseUrl();
@@ -333,6 +342,14 @@ router.get("/:token/download", authRequired, async (req, res, next) => {
   try {
     const doc = await loadSharedDocument(req.params.token);
     if (!doc) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lien de partage invalide ou expiré" } });
+    if (Number(doc.price) > 0 && doc.__sharePayload?.allowDownload !== true) {
+      return res.status(403).json({
+        error: {
+          code: "PAID_DOCUMENT",
+          message: "Ce document est en vente. Demandez au propriétaire son lien de téléchargement."
+        }
+      });
+    }
     await query("UPDATE documents SET download_count = download_count + 1 WHERE id = $1", [doc.id]);
     const url = await getSignedDownloadUrl(doc.cloudinary_public_id, doc.original_filename, doc.cloudinary_resource_type);
     res.json({ url });
