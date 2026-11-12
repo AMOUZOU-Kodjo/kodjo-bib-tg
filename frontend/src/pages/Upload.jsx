@@ -167,7 +167,7 @@ export default function Upload({ selling = false }) {
     if (categoryId) formData.append("categoryId", categoryId);
     if (category) formData.append("category", category);
     if (tags.trim()) formData.append("tags", tags.trim());
-    formData.append("visibility", visibility);
+    formData.append("visibility", selling ? "public" : visibility);
     if (price.trim()) formData.append("price", price.trim());
     if (sellerWhatsapp.trim()) formData.append("sellerWhatsapp", sellerWhatsapp.trim());
     setLoading(true);
@@ -426,6 +426,7 @@ export default function Upload({ selling = false }) {
               <p className="mt-1 text-xs text-gray-400">{t("upload.tagsHint")}</p>
             </div>
 
+            {!selling && (
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.visibility")}</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -463,7 +464,7 @@ export default function Upload({ selling = false }) {
                 </button>
               </div>
             </div>
-
+            )}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.price")}</label>
