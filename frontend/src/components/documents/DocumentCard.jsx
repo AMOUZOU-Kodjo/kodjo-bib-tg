@@ -51,9 +51,9 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
               {t("common.private")}
             </span>
           )}
-          {doc.price != null && (
-            <span className="rounded-full bg-amber-500/90 px-3 py-1 text-xs font-bold text-white backdrop-blur">
-              {doc.price} FCFA
+          {doc.price != null && Number(doc.price) > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/90 px-3 py-1 text-xs font-bold text-white backdrop-blur">
+              {t("document.forSale")} · {Number(doc.price).toLocaleString("fr-FR")} FCFA
             </span>
           )}
         </div>
@@ -73,7 +73,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
           </div>
           {doc.price != null && doc.seller_whatsapp && (
             <a
-              href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${doc.price} FCFA.\nAperçu: ${doc.thumbnail || ""}`)}`}
+              href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${Number(doc.price).toLocaleString("fr-FR")} FCFA.\nAperçu: ${doc.thumbnail || ""}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}

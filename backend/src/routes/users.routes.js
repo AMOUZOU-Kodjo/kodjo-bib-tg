@@ -51,7 +51,7 @@ function mapDocumentRow(row) {
 router.get("/me/documents", authRequired, async (req, res, next) => {
   try {
     const resDocs = await query(
-      `SELECT id, title, description, category, category_id, tags, visibility, share_enabled, original_filename, mime_type, cloudinary_public_id, preview_public_id, size_bytes,
+      `SELECT id, title, description, category, category_id, tags, visibility, share_enabled, original_filename, mime_type, cloudinary_public_id, preview_public_id, size_bytes, price, seller_whatsapp,
               view_count, download_count, like_count, comment_count, created_at
        FROM documents
        WHERE owner_id = $1
@@ -89,7 +89,7 @@ router.get("/me/favorites", authRequired, async (req, res, next) => {
       params
     );
     const listRes = await query(
-      `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type,
+      `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type, d.price, d.seller_whatsapp,
               d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.download_count, d.like_count,
               d.comment_count, d.created_at, u.display_name AS author_name, u.id AS owner_id
        FROM favorites f
@@ -436,7 +436,7 @@ router.get("/:id/documents", optionalAuth, async (req, res, next) => {
       [req.params.id]
     );
     const listRes = await query(
-      `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type,
+      `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type, d.price, d.seller_whatsapp,
               d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.download_count, d.like_count,
               d.comment_count, d.created_at, u.display_name AS author_name, u.id AS owner_id
        FROM documents d JOIN users u ON u.id = d.owner_id
@@ -495,7 +495,7 @@ router.get("/me/downloads", authRequired, async (req, res, next) => {
     const offset = (pageNum - 1) * limitNum;
     const totalRes = await query("SELECT COUNT(*)::int AS total FROM downloads WHERE user_id = $1", [req.user.id]);
     const { rows } = await query(
-      `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type,
+      `SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type, d.price, d.seller_whatsapp,
               d.cloudinary_public_id, d.preview_public_id, d.size_bytes, d.view_count, d.download_count,
               d.like_count, d.comment_count, d.created_at,
               u.display_name as author_name, u.id as owner_id,

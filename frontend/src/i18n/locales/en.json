@@ -175,13 +175,16 @@
     "submit": "Upload document",
     "privateNote": "This document will remain private. You can generate a share link from your profile.",
     "publicNote": "By uploading this document, you agree to share it with the community.",
-    "price": "Price (optional)",
+    "price": "Sale price (FCFA)",
     "pricePlaceholder": "e.g. 5000",
     "sellerWhatsapp": "Seller WhatsApp",
     "sellerWhatsappPlaceholder": "+228...",
     "priceRequired": "Price required to sell",
     "sellTitle": "Sell a document",
-    "sellSubtitle": "Upload a document for sale and set its price."
+    "sellSubtitle": "Upload a document for sale and set its price.",
+    "saleInfo": "Sale details",
+    "saleHint": "The Order button will open WhatsApp with your number and the document details.",
+    "whatsappRequired": "Seller WhatsApp required"
   },
   "document": {
     "aiSummary": "AI summary",
@@ -279,7 +282,8 @@
     "shareAria": "Share {{title}}",
     "editAria": "Edit {{title}}",
     "deleteAria": "Delete {{title}}",
-    "order": "Order"
+    "order": "Order",
+    "forSale": "For sale"
   },
   "footer": {
     "tagline": "Free collaborative platform for archiving and sharing documents.",

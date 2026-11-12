@@ -154,6 +154,7 @@ export default function Upload({ selling = false }) {
     if (!file) return toast.error(t("upload.toastFileReq"));
     if (!title.trim()) return toast.error(t("upload.toastTitleReq"));
     if (selling && !price.trim()) return toast.error(t("upload.priceRequired"));
+    if (selling && !sellerWhatsapp.trim()) return toast.error(t("upload.whatsappRequired"));
     if (file.size > maxUploadSizeMb * 1024 * 1024) {
       return toast.error(t("upload.toastTooLarge", { max: maxUploadSizeMb }));
     }
@@ -465,16 +466,22 @@ export default function Upload({ selling = false }) {
               </div>
             </div>
             )}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.price")}</label>
-                <Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder={t("upload.pricePlaceholder")} />
+            {selling && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
+                <h3 className="mb-3 text-sm font-bold text-amber-900 dark:text-amber-200">{t("upload.saleInfo")}</h3>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.price")} <span className="text-red-500">*</span></label>
+                    <Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder={t("upload.pricePlaceholder")} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.sellerWhatsapp")} <span className="text-red-500">*</span></label>
+                    <Input type="text" value={sellerWhatsapp} onChange={(e) => setSellerWhatsapp(e.target.value)} placeholder={t("upload.sellerWhatsappPlaceholder")} />
+                  </div>
+                </div>
+                <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">{t("upload.saleHint")}</p>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 dark:text-slate-100 mb-2">{t("upload.sellerWhatsapp")}</label>
-                <Input type="text" value={sellerWhatsapp} onChange={(e) => setSellerWhatsapp(e.target.value)} placeholder={t("upload.sellerWhatsappPlaceholder")} />
-              </div>
-            </div>
+            )}
 
             <div>
               <div className="mb-2 flex items-center justify-between">

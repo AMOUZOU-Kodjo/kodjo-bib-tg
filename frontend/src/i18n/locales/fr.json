@@ -175,13 +175,16 @@
     "submit": "Déposer le document",
     "privateNote": "Ce document restera privé. Vous pourrez générer un lien de partage depuis votre profil.",
     "publicNote": "En déposant ce document, vous acceptez qu'il soit partagé avec la communauté.",
-    "price": "Prix (optionnel)",
+    "price": "Prix de vente (FCFA)",
     "pricePlaceholder": "Ex: 5000",
     "sellerWhatsapp": "WhatsApp du vendeur",
     "sellerWhatsappPlaceholder": "+228...",
     "priceRequired": "Prix requis pour vendre",
     "sellTitle": "Vendre un document",
-    "sellSubtitle": "Déposez un document à vendre et fixez son prix."
+    "sellSubtitle": "Déposez un document à vendre et fixez son prix.",
+    "saleInfo": "Informations de vente",
+    "saleHint": "Le bouton Commander ouvrira WhatsApp avec votre numéro et le détail du document.",
+    "whatsappRequired": "WhatsApp du vendeur requis"
   },
   "document": {
     "aiSummary": "Résumé IA",
@@ -279,7 +282,8 @@
     "shareAria": "Partager {{title}}",
     "editAria": "Modifier {{title}}",
     "deleteAria": "Supprimer {{title}}",
-    "order": "Commander"
+    "order": "Commander",
+    "forSale": "À vendre"
   },
   "footer": {
     "tagline": "Plateforme collaborative gratuite d'archivage et de partage de documents.",

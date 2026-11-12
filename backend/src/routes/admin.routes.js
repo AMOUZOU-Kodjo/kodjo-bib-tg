@@ -640,7 +640,7 @@ router.delete("/users/:id", async (req, res, next) => {
 router.get("/documents", async (req, res, next) => {
   try {
     const docs = await query(`
-      SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type,
+      SELECT d.id, d.title, d.description, d.category, d.tags, d.visibility, d.original_filename, d.mime_type, d.price, d.seller_whatsapp,
              d.size_bytes, d.view_count, d.download_count, d.like_count, d.comment_count,
              d.created_at, d.cloudinary_public_id, d.preview_public_id,
              u.display_name as author_name, u.id as owner_id
