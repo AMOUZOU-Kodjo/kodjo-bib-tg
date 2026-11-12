@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Download, Eye, FileText, Lock, Pencil, Share2, Trash2 } from "lucide-react";
 import { getCategoryColor, formatCategoryName } from "../../utils/document";
 import { useQuickPreview } from "../../context/QuickPreviewContext";
+import { getPublicShareUrl } from "../../api/share";
 
 export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false }) {
   const { t } = useTranslation();
@@ -97,7 +98,7 @@ export function DocumentCard({ doc, onEdit, onDelete, onShare, deleting = false 
 
         {canOrder && (
           <a
-            href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${Number(doc.price).toLocaleString("fr-FR")} FCFA.\nAperçu: ${typeof window !== "undefined" ? `${window.location.origin}/documents/${doc.id}` : ""}`)}`}
+            href={`https://wa.me/${String(doc.seller_whatsapp).replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Bonjour, je suis intéressé par "${doc.title}" au prix de ${Number(doc.price).toLocaleString("fr-FR")} FCFA.\nAperçu: ${getPublicShareUrl(doc.id)}`)}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
