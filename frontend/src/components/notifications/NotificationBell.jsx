@@ -97,7 +97,7 @@ export default function NotificationBell() {
           setOpen((value) => !value);
           if (!open) load();
         }}
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl text-white/90 transition-colors hover:bg-white/10 hover:text-white"
+        className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-white/90 dark:hover:bg-white/10 dark:hover:text-white"
         aria-label={t("notifications.title")}
         aria-expanded={open}
       >
