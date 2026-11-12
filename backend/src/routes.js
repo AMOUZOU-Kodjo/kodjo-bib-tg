@@ -17,6 +17,10 @@ import { globalLimiter } from "./middlewares/rateLimit.js";
 
 export function setupRoutes(app) {
   app.use(globalLimiter);
+  app.use("/api", (req, res, next) => {
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    next();
+  });
   app.use("/api/events", eventsRoutes);
   app.use("/api/auth", authRoutes);
   app.use("/api/categories", categoriesRoutes);
