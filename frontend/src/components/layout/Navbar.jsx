@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { logout } from "../../api/auth";
+import { SALES_ENABLED } from "../../config/features";
 import NotificationBell from "../notifications/NotificationBell";
 import {
   DollarSign, Upload, User, LogOut, LogIn, UserPlus, Shield, BookOpen, Mail, Menu, X, Search, Heart, Download, Languages, Coins, Newspaper

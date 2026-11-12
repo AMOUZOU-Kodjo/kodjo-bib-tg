@@ -4,6 +4,7 @@ import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 import { useEffect } from "react";
+import { SALES_ENABLED } from "./config/features";
 
 const Home = lazy(() => import("./pages/Home"));
 const News = lazy(() => import("./pages/News"));
