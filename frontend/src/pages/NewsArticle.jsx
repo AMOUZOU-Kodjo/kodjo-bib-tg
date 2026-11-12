@@ -22,11 +22,32 @@ export default function NewsArticle() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const seoArticle = article || preview;
+  const seoOrigin = typeof window !== "undefined" ? window.location.origin : "https://archivia.pages.dev";
+  const seoUrl = `${seoOrigin}/actualites/article?url=${encodeURIComponent(url)}`;
   useSeo({
     title: article?.title || preview?.title || t("news.seoTitle"),
     description: article?.description || preview?.description || t("news.seoDesc"),
     image: article?.image || preview?.image,
-    url: `${window.location.origin}/actualites/article?url=${encodeURIComponent(url)}`
+    url: seoUrl,
+    type: "article",
+    jsonLd: seoArticle ? {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "headline": seoArticle.title,
+      "description": seoArticle.description || undefined,
+      "image": seoArticle.image ? [seoArticle.image] : undefined,
+      "datePublished": seoArticle.publishedAt || undefined,
+      "dateModified": seoArticle.publishedAt || undefined,
+      "author": { "@type": "Organization", "name": seoArticle.source || "Archives de Documents" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Archives de Documents",
+        "logo": { "@type": "ImageObject", "url": `${seoOrigin}/logo.png` }
+      },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": seoUrl },
+      "inLanguage": "fr"
+    } : null
   });
 
   useEffect(() => {

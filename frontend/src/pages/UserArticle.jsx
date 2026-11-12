@@ -13,7 +13,32 @@ export default function UserArticle() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useSeo({ title: article?.title || t("news.title"), description: article?.description || "", url: `${window.location.origin}/actualites/article-utilisateur?id=${id}` });
+  const seoOrigin = typeof window !== "undefined" ? window.location.origin : "https://archivia.pages.dev";
+  const seoUrl = `${seoOrigin}/actualites/article-utilisateur?id=${id}`;
+  useSeo({
+    title: article?.title || t("news.title"),
+    description: article?.description || "",
+    image: article?.image,
+    url: seoUrl,
+    type: "article",
+    jsonLd: article ? {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": article.title,
+      "description": article.description || undefined,
+      "image": article.image ? [article.image] : undefined,
+      "datePublished": article.publishedAt || undefined,
+      "dateModified": article.publishedAt || undefined,
+      "author": { "@type": "Person", "name": article.author || "Auteur" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Archives de Documents",
+        "logo": { "@type": "ImageObject", "url": `${seoOrigin}/logo.png` }
+      },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": seoUrl },
+      "inLanguage": "fr"
+    } : null
+  });
 
   useEffect(() => {
     if (!id) { setError(t("news.articleError")); setLoading(false); return; }

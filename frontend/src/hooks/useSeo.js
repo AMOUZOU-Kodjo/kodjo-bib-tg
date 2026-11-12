@@ -25,7 +25,25 @@ function setCanonical(url) {
   element.setAttribute("href", url);
 }
 
-export default function useSeo({ title, description, image, url, type = "website", noIndex = false } = {}) {
+function setJsonLd(json) {
+  const id = "page-structured-data";
+  let element = document.getElementById(id);
+  if (!json) {
+    if (element) element.remove();
+    return;
+  }
+  if (!element) {
+    element = document.createElement("script");
+    element.type = "application/ld+json";
+    element.id = id;
+    document.head.appendChild(element);
+  }
+  element.textContent = json;
+}
+
+export default function useSeo({ title, description, image, url, type = "website", noIndex = false, jsonLd = null } = {}) {
+  const jsonLdString = jsonLd ? JSON.stringify(jsonLd) : "";
+
   useEffect(() => {
     const resolvedTitle = title ? `${title} — Archives de Documents` : DEFAULT_TITLE;
     const resolvedDescription = String(description || DEFAULT_DESCRIPTION).replace(/\s+/g, " ").trim().slice(0, 160);
@@ -45,5 +63,7 @@ export default function useSeo({ title, description, image, url, type = "website
     setMeta("name", "twitter:description", resolvedDescription);
     setMeta("name", "twitter:image", resolvedImage);
     setCanonical(resolvedUrl);
-  }, [title, description, image, url, type, noIndex]);
+    setJsonLd(jsonLdString || null);
+    return () => setJsonLd(null);
+  }, [title, description, image, url, type, noIndex, jsonLdString]);
 }

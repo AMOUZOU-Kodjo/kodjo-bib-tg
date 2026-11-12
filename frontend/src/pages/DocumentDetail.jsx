@@ -52,13 +52,56 @@ export default function DocumentDetail() {
   const documentsVersion = useLiveVersion("documents");
   const { user, setUser } = useAuth();
 
+  const seoOrigin = typeof window !== "undefined" ? window.location.origin : "https://archivia.pages.dev";
   useSeo({
     title: doc ? doc.title : t("document.fallback"),
     description: doc?.description || (doc ? t("document.seoDesc", { title: doc.title }) : t("document.seoDescFallback")),
     image: doc?.thumbnail,
-    url: doc ? `${window.location.origin}/documents/${doc.id}` : undefined,
+    url: doc ? `${seoOrigin}/documents/${doc.id}` : undefined,
     type: "article",
-    noIndex: doc?.visibility === "private"
+    noIndex: doc?.visibility === "private",
+    jsonLd: doc ? {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "DigitalDocument",
+          "name": doc.title,
+          "description": doc.description || undefined,
+          "image": doc.thumbnail || undefined,
+          "url": `${seoOrigin}/documents/${doc.id}`,
+          "datePublished": doc.created_at,
+          "dateModified": doc.created_at,
+          "author": { "@type": "Person", "name": doc.author_name || "Auteur inconnu" },
+          "publisher": {
+            "@type": "Organization",
+            "name": "Archives de Documents",
+            "logo": { "@type": "ImageObject", "url": `${seoOrigin}/logo.png` }
+          },
+          "encodingFormat": doc.mime_type || undefined,
+          "contentSize": doc.size_bytes || undefined,
+          "inLanguage": "fr"
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": `${seoOrigin}/` },
+            { "@type": "ListItem", "position": 2, "name": "Documents", "item": `${seoOrigin}/documents` },
+            ...(doc.category ? [{
+              "@type": "ListItem",
+              "position": 3,
+              "name": doc.category,
+              "item": `${seoOrigin}/documents?category=${encodeURIComponent(doc.category_slug || doc.category)}`
+            }] : []),
+            {
+              "@type": "ListItem",
+              "position": doc.category ? 4 : 3,
+              "name": doc.title,
+              "item": `${seoOrigin}/documents/${doc.id}`
+            }
+          ]
+        }
+      ]
+    } : null
   });
 
   useEffect(() => {
