@@ -17,6 +17,72 @@ router.use((req, res, next) => {
   next();
 });
 
+function isPrivateHost(hostname = "") {
+  const host = String(hostname).toLowerCase();
+  if (host === "localhost" || host.endsWith(".local") || host === "::1" || host === "0.0.0.0") return true;
+  const ipv4 = host.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (!ipv4) return false;
+  const a = Number(ipv4[1]);
+  const b = Number(ipv4[2]);
+  return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+}
+
+router.get("/news/image", async (req, res, next) => {
+  try {
+    const raw = String(req.query.url || "").trim();
+    let target;
+    try {
+      target = new URL(raw);
+    } catch {
+      return res.status(400).end();
+    }
+    if (!["http:", "https:"].includes(target.protocol) || isPrivateHost(target.hostname)) {
+      return res.status(400).end();
+    }
+    let current = target;
+    let response;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      response = await fetch(current.href, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; ArchiviaBot/1.0)",
+          Accept: "image/avif,image/webp,image/png,image/jpeg,image/*"
+        },
+        redirect: "manual",
+        signal: AbortSignal.timeout(10000)
+      });
+      if (![301, 302, 303, 307, 308].includes(response.status)) break;
+      const location = response.headers.get("location");
+      if (!location) break;
+      let next;
+      try {
+        next = new URL(location, current);
+      } catch {
+        return res.status(400).end();
+      }
+      if (!["http:", "https:"].includes(next.protocol) || isPrivateHost(next.hostname)) {
+        return res.status(400).end();
+      }
+      current = next;
+    }
+    if (!response || !response.ok) return res.status(502).end();
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.startsWith("image/")) return res.status(415).end();
+    const contentLength = Number(response.headers.get("content-length") || 0);
+    if (contentLength > 5 * 1024 * 1024) return res.status(413).end();
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.length > 5 * 1024 * 1024) return res.status(413).end();
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
+    res.send(buffer);
+  } catch (err) {
+    if (res.headersSent) {
+      res.destroy();
+      return;
+    }
+    next(err);
+  }
+});
+
 router.get("/news", async (req, res, next) => {
   try {
     const id = String(req.query.id || "").trim();
@@ -34,8 +100,10 @@ router.get("/news", async (req, res, next) => {
 
     const title = escapeHtml(article.title || "Actualité");
     const description = escapeHtml(article.description || "").slice(0, 200);
-    const image = article.image || `${frontendBaseUrl()}/og-image.png`;
     const backendOrigin = backendBaseUrl(req);
+    const image = article.image
+      ? `${backendOrigin}/share/news/image?url=${encodeURIComponent(article.image)}`
+      : `${frontendBaseUrl()}/og-image-v2.png`;
     const shareUrl = `${backendOrigin}/share/news?${id ? `id=${encodeURIComponent(id)}` : `url=${encodeURIComponent(url)}`}`;
 
     const html = `<!DOCTYPE html>
