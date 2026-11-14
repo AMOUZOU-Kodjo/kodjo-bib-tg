@@ -76,7 +76,7 @@ export default function NotificationBell() {
       setNotifications((list) => list.map((item) => (item.id === notification.id ? { ...item, read_at: new Date().toISOString() } : item)));
       markNotificationRead(notification.id).catch(() => {});
     }
-    navigate(notification.link || "/notifications");
+    navigate(`/notifications/${notification.id}`);
   };
 
   const readAll = async () => {

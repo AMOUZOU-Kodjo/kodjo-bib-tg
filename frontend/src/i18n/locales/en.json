@@ -462,7 +462,12 @@
     "readAll": "Read all",
     "loadError": "Could not load your notifications",
     "markError": "Could not mark notifications as read",
-    "empty": "No notifications yet"
+    "empty": "No notifications yet",
+    "detailTitle": "Notification",
+    "backToList": "Back to notifications",
+    "notFound": "Notification not found",
+    "read": "Read",
+    "openRelated": "Open related content"
   },
   "install": {
     "title": "Install Archives de Documents",

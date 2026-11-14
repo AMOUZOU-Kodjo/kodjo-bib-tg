@@ -25,6 +25,7 @@ const BuyCredits = lazy(() => import("./pages/BuyCredits"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const MyDownloads = lazy(() => import("./pages/MyDownloads"));
 const Notifications = lazy(() => import("./pages/Notifications"));
+const NotificationDetail = lazy(() => import("./pages/NotificationDetail"));
 const Contact = lazy(() => import("./pages/Contact"));
 const About = lazy(() => import("./pages/About"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
@@ -79,6 +80,7 @@ export default function App() {
           <Route path="/favorites" element={<ProtectedRoute requireVerified={false}><Favorites /></ProtectedRoute>} />
           <Route path="/downloads" element={<ProtectedRoute requireVerified={false}><MyDownloads /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute requireVerified={false}><Notifications /></ProtectedRoute>} />
+          <Route path="/notifications/:id" element={<ProtectedRoute requireVerified={false}><NotificationDetail /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/a-propos" element={<About />} />

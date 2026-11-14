@@ -462,7 +462,12 @@
     "readAll": "Tout lire",
     "loadError": "Impossible de charger vos notifications",
     "markError": "Impossible de marquer les notifications comme lues",
-    "empty": "Aucune notification pour le moment"
+    "empty": "Aucune notification pour le moment",
+    "detailTitle": "Notification",
+    "backToList": "Retour aux notifications",
+    "notFound": "Notification introuvable",
+    "read": "Lue",
+    "openRelated": "Ouvrir le contenu associé"
   },
   "install": {
     "title": "Installer Archives de Documents",

@@ -84,6 +84,26 @@ router.patch("/:id/read", async (req, res, next) => {
   }
 });
 
+router.get("/:id", async (req, res, next) => {
+  try {
+    if (!UUID_RE.test(req.params.id)) {
+      return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant de notification invalide" } });
+    }
+    const result = await query(
+      `SELECT id, type, title, message, link, read_at, created_at
+       FROM notifications
+       WHERE id = $1 AND user_id = $2`,
+      [req.params.id, req.user.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: { code: "NOT_FOUND", message: "Notification introuvable" } });
+    }
+    res.json({ notification: result.rows[0] });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get("/push/public-key", (req, res) => {
   res.json({ enabled: isPushConfigured(), publicKey: getPushPublicKey() });
 });

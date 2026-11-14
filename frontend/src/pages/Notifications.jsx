@@ -122,14 +122,15 @@ export default function Notifications() {
               </div>
             );
 
-            return notification.link ? (
-              <Link key={notification.id} to={notification.link} onClick={() => openNotification(notification)} className="block hover:opacity-90">
+            return (
+              <Link
+                key={notification.id}
+                to={`/notifications/${notification.id}`}
+                onClick={() => openNotification(notification)}
+                className="block hover:opacity-90"
+              >
                 {content}
               </Link>
-            ) : (
-              <button key={notification.id} onClick={() => openNotification(notification)} className="block w-full text-left">
-                {content}
-              </button>
             );
           })}
         </div>
