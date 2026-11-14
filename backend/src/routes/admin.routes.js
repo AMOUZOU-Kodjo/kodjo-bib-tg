@@ -890,8 +890,10 @@ router.post("/broadcast", uploadAttachmentsMultiple("attachments", 10), async (r
             userId: recipient.id,
             type: "admin_broadcast",
             title: subject,
-            message: message.slice(0, 300),
-            link: "/"
+            message,
+            link: "/",
+            messageMaxLength: 10000,
+            preserveMessageWhitespace: true
           });
           await sendEmail({
             to: recipient.email,

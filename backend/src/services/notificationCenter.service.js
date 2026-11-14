@@ -13,8 +13,10 @@ if (config.push.publicKey && config.push.privateKey) {
   }
 }
 
-function clean(value, maxLength = 160) {
-  return String(value ?? "").replace(/\s+/g, " ").trim().slice(0, maxLength);
+function clean(value, maxLength = 160, preserveWhitespace = false) {
+  const text = String(value ?? "");
+  const normalized = preserveWhitespace ? text.replace(/\r\n?/g, "\n") : text.replace(/\s+/g, " ");
+  return normalized.trim().slice(0, maxLength);
 }
 
 export function isPushConfigured() {
@@ -60,12 +62,30 @@ async function sendPushToUsers(userIds, payload) {
   await sendPushToSubscriptions(subs.rows, payload);
 }
 
-export async function createNotification({ userId, type, title, message, link, actorId = null, documentId = null }) {
+export async function createNotification({
+  userId,
+  type,
+  title,
+  message,
+  link,
+  actorId = null,
+  documentId = null,
+  messageMaxLength = 300,
+  preserveMessageWhitespace = false
+}) {
   const res = await query(
     `INSERT INTO notifications (user_id, type, title, message, link, actor_id, document_id)
      VALUES ($1,$2,$3,$4,$5,$6,$7)
      RETURNING id, type, title, message, link, read_at, created_at`,
-    [userId, type, clean(title), clean(message, 300) || null, link || null, actorId, documentId]
+    [
+      userId,
+      type,
+      clean(title),
+      clean(message, messageMaxLength, preserveMessageWhitespace) || null,
+      link || null,
+      actorId,
+      documentId
+    ]
   );
   publishLiveEvent("notifications", { notificationId: res.rows[0].id }, { userId });
   sendPushToUser(userId, { title: res.rows[0].title, body: res.rows[0].message, url: link || "/" }).catch((err) => {
