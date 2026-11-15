@@ -6,7 +6,7 @@ import { authRequired } from "../middlewares/auth.js";
 import { requireAdmin } from "../middlewares/admin.js";
 import { getSettings, normalizeCreditPacks, saveSettings } from "../services/settings.service.js";
 import { sendEmail } from "../services/email.service.js";
-import { deleteAvatar, deleteRaw, deletePreview, getDocumentThumbnailUrl } from "../services/cloudinary.service.js";
+import { deleteAvatar, deleteRaw, deletePreview, getDocumentThumbnailUrl, uploadAttachment } from "../services/cloudinary.service.js";
 import { reviewCreditOrder } from "../services/creditOrders.service.js";
 import { createCategory, deleteCategory, ensureCategoriesSchema, getCategoryTree, updateCategory } from "../services/categories.service.js";
 import { uploadAttachmentsMultiple } from "../middlewares/upload.js";
@@ -862,7 +862,6 @@ router.post("/broadcast", uploadAttachmentsMultiple("attachments", 10), async (r
       content: file.buffer,
       contentType: file.mimetype
     }));
-
     const usersRes = await query(
       "SELECT id, email, display_name FROM users WHERE email_verified = true ORDER BY created_at ASC"
     );
@@ -871,8 +870,19 @@ router.post("/broadcast", uploadAttachmentsMultiple("attachments", 10), async (r
       return res.json({ ok: true, sent: 0, failed: 0, total: 0 });
     }
 
+    const storedAttachments = await Promise.all(files.map(async (file) => {
+      const uploaded = await uploadAttachment(file.buffer, file.originalname, file.mimetype);
+      return {
+        public_id: uploaded.public_id,
+        filename: file.originalname,
+        mime_type: file.mimetype,
+        size: file.size || file.buffer.length,
+        resource_type: uploaded.resource_type || (String(file.mimetype || "").startsWith("image/") ? "image" : "raw")
+      };
+    }));
+
     const siteUrl = String(config.frontendUrl || "").replace(/\/+$/, "");
-    const brand = "Archives";
+    const brand = "Archivia";
     const safeSubject = escapeHtml(subject);
     const safeMessage = escapeHtml(message).replace(/\r?\n/g, "<br>");
     const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;"><h2>${safeSubject}</h2><p>${safeMessage}</p><hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;"><p style="color:#6b7280;font-size:13px;">— L'équipe ${escapeHtml(brand)}<br><a href="${escapeHtml(siteUrl)}">${escapeHtml(siteUrl)}</a></p></div>`;
@@ -892,6 +902,7 @@ router.post("/broadcast", uploadAttachmentsMultiple("attachments", 10), async (r
             title: subject,
             message,
             link: "/",
+            attachments: storedAttachments,
             messageMaxLength: 10000,
             preserveMessageWhitespace: true
           });

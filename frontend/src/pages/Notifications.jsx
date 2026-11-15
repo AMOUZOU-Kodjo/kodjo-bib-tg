@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { Bell, CheckCheck, FileText, MessageCircle, UserPlus, Flag, Inbox, ChevronRight } from "lucide-react";
+import { Bell, CheckCheck, FileText, MessageCircle, UserPlus, Flag, Inbox, ChevronRight, Paperclip } from "lucide-react";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../api/notifications";
 import { formatDate } from "../utils/format";
 import { Spinner, EmptyState, Pagination } from "../components/ui";
@@ -116,6 +116,12 @@ export default function Notifications() {
                     {!notification.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-teal-600" />}
                   </div>
                   {notification.message && <p className="mt-0.5 text-sm text-gray-600 dark:text-slate-400">{notification.message}</p>}
+                  {notification.attachments?.length > 0 && (
+                    <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-slate-400">
+                      <Paperclip className="h-3.5 w-3.5" />
+                      {t("notifications.attachmentsCount", { count: notification.attachments.length })}
+                    </span>
+                  )}
                   <p className="mt-1 text-xs text-gray-400">{formatDate(notification.created_at)}</p>
                 </div>
                 {notification.link && <ChevronRight className="mt-2 h-4 w-4 shrink-0 text-gray-400" />}

@@ -467,7 +467,13 @@
     "backToList": "Retour aux notifications",
     "notFound": "Notification introuvable",
     "read": "Lue",
-    "openRelated": "Ouvrir le contenu associé"
+    "openRelated": "Ouvrir le contenu associé",
+    "attachments": "Pièces jointes",
+    "attachmentsCount_one": "{{count}} pièce jointe",
+    "attachmentsCount_other": "{{count}} pièces jointes",
+    "openAttachment": "Ouvrir",
+    "downloadAttachment": "Télécharger",
+    "attachmentUnavailable": "Aperçu indisponible"
   },
   "install": {
     "title": "Installer Archives de Documents",

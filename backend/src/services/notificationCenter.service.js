@@ -19,6 +19,19 @@ function clean(value, maxLength = 160, preserveWhitespace = false) {
   return normalized.trim().slice(0, maxLength);
 }
 
+function normalizeAttachments(attachments) {
+  if (!Array.isArray(attachments)) return [];
+  return attachments
+    .map((file) => ({
+      public_id: String(file?.public_id || "").trim().slice(0, 500),
+      filename: String(file?.filename || "piece-jointe").trim().slice(0, 255),
+      mime_type: String(file?.mime_type || "application/octet-stream").trim().slice(0, 120),
+      size: Number(file?.size) || 0,
+      resource_type: String(file?.resource_type || "raw").trim().slice(0, 20)
+    }))
+    .filter((file) => file.public_id);
+}
+
 export function isPushConfigured() {
   return pushReady;
 }
@@ -70,13 +83,14 @@ export async function createNotification({
   link,
   actorId = null,
   documentId = null,
+  attachments = [],
   messageMaxLength = 300,
   preserveMessageWhitespace = false
 }) {
   const res = await query(
-    `INSERT INTO notifications (user_id, type, title, message, link, actor_id, document_id)
-     VALUES ($1,$2,$3,$4,$5,$6,$7)
-     RETURNING id, type, title, message, link, read_at, created_at`,
+    `INSERT INTO notifications (user_id, type, title, message, link, actor_id, document_id, attachments)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb)
+     RETURNING id, type, title, message, link, attachments, read_at, created_at`,
     [
       userId,
       type,
@@ -84,7 +98,8 @@ export async function createNotification({
       clean(message, messageMaxLength, preserveMessageWhitespace) || null,
       link || null,
       actorId,
-      documentId
+      documentId,
+      JSON.stringify(normalizeAttachments(attachments))
     ]
   );
   publishLiveEvent("notifications", { notificationId: res.rows[0].id }, { userId });

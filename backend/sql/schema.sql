@@ -200,9 +200,11 @@ CREATE TABLE IF NOT EXISTS notifications (
   link TEXT,
   actor_id UUID REFERENCES users(id) ON DELETE SET NULL,
   document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
+  attachments JSONB NOT NULL DEFAULT '[]'::jsonb,
   read_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS attachments JSONB NOT NULL DEFAULT '[]'::jsonb;
 CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON notifications (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications (user_id, created_at DESC) WHERE read_at IS NULL;
 

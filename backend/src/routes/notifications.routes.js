@@ -3,9 +3,42 @@ import net from "node:net";
 import { query } from "../config/db.js";
 import { authRequired } from "../middlewares/auth.js";
 import { getPushPublicKey, isPushConfigured } from "../services/notificationCenter.service.js";
+import { getSignedDownloadUrl, getSignedViewUrl } from "../services/cloudinary.service.js";
 
 const router = express.Router();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function attachmentList(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function publicAttachmentList(value) {
+  return attachmentList(value).map((file) => ({
+    filename: file.filename || "piece-jointe",
+    mime_type: file.mime_type || "application/octet-stream",
+    size: Number(file.size) || 0
+  }));
+}
+
+async function signAttachments(attachments) {
+  return Promise.all(attachmentList(attachments).map(async (file) => {
+    const base = {
+      filename: file.filename || "piece-jointe",
+      mime_type: file.mime_type || "application/octet-stream",
+      size: Number(file.size) || 0
+    };
+    if (!file.public_id) return { ...base, url: null, download_url: null };
+    const [viewResult, downloadResult] = await Promise.allSettled([
+      getSignedViewUrl(file.public_id, file.filename, file.resource_type || "raw"),
+      getSignedDownloadUrl(file.public_id, file.filename, file.resource_type || "raw")
+    ]);
+    return {
+      ...base,
+      url: viewResult.status === "fulfilled" ? viewResult.value : null,
+      download_url: downloadResult.status === "fulfilled" ? downloadResult.value : null
+    };
+  }));
+}
 
 function isValidPushEndpoint(value) {
   if (!value || value.length > 2048) return false;
@@ -29,7 +62,7 @@ router.get("/", async (req, res, next) => {
     const offset = (page - 1) * limit;
     const [listRes, totalRes, unreadRes] = await Promise.all([
       query(
-        `SELECT id, type, title, message, link, read_at, created_at
+        `SELECT id, type, title, message, link, attachments, read_at, created_at
          FROM notifications
          WHERE user_id = $1
          ORDER BY created_at DESC
@@ -40,7 +73,7 @@ router.get("/", async (req, res, next) => {
       query("SELECT COUNT(*)::int AS unread FROM notifications WHERE user_id = $1 AND read_at IS NULL", [req.user.id])
     ]);
     res.json({
-      notifications: listRes.rows,
+      notifications: listRes.rows.map((row) => ({ ...row, attachments: publicAttachmentList(row.attachments) })),
       total: totalRes.rows[0].total,
       unread: unreadRes.rows[0].unread,
       page,
@@ -90,7 +123,7 @@ router.get("/:id", async (req, res, next) => {
       return res.status(400).json({ error: { code: "INVALID_ID", message: "Identifiant de notification invalide" } });
     }
     const result = await query(
-      `SELECT id, type, title, message, link, read_at, created_at
+      `SELECT id, type, title, message, link, attachments, read_at, created_at
        FROM notifications
        WHERE id = $1 AND user_id = $2`,
       [req.params.id, req.user.id]
@@ -98,7 +131,9 @@ router.get("/:id", async (req, res, next) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: { code: "NOT_FOUND", message: "Notification introuvable" } });
     }
-    res.json({ notification: result.rows[0] });
+    const notification = result.rows[0];
+    notification.attachments = await signAttachments(notification.attachments);
+    res.json({ notification });
   } catch (err) {
     next(err);
   }

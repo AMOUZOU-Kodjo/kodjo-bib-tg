@@ -467,7 +467,13 @@
     "backToList": "Back to notifications",
     "notFound": "Notification not found",
     "read": "Read",
-    "openRelated": "Open related content"
+    "openRelated": "Open related content",
+    "attachments": "Attachments",
+    "attachmentsCount_one": "{{count}} attachment",
+    "attachmentsCount_other": "{{count}} attachments",
+    "openAttachment": "Open",
+    "downloadAttachment": "Download",
+    "attachmentUnavailable": "Preview unavailable"
   },
   "install": {
     "title": "Install Archives de Documents",

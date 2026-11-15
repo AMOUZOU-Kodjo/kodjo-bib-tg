@@ -24,6 +24,29 @@ export async function uploadRaw(fileBuffer, originalName, mimeType) {
   });
 }
 
+export async function uploadAttachment(fileBuffer, originalName, mimeType) {
+  if (isR2Configured()) {
+    return uploadR2Object(fileBuffer, originalName, mimeType);
+  }
+  const resourceType = String(mimeType || "").toLowerCase().startsWith("image/") ? "image" : "raw";
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: resourceType,
+        folder: "archives/notifications",
+        type: "authenticated",
+        use_filename: true,
+        unique_filename: true
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    stream.end(fileBuffer);
+  });
+}
+
 export function uploadPreview(fileBuffer) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
