@@ -553,6 +553,10 @@
     "firstPage": "First-page preview",
     "showDocument": "Show document",
     "noPreview": "Preview is not available for this format. Use the download button.",
+    "explore": "Explore documents",
+    "exploreTitle": "Discover more documents on Archivia",
+    "exploreHint": "Thousands of educational, scientific and cultural resources to browse and download.",
+    "moreInCategory": "More documents in {{category}}",
     "paidTitle": "Document for sale",
     "paidHint": "Download is restricted. Contact the seller on WhatsApp; they will send the download link after payment."
   },

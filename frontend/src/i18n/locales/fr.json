@@ -553,6 +553,10 @@
     "firstPage": "Aperçu de la première page",
     "showDocument": "Afficher le document",
     "noPreview": "L'aperçu n'est pas disponible pour ce format. Utilisez le bouton de téléchargement.",
+    "explore": "Explorer les documents",
+    "exploreTitle": "Découvrez plus de documents sur Archivia",
+    "exploreHint": "Des milliers de ressources pédagogiques, scientifiques et culturelles à consulter et à télécharger.",
+    "moreInCategory": "Plus de documents dans {{category}}",
     "paidTitle": "Document en vente",
     "paidHint": "Le téléchargement est réservé. Contactez le vendeur sur WhatsApp ; il vous enverra le lien de téléchargement après paiement."
   },

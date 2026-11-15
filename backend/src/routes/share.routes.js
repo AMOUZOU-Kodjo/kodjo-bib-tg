@@ -189,6 +189,7 @@ function serializeSharedDocument(doc) {
     description: doc.description,
     category: doc.category,
     visibility: doc.visibility,
+    owner_id: doc.owner_id,
     author_name: doc.author_name,
     original_filename: doc.original_filename,
     mime_type: doc.mime_type,
@@ -234,10 +235,10 @@ function buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl, redirect = true })
   const author = escapeHtml(doc.author_name || "Auteur inconnu");
   const description = doc.description
     ? escapeHtml(doc.description).slice(0, 200)
-    : `Document partagé par ${author} sur Archives de Documents`;
+    : `Document partagé par ${author} sur Archivia`;
   const mimeType = String(doc.mime_type || "").toLowerCase();
   const hasThumbnail = Boolean(doc.preview_public_id) || mimeType === "application/pdf" || mimeType.startsWith("image/");
-  const imageUrl = hasThumbnail ? ogImageUrl : `${frontendBaseUrl()}/og-image.png`;
+  const imageUrl = hasThumbnail ? ogImageUrl : `${frontendBaseUrl()}/og-image-v2.png`;
 
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -248,7 +249,7 @@ function buildShareHtml(doc, { shareUrl, ogImageUrl, pageUrl, redirect = true })
   <meta name="description" content="${description}">
   <meta name="robots" content="noindex, nofollow">
   <meta property="og:type" content="article">
-  <meta property="og:site_name" content="Archives de Documents">
+  <meta property="og:site_name" content="Archivia">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">
   <meta property="og:url" content="${escapeHtml(pageUrl || shareUrl)}">

@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { Calendar, Copy, Download, ExternalLink, FileText, Lock, MessageCircle, User } from "lucide-react";
+import { ArrowRight, Calendar, Compass, Copy, Download, ExternalLink, FileText, Lock, MessageCircle, User } from "lucide-react";
 import { getSharedDocument, downloadSharedDocument, getSharedFileUrl, getPublicShareUrl } from "../api/share";
+import { getDocuments } from "../api/documents";
 import { useAuth } from "../context/AuthContext";
 import { formatSize, formatDate } from "../utils/format";
 import { getCategoryColor, formatCategoryName } from "../utils/document";
+import { DocumentCard } from "../components/documents/DocumentCard";
 import { Spinner } from "../components/ui";
 
 export default function SharedDocument() {
@@ -16,6 +18,7 @@ export default function SharedDocument() {
   const navigate = useNavigate();
   const location = useLocation();
   const [doc, setDoc] = useState(null);
+  const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
@@ -42,13 +45,28 @@ export default function SharedDocument() {
     const previousTitle = document.title;
     setLoading(true);
     setError("");
+    setRelated([]);
     setFullPreview(false);
     setThumbnailFailed(false);
     getSharedDocument(token)
       .then((res) => {
         if (!active) return;
-        setDoc(res.data.document);
-        document.title = `${res.data.document.title} - ${t("share.pageTitle")}`;
+        const sharedDoc = res.data.document;
+        setDoc(sharedDoc);
+        document.title = `${sharedDoc.title} - ${t("share.pageTitle")}`;
+        if (sharedDoc.category) {
+          getDocuments({ category: sharedDoc.category, limit: 6 })
+            .then((relatedRes) => {
+              if (!active) return;
+              const items = (relatedRes.data.documents || [])
+                .filter((item) => item.id !== sharedDoc.id)
+                .slice(0, 3);
+              setRelated(items);
+            })
+            .catch(() => {
+              if (active) setRelated([]);
+            });
+        }
       })
       .catch((err) => {
         if (!active) return;
@@ -187,6 +205,13 @@ export default function SharedDocument() {
             <Copy className="w-4 h-4" />
             {t("share.copyLink")}
           </button>
+          <Link
+            to="/documents"
+            className="mt-3 w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-teal-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-gray-800 dark:hover:bg-teal-700 transition-colors"
+          >
+            <Compass className="w-4 h-4" />
+            {t("share.explore")}
+          </Link>
 
           <p className="mt-4 text-xs text-gray-500 dark:text-slate-400 leading-relaxed">
             {t("share.warning")}
@@ -198,9 +223,12 @@ export default function SharedDocument() {
             <h1 className="mb-3 text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl md:text-3xl lg:text-4xl">{doc.title}</h1>
             <div className="flex flex-wrap items-center gap-3">
               {doc.category && (
-                <span className={`px-3 py-1 rounded-full text-sm text-white ${getCategoryColor(doc.category)}`}>
+                <Link
+                  to={`/documents?category=${encodeURIComponent(doc.category)}`}
+                  className={`px-3 py-1 rounded-full text-sm text-white transition-opacity hover:opacity-90 ${getCategoryColor(doc.category)}`}
+                >
                   {formatCategoryName(doc.category, t)}
-                </span>
+                </Link>
               )}
             </div>
           </header>
@@ -214,7 +242,13 @@ export default function SharedDocument() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm text-gray-500 dark:text-slate-400">{t("share.sharedBy")}</p>
-                  <p className="font-medium text-gray-900 dark:text-slate-100 break-words">{doc.author_name}</p>
+                  {doc.owner_id ? (
+                    <Link to={`/authors/${doc.owner_id}`} className="font-medium text-teal-700 dark:text-teal-300 break-words hover:underline">
+                      {doc.author_name}
+                    </Link>
+                  ) : (
+                    <p className="font-medium text-gray-900 dark:text-slate-100 break-words">{doc.author_name}</p>
+                  )}
                 </div>
               </div>
               <div className="flex min-w-0 items-center gap-3">
@@ -300,6 +334,45 @@ export default function SharedDocument() {
           </section>
         </main>
       </div>
+
+      {related.length > 0 && (
+        <section className="mt-10">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">
+              {t("share.moreInCategory", { category: formatCategoryName(doc.category, t) })}
+            </h2>
+            <Link
+              to={`/documents?category=${encodeURIComponent(doc.category)}`}
+              className="inline-flex items-center gap-1 text-sm font-medium text-teal-700 hover:underline dark:text-teal-300"
+            >
+              {t("common.seeAll")}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+            {related.map((item) => (
+              <DocumentCard key={item.id} doc={item} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="mt-10 overflow-hidden rounded-3xl bg-gradient-to-br from-teal-700 via-teal-800 to-slate-900 p-6 text-white shadow-lg sm:p-8">
+        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-200">Archivia</p>
+            <h2 className="mt-2 text-xl font-bold sm:text-2xl">{t("share.exploreTitle")}</h2>
+            <p className="mt-2 text-sm text-teal-50/80">{t("share.exploreHint")}</p>
+          </div>
+          <Link
+            to="/documents"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-teal-800 transition-colors hover:bg-teal-50"
+          >
+            {t("share.explore")}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
