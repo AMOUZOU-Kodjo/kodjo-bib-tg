@@ -21,7 +21,7 @@ export async function sendWelcomeMessage({ userId }) {
     if (userRes.rows.length === 0) return;
     const user = userRes.rows[0];
     const { siteName } = await getSettings();
-    const brand = String(siteName || "Archives").trim() || "Archives";
+    const brand = String(siteName || "Archivia").trim() || "Archivia";
     await createNotification({
       userId: user.id,
       type: "welcome",
@@ -55,7 +55,7 @@ export async function sendFirstPublicationThanks({ userId, documentId }) {
     const countRes = await query("SELECT COUNT(*)::int AS c FROM documents WHERE owner_id = $1", [userId]);
     if ((countRes.rows[0]?.c || 0) !== 1) return;
     const { siteName } = await getSettings();
-    const brand = String(siteName || "Archives").trim() || "Archives";
+    const brand = String(siteName || "Archivia").trim() || "Archivia";
     await createNotification({
       userId: user.id,
       type: "first_publication",

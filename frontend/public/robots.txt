@@ -3,6 +3,16 @@ Allow: /
 Disallow: /admin
 Disallow: /profile
 Disallow: /upload
+Disallow: /vendre
 Disallow: /verify-email
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /notifications
+Disallow: /favorites
+Disallow: /downloads
+Disallow: /credits
+Disallow: /share
 
 Sitemap: https://archivia.pages.dev/sitemap.xml

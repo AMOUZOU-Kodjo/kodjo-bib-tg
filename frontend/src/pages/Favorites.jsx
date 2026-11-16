@@ -22,7 +22,8 @@ export default function Favorites() {
   useSeo({
     title: t("favorites.title"),
     description: t("favorites.seoDesc"),
-    url: `${window.location.origin}/favorites`
+    url: `${window.location.origin}/favorites`,
+    noIndex: true
   });
 
   useEffect(() => {

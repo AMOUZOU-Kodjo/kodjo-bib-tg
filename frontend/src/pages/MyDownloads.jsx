@@ -22,7 +22,8 @@ export default function MyDownloads() {
   useSeo({
     title: t("downloads.title"),
     description: t("downloads.seoDesc"),
-    url: `${window.location.origin}/downloads`
+    url: `${window.location.origin}/downloads`,
+    noIndex: true
   });
 
   useEffect(() => {

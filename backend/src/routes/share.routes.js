@@ -397,6 +397,14 @@ router.get("/:token/file", async (req, res, next) => {
   try {
     const doc = await loadSharedDocument(req.params.token);
     if (!doc) return res.status(404).json({ error: { code: "NOT_FOUND", message: "Lien de partage invalide ou expiré" } });
+    if (config.salesEnabled && Number(doc.price) > 0 && doc.__sharePayload?.allowDownload !== true) {
+      return res.status(403).json({
+        error: {
+          code: "PAID_DOCUMENT",
+          message: "Ce document est en vente. Demandez au propriétaire son lien de téléchargement."
+        }
+      });
+    }
     await streamDocumentFile(doc, req, res, { cacheControl: "no-store" });
   } catch (err) {
     if (res.headersSent) {

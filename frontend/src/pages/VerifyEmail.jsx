@@ -7,9 +7,11 @@ import toast from "react-hot-toast";
 import { Mail, ArrowLeft, AlertTriangle } from "lucide-react";
 import { Input, Button } from "../components/ui";
 import { Link } from "react-router-dom";
+import useNoIndex from "../hooks/useNoIndex";
 
 export default function VerifyEmail() {
   const { t } = useTranslation();
+  useNoIndex();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);

@@ -63,7 +63,17 @@ Allow: /
 Disallow: /admin
 Disallow: /profile
 Disallow: /upload
+Disallow: /vendre
 Disallow: /verify-email
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /notifications
+Disallow: /favorites
+Disallow: /downloads
+Disallow: /credits
+Disallow: /share
 
 Sitemap: ${siteBase()}/sitemap.xml
 `
@@ -118,7 +128,7 @@ router.get("/rss.xml", async (req, res) => {
   const base = siteBase();
   const settings = await getSettings();
   const documents = await getPublicDocuments(50);
-  const siteName = settings.siteName || "Archives";
+  const siteName = settings.siteName || "Archivia";
   const contactEmail = settings.contactEmail || config.contactEmail || "";
 
   const items = documents.map((doc) => {

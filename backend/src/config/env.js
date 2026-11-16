@@ -33,7 +33,7 @@ export const config = {
   brevo: {
     apiKey: process.env.BREVO_API_KEY,
     senderEmail: process.env.BREVO_SENDER_EMAIL,
-    senderName: process.env.BREVO_SENDER_NAME || "Archives"
+    senderName: process.env.BREVO_SENDER_NAME || "Archivia"
   },
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN,
@@ -50,9 +50,10 @@ export const config = {
   push: {
     publicKey: process.env.VAPID_PUBLIC_KEY,
     privateKey: process.env.VAPID_PRIVATE_KEY,
-    subject: process.env.VAPID_SUBJECT || "mailto:contact@archives.local"
+    subject: process.env.VAPID_SUBJECT || "https://archivia.pages.dev"
   },
   contactEmail: process.env.CONTACT_EMAIL || process.env.BREVO_SENDER_EMAIL || null,
+  openAlexApiKey: process.env.OPENALEX_API_KEY || "",
   maxFileSizeMb: positiveNumber(process.env.MAX_FILE_SIZE_MB, 10),
   creditsInitiaux: nonNegativeInt(process.env.CREDITS_INITIAUX, 0),
   creditsParUpload: nonNegativeInt(process.env.CREDITS_PAR_UPLOAD, 2),

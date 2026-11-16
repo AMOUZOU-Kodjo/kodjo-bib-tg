@@ -5,9 +5,11 @@ import { resetPassword } from "../api/auth";
 import { KeyRound, ArrowLeft } from "lucide-react";
 import { Input, Button } from "../components/ui";
 import toast from "react-hot-toast";
+import useNoIndex from "../hooks/useNoIndex";
 
 export default function ResetPassword() {
   const { t } = useTranslation();
+  useNoIndex();
   const location = useLocation();
   const navigate = useNavigate();
   const [email, setEmail] = useState(location.state?.email || "");

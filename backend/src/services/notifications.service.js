@@ -26,7 +26,7 @@ export async function notifyDocumentUpload({ documentId }) {
   const siteBase = String(config.frontendUrl || "").replace(/\/+$/, "");
   const documentUrl = `${siteBase}/documents/${doc.id}`;
   const subjectTitle = String(doc.title || "Nouveau document").replace(/[\r\n]+/g, " ").trim();
-  const subjectSite = String(settings.siteName || "Archives").replace(/[\r\n]+/g, " ").trim();
+  const subjectSite = String(settings.siteName || "Archivia").replace(/[\r\n]+/g, " ").trim();
   const subject = isPrivate
     ? `Votre document privé sur ${subjectSite} : ${subjectTitle}`
     : `Nouveau document sur ${subjectSite} : ${subjectTitle}`;

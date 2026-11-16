@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { Mail, Lock, LogIn } from "lucide-react";
 import { Button, Input } from "../components/ui";
+import useNoIndex from "../hooks/useNoIndex";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -17,6 +18,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  useNoIndex();
   const from = location.state?.from
     ? `${location.state.from.pathname || "/"}${location.state.from.search || ""}`
     : "/";

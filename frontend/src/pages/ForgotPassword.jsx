@@ -5,9 +5,11 @@ import { forgotPassword } from "../api/auth";
 import { Mail, ArrowLeft } from "lucide-react";
 import { Input, Button } from "../components/ui";
 import toast from "react-hot-toast";
+import useNoIndex from "../hooks/useNoIndex";
 
 export default function ForgotPassword() {
   const { t } = useTranslation();
+  useNoIndex();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);

@@ -76,7 +76,7 @@ export default function AdminDashboard() {
   const [editSaving, setEditSaving] = useState(false);
   const [searchDoc, setSearchDoc] = useState("");
   const [settings, setSettings] = useState({
-    siteName: "Archives",
+    siteName: "Archivia",
     siteTagline: "Plateforme de documents",
     contactEmail: "",
     creditsInitiaux: 0,
@@ -271,7 +271,7 @@ export default function AdminDashboard() {
     if (savedSettings) setSettings(savedSettings);
     else {
       setSettings({
-        siteName: "Archives",
+        siteName: "Archivia",
         siteTagline: "Plateforme de documents",
         contactEmail: "",
         creditsInitiaux: 0,

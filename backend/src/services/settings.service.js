@@ -8,7 +8,7 @@ export const DEFAULT_CREDIT_PACKS = [
 ];
 
 const DEFAULTS = {
-  siteName: "Archives",
+  siteName: "Archivia",
   siteTagline: "Plateforme de documents",
   contactEmail: config.contactEmail,
   creditsInitiaux: config.creditsInitiaux,

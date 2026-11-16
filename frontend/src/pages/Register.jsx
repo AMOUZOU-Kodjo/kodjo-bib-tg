@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { User, Mail, Lock, UserPlus } from "lucide-react";
 import { Button, Input } from "../components/ui";
 import { useSiteSettings } from "../context/SiteSettingsContext";
+import useNoIndex from "../hooks/useNoIndex";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -16,6 +17,7 @@ export default function Register() {
   const navigate = useNavigate();
   const { allowRegistrations } = useSiteSettings();
   const { t } = useTranslation();
+  useNoIndex();
 
   const submit = async (e) => {
     e.preventDefault();

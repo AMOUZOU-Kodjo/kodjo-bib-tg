@@ -1,9 +1,17 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, FileQuestion } from "lucide-react";
+import useSeo from "../hooks/useSeo";
 
 export default function NotFound() {
   const { t } = useTranslation();
+
+  useSeo({
+    title: t("notFound.title"),
+    description: t("notFound.desc"),
+    noIndex: true
+  });
+
   return (
     <div className="flex min-h-[60vh] items-center justify-center py-8">
       <div className="w-full max-w-md text-center">

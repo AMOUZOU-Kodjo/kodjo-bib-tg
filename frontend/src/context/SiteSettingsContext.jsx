@@ -3,7 +3,7 @@ import client from "../api/client";
 import { useLiveVersion } from "./LiveUpdatesContext";
 
 const DEFAULTS = {
-  siteName: "Archives",
+  siteName: "Archivia",
   siteTagline: "Plateforme de documents",
   contactEmail: "",
   creditsParUpload: 2,
@@ -36,12 +36,13 @@ export function SiteSettingsProvider({ children }) {
   }, [refreshSettings, settingsVersion]);
 
   useEffect(() => {
-    const baseTitle = settings.siteName === "Archives" ? "Archives de Documents" : settings.siteName;
+    const baseTitle = settings.siteName || "Archivia";
     if (!baseTitle) return;
     const current = document.title;
     const isBaseTitle = !current || current === "Archives" ||
       current === "Archives de Documents" ||
-      current === "Archives de Documents — Partage et archivage collaboratif";
+      current === "Archives de Documents — Partage et archivage collaboratif" ||
+      current === "Archivia";
     if (isBaseTitle) document.title = baseTitle;
   }, [settings.siteName]);
 

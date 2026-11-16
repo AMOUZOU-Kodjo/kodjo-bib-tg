@@ -104,6 +104,7 @@ export async function getScientificPublications({ force = false, limit = 12 } = 
     "per-page": String(safeLimit),
     select: "id,doi,title,display_name,publication_date,primary_location,authorships,abstract_inverted_index,primary_topic"
   });
+  if (config.openAlexApiKey) params.set("api_key", config.openAlexApiKey);
   if (config.contactEmail) params.set("mailto", config.contactEmail);
 
   const response = await fetch(`${OPENALEX_URL}?${params}`, {

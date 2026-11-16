@@ -13,6 +13,7 @@ import { TELEGRAM_CHANNEL_URL } from "../config/links";
 import { formatCategoryName } from "../utils/document";
 import { findCategoryByName } from "../utils/categories";
 import useCategories from "../hooks/useCategories";
+import useNoIndex from "../hooks/useNoIndex";
 
 const ALLOWED_EXTENSIONS = new Set([".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt"]);
 const ALLOWED_ACCEPT = Array.from(ALLOWED_EXTENSIONS).join(",");
@@ -28,6 +29,7 @@ export default function Upload({ selling = false }) {
   const { maxUploadSizeMb } = useSiteSettings();
   const { setUser } = useAuth();
   const { t } = useTranslation();
+  useNoIndex();
   const { categories } = useCategories();
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");

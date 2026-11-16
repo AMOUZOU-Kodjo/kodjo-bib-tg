@@ -33,9 +33,9 @@ export function buildContactEmail({
   documentUrl,
   recipientName,
   contextLabel = "Nouveau message",
-  siteName = "Archives"
+  siteName = "Archivia"
 }) {
-  const brandName = String(siteName || "Archives").trim() || "Archives";
+  const brandName = String(siteName || "Archivia").trim() || "Archivia";
   const safeBrand = escapeHtml(brandName);
   const safeName = escapeHtml(fromName || "Utilisateur");
   const safeEmail = escapeHtml(fromEmail);
@@ -228,10 +228,10 @@ export function buildVerificationEmail({
   code,
   displayName,
   email,
-  siteName = "Archives",
+  siteName = "Archivia",
   expiresMinutes = 15
 }) {
-  const brandName = String(siteName || "Archives").trim() || "Archives";
+  const brandName = String(siteName || "Archivia").trim() || "Archivia";
   const safeBrand = escapeHtml(brandName);
   const safeName = escapeHtml(displayName || "bonjour");
   const safeCode = escapeHtml(code);
@@ -332,7 +332,7 @@ export function buildVerificationEmail({
 }
 
 export function buildDocumentNotificationEmail({
-  siteName = "Archives",
+  siteName = "Archivia",
   recipientName,
   authorName,
   title,
@@ -346,7 +346,7 @@ export function buildDocumentNotificationEmail({
   thumbnailUrl,
   isPrivate = false
 }) {
-  const brandName = String(siteName || "Archives").trim() || "Archives";
+  const brandName = String(siteName || "Archivia").trim() || "Archivia";
   const safeBrand = escapeHtml(brandName);
   const safeRecipient = escapeHtml(recipientName || "");
   const safeAuthor = escapeHtml(authorName || "Un membre");

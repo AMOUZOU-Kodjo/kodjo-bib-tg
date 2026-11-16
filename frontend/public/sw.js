@@ -1,4 +1,4 @@
-const CACHE_NAME = "archives-pwa-v3";
+const CACHE_NAME = "archivia-pwa-v4";
 
 const APP_SHELL = [
   "/",
@@ -27,7 +27,7 @@ self.addEventListener("activate", (event) => {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter((key) => key.startsWith("archives-pwa-") && key !== CACHE_NAME)
+          .filter((key) => (key.startsWith("archives-pwa-") || key.startsWith("archivia-pwa-")) && key !== CACHE_NAME)
           .map((key) => caches.delete(key))
       );
       await self.clients.claim();
@@ -89,13 +89,13 @@ self.addEventListener("push", (event) => {
     payload = { body: event.data ? event.data.text() : "" };
   }
 
-  const title = payload.title || "Archives de Documents";
+  const title = payload.title || "Archivia";
   const options = {
     body: payload.body || "",
     icon: "/icons/icon-192.png",
     badge: "/icons/icon-192.png",
     data: { url: payload.url || "/" },
-    tag: payload.tag || "archives-notification",
+    tag: payload.tag || "archivia-notification",
     renotify: true
   };
 
