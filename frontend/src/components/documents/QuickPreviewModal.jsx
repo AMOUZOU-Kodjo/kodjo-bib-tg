@@ -90,7 +90,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-6"
+      className="fixed inset-0 z-[70] flex items-center justify-center overflow-hidden p-3 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-label={t("document.quickPreviewAria", { title: doc.title })}
@@ -102,7 +102,7 @@ export default function QuickPreviewModal({ doc, onClose }) {
         className="absolute inset-0 cursor-default bg-slate-950/70 backdrop-blur-sm"
       />
 
-      <div className="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl dark:bg-slate-900">
+      <div className="relative flex max-h-[92vh] w-full min-w-0 max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl dark:bg-slate-900">
         <header className="flex items-start gap-3 border-b border-gray-100 px-4 py-3 dark:border-slate-700 sm:px-5">
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -133,9 +133,9 @@ export default function QuickPreviewModal({ doc, onClose }) {
           </button>
         </header>
 
-        <div className="relative min-h-[240px] flex-1 overflow-hidden bg-gray-50 dark:bg-slate-950">
+        <div className="relative min-h-[240px] min-w-0 flex-1 overflow-hidden bg-gray-50 dark:bg-slate-950">
           {blobUrl ? (
-            <div className="h-[58vh] max-h-[640px] min-h-0">
+            <div className="h-[58vh] max-h-[640px] min-h-0 min-w-0">
               <PreviewContent mimeType={doc.mime_type} url={blobUrl} title={doc.title} compact />
             </div>
           ) : (

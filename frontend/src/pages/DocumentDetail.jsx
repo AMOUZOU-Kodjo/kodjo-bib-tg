@@ -388,7 +388,7 @@ export default function DocumentDetail() {
         <span className="text-gray-900 dark:text-slate-100 line-clamp-1">{doc.title}</span>
       </nav>
 
-      <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:gap-8">
+      <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-8">
         <aside>
           <div className="mx-auto mb-4 w-full max-w-[240px] overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm sm:max-w-[280px] lg:max-w-none">
             <div className="relative aspect-[3/4] bg-gray-100 dark:bg-slate-800">
@@ -498,7 +498,7 @@ export default function DocumentDetail() {
           )}
         </aside>
 
-        <main>
+        <main className="min-w-0">
           <header className="mb-6">
             <h1 className="mb-3 text-xl font-bold text-gray-900 dark:text-slate-100 sm:text-2xl md:text-3xl lg:text-4xl">{doc.title}</h1>
             <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -652,7 +652,7 @@ export default function DocumentDetail() {
             </section>
           )}
 
-          <section className="rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
+          <section className="min-w-0 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm sm:p-6">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100 sm:text-xl">{t("document.previewTitle")}</h2>
               {showPreview && (

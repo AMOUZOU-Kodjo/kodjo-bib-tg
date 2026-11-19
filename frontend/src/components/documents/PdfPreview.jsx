@@ -52,6 +52,7 @@ function PageCanvas({ pdf, pageNumber, width, ratio, rootRef }) {
         canvas.height = Math.floor(viewport.height * pixelRatio);
         canvas.style.width = `${Math.floor(viewport.width)}px`;
         canvas.style.height = `${Math.floor(viewport.height)}px`;
+        canvas.style.maxWidth = "100%";
         renderTaskRef.current = pdfPage.render({
           canvasContext: canvas.getContext("2d"),
           viewport,
@@ -159,7 +160,7 @@ export default function PdfPreview({ src, title, compact = false }) {
   }, [pdf]);
 
   useEffect(() => {
-    const element = wrapperRef.current;
+    const element = scrollRef.current;
     if (!element) return undefined;
     const updateWidth = () => {
       const nextWidth = Math.max(0, Math.floor(element.clientWidth));
@@ -193,11 +194,11 @@ export default function PdfPreview({ src, title, compact = false }) {
   }
 
   return (
-    <div className={`overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-950 ${compact ? "h-full" : ""}`}>
-      <div ref={wrapperRef} className={compact ? "h-full w-full" : "w-full"}>
+    <div className={`min-w-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-950 ${compact ? "h-full" : ""}`}>
+      <div ref={wrapperRef} className={`min-w-0 ${compact ? "h-full w-full" : "w-full"}`}>
         <div
           ref={scrollRef}
-          className={`relative w-full overscroll-contain overflow-auto ${compact ? "h-full min-h-[240px]" : "max-h-[65vh] min-h-[320px] md:max-h-[900px]"}`}
+          className={`relative w-full min-w-0 overscroll-contain overflow-auto ${compact ? "h-full min-h-[240px]" : "max-h-[65vh] min-h-[320px] md:max-h-[900px]"}`}
         >
           {loading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 text-sm text-gray-600 dark:bg-slate-900/80 dark:text-slate-400" aria-live="polite">
