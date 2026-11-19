@@ -6,7 +6,7 @@ import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-function PageCanvas({ pdf, pageNumber, width, rootRef }) {
+function PageCanvas({ pdf, pageNumber, width, ratio, rootRef }) {
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
   const renderTaskRef = useRef(null);
@@ -83,9 +83,16 @@ function PageCanvas({ pdf, pageNumber, width, rootRef }) {
     );
   }
 
+  const placeholderHeight = Math.max(140, Math.round(width * ratio));
+
   return (
     <div ref={wrapperRef} className="relative flex w-full justify-center">
-      {!active && <div className="h-[140px] w-full rounded-lg bg-gray-100 dark:bg-slate-800/60" />}
+      {!active && (
+        <div
+          style={{ height: placeholderHeight }}
+          className="w-full rounded-lg bg-gray-100 dark:bg-slate-800/60"
+        />
+      )}
       {active && loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-slate-900/70">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
@@ -102,6 +109,7 @@ export default function PdfPreview({ src, title, compact = false }) {
   const scrollRef = useRef(null);
   const [pdf, setPdf] = useState(null);
   const [numPages, setNumPages] = useState(0);
+  const [pageRatio, setPageRatio] = useState(1.4);
   const [width, setWidth] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -136,6 +144,19 @@ export default function PdfPreview({ src, title, compact = false }) {
       loadingTask.destroy().catch(() => {});
     };
   }, [src]);
+
+  useEffect(() => {
+    if (!pdf) return undefined;
+    let cancelled = false;
+    pdf.getPage(1)
+      .then((page) => {
+        if (cancelled) return;
+        const viewport = page.getViewport({ scale: 1 });
+        if (viewport.width > 0) setPageRatio(viewport.height / viewport.width);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [pdf]);
 
   useEffect(() => {
     const element = wrapperRef.current;
@@ -176,7 +197,7 @@ export default function PdfPreview({ src, title, compact = false }) {
       <div ref={wrapperRef} className={compact ? "h-full w-full" : "w-full"}>
         <div
           ref={scrollRef}
-          className={`relative w-full overflow-auto ${compact ? "h-full min-h-[240px]" : "max-h-[65vh] min-h-[320px] md:max-h-[900px]"}`}
+          className={`relative w-full overscroll-contain overflow-auto ${compact ? "h-full min-h-[240px]" : "max-h-[65vh] min-h-[320px] md:max-h-[900px]"}`}
         >
           {loading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 text-sm text-gray-600 dark:bg-slate-900/80 dark:text-slate-400" aria-live="polite">
@@ -192,6 +213,7 @@ export default function PdfPreview({ src, title, compact = false }) {
                   pdf={pdf}
                   pageNumber={i + 1}
                   width={width}
+                  ratio={pageRatio}
                   rootRef={scrollRef}
                 />
               ))}
