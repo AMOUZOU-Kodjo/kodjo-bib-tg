@@ -188,7 +188,11 @@ export default function Upload({ selling = false }) {
       return toast.error(t("upload.toastMaxTags"));
     }
     if (duplicateInfo?.duplicate) {
-      return toast.error(t("upload.duplicateBlocked", { title: duplicateInfo.document?.title || "" }));
+      return toast.error(
+        duplicateInfo.document?.title
+          ? t("upload.duplicateBlocked", { title: duplicateInfo.document.title })
+          : t("upload.duplicateBlockedGeneric")
+      );
     }
     const formData = new FormData();
     formData.append("file", file);
@@ -238,10 +242,13 @@ export default function Upload({ selling = false }) {
       if (apiError?.code === "DUPLICATE_DOCUMENT") {
         setDuplicateInfo({
           duplicate: true,
-          document: apiError.document || null,
-          existing: apiError.document ? [apiError.document] : []
+          document: apiError.document || null
         });
-        toast.error(t("upload.duplicateBlocked", { title: apiError.document?.title || "" }));
+        toast.error(
+          apiError.document?.title
+            ? t("upload.duplicateBlocked", { title: apiError.document.title })
+            : t("upload.duplicateBlockedGeneric")
+        );
       } else {
         toast.error(apiError?.message || t("upload.toastError"));
       }
@@ -379,9 +386,11 @@ export default function Upload({ selling = false }) {
             )}
             {file && duplicateInfo?.duplicate && (
               <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/40">
-                <p className="font-semibold text-amber-900 dark:text-amber-100">{t("upload.duplicateOwnTitle")}</p>
+                <p className="font-semibold text-amber-900 dark:text-amber-100">{t("upload.duplicateTitle")}</p>
                 <p className="mt-1 text-amber-800 dark:text-amber-200">
-                  {t("upload.duplicateOwnDesc", { title: duplicateInfo.document?.title || "" })}
+                  {duplicateInfo.document?.title
+                    ? t("upload.duplicateDesc", { title: duplicateInfo.document.title })
+                    : t("upload.duplicateGenericDesc")}
                 </p>
                 {duplicateInfo.document?.id && (
                   <Link
@@ -391,20 +400,6 @@ export default function Upload({ selling = false }) {
                     {t("upload.duplicateView")}
                   </Link>
                 )}
-              </div>
-            )}
-            {file && !duplicateInfo?.duplicate && duplicateInfo?.existing?.length > 0 && (
-              <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/40">
-                <p className="font-semibold text-amber-900 dark:text-amber-100">{t("upload.duplicateOtherTitle")}</p>
-                <p className="mt-1 text-amber-800 dark:text-amber-200">
-                  {t("upload.duplicateOtherDesc", { title: duplicateInfo.existing[0]?.title || "" })}
-                </p>
-                <Link
-                  to={`/documents/${duplicateInfo.existing[0].id}`}
-                  className="mt-2 inline-flex font-semibold text-amber-900 underline dark:text-amber-100"
-                >
-                  {t("upload.duplicateView")}
-                </Link>
               </div>
             )}
           </div>

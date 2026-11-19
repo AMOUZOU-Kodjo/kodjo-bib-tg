@@ -116,8 +116,27 @@ export function ensureFeatureSchema() {
         ON reports (reporter_id, comment_id) WHERE status = 'pending' AND comment_id IS NOT NULL;
 
       ALTER TABLE documents ADD COLUMN IF NOT EXISTS content_hash TEXT;
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_owner_content_hash ON documents (owner_id, content_hash) WHERE content_hash IS NOT NULL;
-      CREATE INDEX IF NOT EXISTS idx_documents_content_hash ON documents (content_hash) WHERE content_hash IS NOT NULL;
+      DROP INDEX IF EXISTS idx_documents_owner_content_hash;
+      DROP INDEX IF EXISTS idx_documents_content_hash;
+      DO $$
+      BEGIN
+        WITH ranked AS (
+          SELECT id, row_number() OVER (PARTITION BY content_hash ORDER BY created_at ASC, id ASC) AS rn
+          FROM documents
+          WHERE content_hash IS NOT NULL
+        )
+        UPDATE documents AS d
+        SET content_hash = NULL
+        FROM ranked AS r
+        WHERE d.id = r.id AND r.rn > 1;
+      END $$;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_content_hash_unique ON documents (content_hash) WHERE content_hash IS NOT NULL;
+      UPDATE documents
+      SET cloudinary_public_id = cloudinary_resource_type,
+          cloudinary_resource_type = 'raw'
+      WHERE cloudinary_public_id = 'raw'
+        AND cloudinary_resource_type IS NOT NULL
+        AND cloudinary_resource_type <> 'raw';
       ALTER TABLE documents ADD COLUMN IF NOT EXISTS tags TEXT[] NOT NULL DEFAULT '{}';
       CREATE INDEX IF NOT EXISTS idx_documents_tags ON documents USING GIN (tags);
       ALTER TABLE documents ADD COLUMN IF NOT EXISTS search_vector TSVECTOR GENERATED ALWAYS AS (to_tsvector('french', coalesce(title,'') || ' ' || coalesce(description,'') || ' ' || coalesce(category,''))) STORED;
