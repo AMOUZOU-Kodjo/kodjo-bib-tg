@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getStats, getAdminAnalytics, getUsers, updateUser, deleteUserAdmin, getAllDocuments, deleteDocumentAdmin, bulkDeleteDocuments, bulkUpdateDocumentsVisibility, getAdminSettings, updateAdminSettings, getAdminReports, updateAdminReportStatus, getAdminAudit, exportAdminData, getAdminCreditOrders, reviewAdminCreditOrder, broadcastAdmin } from "../api/admin";
-import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, ExternalLink, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil, Coins, Save, RotateCcw, Wallet, Plus, Smartphone, FolderTree, Mail } from "lucide-react";
-import { Card, Button, Input, Select, Pagination, Toggle } from "../components/ui";
+import { Users, FileText, Download, MessageCircle, Shield, Trash2, Search, Settings, BookOpen, MailCheck, MailX, RefreshCw, Lock, Globe2, Flag, Check, X, History, BarChart3, HardDrive, Pencil, Coins, Save, RotateCcw, Wallet, Plus, Smartphone, FolderTree, Mail, Loader2 } from "lucide-react";
+import { Card, Button, Input, Select, Pagination, Toggle, Skeleton } from "../components/ui";
 import CategoryManager from "../components/categories/CategoryManager";
+import AdminDocumentCard from "../components/documents/AdminDocumentCard";
 import toast from "react-hot-toast";
 import { formatDate, formatSize } from "../utils/format";
 import { useTranslation } from "react-i18next";
@@ -53,8 +54,12 @@ export default function AdminDashboard() {
   const [creditOrdersFilter, setCreditOrdersFilter] = useState("pending");
   const [reviewingOrderId, setReviewingOrderId] = useState(null);
   const [docsPage, setDocsPage] = useState(1);
+  const [docsVisibilityFilter, setDocsVisibilityFilter] = useState("all");
+  const [docsCategoryFilter, setDocsCategoryFilter] = useState("all");
+  const [docsSort, setDocsSort] = useState("recent");
   const [selectedDocIds, setSelectedDocIds] = useState([]);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [busyVisibilityId, setBusyVisibilityId] = useState(null);
   const [audit, setAudit] = useState([]);
   const [auditPage, setAuditPage] = useState(1);
   const [auditTotal, setAuditTotal] = useState(0);
@@ -364,6 +369,22 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleToggleDocVisibility = async (doc) => {
+    const visibility = doc.visibility === "private" ? "public" : "private";
+    setBusyVisibilityId(doc.id);
+    try {
+      await bulkUpdateDocumentsVisibility([doc.id], visibility);
+      setDocs((current) => current.map((item) => (
+        item.id === doc.id ? { ...item, visibility } : item
+      )));
+      toast.success(t("admin.visibilityUpdated"));
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || t("admin.visibilityUpdateError"));
+    } finally {
+      setBusyVisibilityId(null);
+    }
+  };
+
   const handleExport = async (type) => {
     try {
       const res = await exportAdminData(type);
@@ -431,12 +452,33 @@ export default function AdminDashboard() {
     currentUsersPage * USERS_PER_PAGE
   );
 
-  const filteredDocs = docs.filter(d => 
-    d.title.toLowerCase().includes(searchDoc.toLowerCase()) ||
-    d.author_name?.toLowerCase().includes(searchDoc.toLowerCase())
-  );
-  const canShowViewCount = (doc) =>
-    doc.visibility !== "private" && String(doc.owner_id) !== String(currentUser?.id);
+  const docCategories = [...new Set(docs.map((doc) => doc.category).filter(Boolean))]
+    .sort((a, b) => String(a).localeCompare(String(b), "fr"));
+  const publicDocsCount = docs.filter((doc) => doc.visibility !== "private").length;
+  const privateDocsCount = docs.length - publicDocsCount;
+  const docsFiltersActive = Boolean(searchDoc.trim()) || docsVisibilityFilter !== "all" || docsCategoryFilter !== "all" || docsSort !== "recent";
+
+  const filteredDocs = docs
+    .filter((doc) => {
+      const query = searchDoc.trim().toLowerCase();
+      const matchesQuery = !query || [
+        doc.title,
+        doc.author_name,
+        doc.category,
+        doc.original_filename,
+        ...(Array.isArray(doc.tags) ? doc.tags : [])
+      ].some((value) => String(value || "").toLowerCase().includes(query));
+      const matchesVisibility = docsVisibilityFilter === "all" || doc.visibility === docsVisibilityFilter;
+      const matchesCategory = docsCategoryFilter === "all" || doc.category === docsCategoryFilter;
+      return matchesQuery && matchesVisibility && matchesCategory;
+    })
+    .sort((a, b) => {
+      if (docsSort === "title") return String(a.title).localeCompare(String(b.title), "fr");
+      if (docsSort === "downloads") return (b.download_count || 0) - (a.download_count || 0);
+      if (docsSort === "popular") return (b.view_count || 0) - (a.view_count || 0);
+      if (docsSort === "oldest") return new Date(a.created_at) - new Date(b.created_at);
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
 
   const docsTotalPages = Math.max(1, Math.ceil(filteredDocs.length / DOCUMENTS_PER_PAGE));
   const currentDocsPage = Math.min(docsPage, docsTotalPages);
@@ -445,7 +487,17 @@ export default function AdminDashboard() {
     currentDocsPage * DOCUMENTS_PER_PAGE
   );
   const pageDocIds = pagedDocs.map((doc) => doc.id);
+  const filteredDocIds = filteredDocs.map((doc) => doc.id);
   const allPageDocsSelected = pageDocIds.length > 0 && pageDocIds.every((id) => selectedDocIds.includes(id));
+  const allFilteredDocsSelected = filteredDocIds.length > 0 && filteredDocIds.every((id) => selectedDocIds.includes(id));
+
+  const resetDocsFilters = () => {
+    setSearchDoc("");
+    setDocsVisibilityFilter("all");
+    setDocsCategoryFilter("all");
+    setDocsSort("recent");
+    setDocsPage(1);
+  };
 
   useEffect(() => {
     if (docsPage > docsTotalPages) setDocsPage(docsTotalPages);
@@ -1081,39 +1133,119 @@ export default function AdminDashboard() {
 
       {activeTab === "documents" && (
         <Card className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2 sm:text-xl">
-              <BookOpen className="w-5 h-5" />
-              {t("admin.docsManagement", { total: filteredDocs.length })}
-            </h2>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-              <button
-                onClick={() => handleExport("documents")}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-900"
-              >
-                <Download className="h-4 w-4" />
-                {t("admin.exportCsv")}
-              </button>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input placeholder={t("admin.search")} value={searchDoc} onChange={(e) => { setSearchDoc(e.target.value); setDocsPage(1); }} className="pl-9" />
+          <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
+                <BookOpen className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                {t("admin.docsManagement", { total: docs.length })}
+              </h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{t("admin.docsManagementDesc")}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-slate-200">
+                  {t("admin.docsShown", { count: filteredDocs.length, total: docs.length })}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+                  <Globe2 className="h-3 w-3" />
+                  {t("admin.publicDocsCount", { count: publicDocsCount })}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                  <Lock className="h-3 w-3" />
+                  {t("admin.privateDocsCount", { count: privateDocsCount })}
+                </span>
               </div>
             </div>
+            <button
+              onClick={() => handleExport("documents")}
+              className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-900"
+            >
+              <Download className="h-4 w-4" />
+              {t("admin.exportCsv")}
+            </button>
           </div>
-          <div className="mb-5 flex flex-col gap-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-3 sm:flex-row sm:items-center sm:justify-between">
-            <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-slate-300">
-              <input
-                type="checkbox"
-                checked={allPageDocsSelected}
-                onChange={() => {
-                  setSelectedDocIds((prev) => allPageDocsSelected
-                    ? prev.filter((id) => !pageDocIds.includes(id))
-                    : [...new Set([...prev, ...pageDocIds])]);
-                }}
-                className="h-4 w-4 rounded border-gray-300 dark:border-slate-600 text-primary-600 dark:text-primary-100"
+
+          <div className="mb-4 grid grid-cols-1 gap-2 rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-slate-700 dark:bg-slate-900 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="relative sm:col-span-2 lg:col-span-2">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder={t("admin.searchDoc")}
+                value={searchDoc}
+                onChange={(e) => { setSearchDoc(e.target.value); setDocsPage(1); }}
+                className="pl-9"
               />
-              {t("admin.selectPage")}
-            </label>
+            </div>
+            <Select
+              value={docsVisibilityFilter}
+              onChange={(e) => { setDocsVisibilityFilter(e.target.value); setDocsPage(1); }}
+              aria-label={t("admin.filterVisibility")}
+            >
+              <option value="all">{t("admin.filterVisibility")} : {t("admin.all")}</option>
+              <option value="public">{t("admin.filterVisibility")} : {t("admin.public")}</option>
+              <option value="private">{t("admin.filterVisibility")} : {t("admin.private")}</option>
+            </Select>
+            <Select
+              value={docsCategoryFilter}
+              onChange={(e) => { setDocsCategoryFilter(e.target.value); setDocsPage(1); }}
+              aria-label={t("admin.filterCategory")}
+            >
+              <option value="all">{t("admin.filterCategory")} : {t("admin.all")}</option>
+              {docCategories.map((category) => (
+                <option key={category} value={category}>{t("admin.filterCategory")} : {category}</option>
+              ))}
+            </Select>
+            <div className="flex gap-2 sm:col-span-2 lg:col-span-1">
+              <Select
+                value={docsSort}
+                onChange={(e) => { setDocsSort(e.target.value); setDocsPage(1); }}
+                aria-label={t("admin.sortBy")}
+                className="flex-1"
+              >
+                <option value="recent">{t("admin.sortRecent")}</option>
+                <option value="oldest">{t("admin.sortOldest")}</option>
+                <option value="popular">{t("admin.sortPopular")}</option>
+                <option value="downloads">{t("admin.sortDownloaded")}</option>
+                <option value="title">{t("admin.sortTitle")}</option>
+              </Select>
+              <button
+                type="button"
+                onClick={resetDocsFilters}
+                disabled={!docsFiltersActive}
+                title={t("admin.clearFilters")}
+                aria-label={t("admin.clearFilters")}
+                className="inline-flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="mb-5 flex flex-col gap-3 rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={allPageDocsSelected}
+                  onChange={() => {
+                    setSelectedDocIds((prev) => allPageDocsSelected
+                      ? prev.filter((id) => !pageDocIds.includes(id))
+                      : [...new Set([...prev, ...pageDocIds])]);
+                  }}
+                  className="h-4 w-4 rounded border-gray-300 dark:border-slate-600 text-primary-600 dark:text-primary-100"
+                />
+                {t("admin.selectPage")}
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedDocIds((prev) => allFilteredDocsSelected
+                    ? prev.filter((id) => !filteredDocIds.includes(id))
+                    : [...new Set([...prev, ...filteredDocIds])]);
+                }}
+                disabled={filteredDocIds.length === 0}
+                className="text-xs font-medium text-teal-700 hover:underline disabled:opacity-40 dark:text-teal-300"
+              >
+                {t("admin.selectAllFiltered", { count: filteredDocIds.length })}
+              </button>
+            </div>
             {selectedDocIds.length > 0 ? (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-gray-500 dark:text-slate-400">{selectedDocIds.length} {t("admin.selected")}</span>
@@ -1138,114 +1270,66 @@ export default function AdminDashboard() {
                   disabled={bulkBusy}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  {bulkBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                   {t("admin.delete")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDocIds([])}
+                  disabled={bulkBusy}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-100 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  {t("admin.clearSelection")}
                 </button>
               </div>
             ) : (
               <span className="text-xs text-gray-500 dark:text-slate-400">{t("admin.bulkHint")}</span>
             )}
           </div>
-          {filteredDocs.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-500 dark:text-slate-400">{t("admin.noDocs")}</div>
+          {loading ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="overflow-hidden rounded-2xl border border-gray-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+                  <Skeleton className="h-32 w-full rounded-xl" />
+                  <Skeleton className="mt-4 h-4 w-4/5" />
+                  <Skeleton className="mt-2 h-3 w-2/5" />
+                  <Skeleton className="mt-3 h-12 w-full" />
+                  <Skeleton className="mt-3 h-10 w-full rounded-xl" />
+                </div>
+              ))}
+            </div>
+          ) : filteredDocs.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-14 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700">
+                <BookOpen className="h-7 w-7 text-gray-400" />
+              </div>
+              <p className="font-medium text-gray-700 dark:text-slate-200">
+                {docsFiltersActive ? t("admin.noResults") : t("admin.noDocs")}
+              </p>
+              {docsFiltersActive && (
+                <button
+                  type="button"
+                  onClick={resetDocsFilters}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-2 text-xs font-semibold text-white hover:bg-teal-700"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {t("admin.clearFilters")}
+                </button>
+              )}
+            </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-              {pagedDocs.map(d => (
-                <article key={d.id} className="relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-shadow hover:shadow-md">
-                  <input
-                    type="checkbox"
-                    checked={selectedDocIds.includes(d.id)}
-                    onChange={() => toggleDocSelection(d.id)}
-                    aria-label={`${t("admin.selectDocAria", { title: d.title })}`}
-                    className="absolute right-2.5 top-2.5 z-20 h-4 w-4 cursor-pointer rounded border-white/70 bg-white/90 dark:bg-slate-800/90 text-primary-600 dark:text-primary-100 shadow-sm"
-                  />
-                  <Link
-                    to={`/documents/${d.id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="relative block h-32 overflow-hidden bg-gradient-to-br from-slate-900 via-gray-800 to-teal-900"
-                  >
-                    {d.thumbnail ? (
-                      <img
-                        src={d.thumbnail}
-                        alt={d.title}
-                        loading="lazy"
-                        className="absolute inset-0 h-full w-full object-cover object-top"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <BookOpen className="h-10 w-10 text-white/60" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/20" />
-                    <span className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium text-white ${d.visibility === "private" ? "bg-gray-900/85" : "bg-teal-700/90"}`}>
-                      {d.visibility === "private" ? <Lock className="h-3 w-3" /> : <Globe2 className="h-3 w-3" />}
-                      {d.visibility === "private" ? t("admin.private") : t("admin.public")}
-                    </span>
-                    {d.category && (
-                      <span className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/90 dark:bg-slate-800/90 px-2.5 py-1 text-[11px] font-medium text-gray-800 dark:text-slate-200 backdrop-blur">
-                        {d.category}
-                      </span>
-                    )}
-                  </Link>
-
-                  <div className="flex flex-1 flex-col p-3.5">
-                    <Link
-                      to={`/documents/${d.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold text-gray-900 dark:text-slate-100 hover:text-primary-600 dark:hover:text-primary-100"
-                    >
-                      {d.title}
-                    </Link>
-                    <p className="mt-1 truncate text-xs text-gray-500 dark:text-slate-400">{d.author_name}</p>
-                    <p className="mt-1 truncate text-[11px] text-gray-400" title={d.original_filename}>{d.original_filename || t("admin.file")}</p>
-
-                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]">
-                      {canShowViewCount(d) && (
-                        <div>
-                          <p className="text-gray-400">{t("admin.views")}</p>
-                          <p className="font-semibold text-gray-700 dark:text-slate-300">{d.view_count || 0}</p>
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-gray-400">{t("admin.downloadsShort")}</p>
-                        <p className="font-semibold text-gray-700 dark:text-slate-300">{d.download_count || 0}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400">{t("admin.size")}</p>
-                        <p className="font-semibold text-gray-700 dark:text-slate-300">{d.size_bytes ? formatSize(d.size_bytes) : "-"}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400">{t("admin.added")}</p>
-                        <p className="font-semibold text-gray-700 dark:text-slate-300">{formatDate(d.created_at)}</p>
-                      </div>
-                    </div>
-
-                    <div className="mt-auto flex items-center justify-end gap-1 border-t border-gray-100 dark:border-slate-700 pt-3">
-                      <Link
-                        to={`/documents/${d.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        title={t("admin.openDoc")}
-                        aria-label={t("admin.openDoc")}
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-primary-600 dark:hover:text-primary-100"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        {t("admin.open")}
-                      </Link>
-                      <button
-                        onClick={() => handleDeleteDoc(d)}
-                        title={t("admin.deleteDoc")}
-                        aria-label={t("admin.deleteDoc")}
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        {t("admin.delete")}
-                      </button>
-                    </div>
-                  </div>
-                </article>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              {pagedDocs.map((doc) => (
+                <AdminDocumentCard
+                  key={doc.id}
+                  doc={doc}
+                  selected={selectedDocIds.includes(doc.id)}
+                  onToggleSelect={toggleDocSelection}
+                  onToggleVisibility={handleToggleDocVisibility}
+                  onDelete={handleDeleteDoc}
+                  visibilityBusy={busyVisibilityId === doc.id}
+                />
               ))}
             </div>
           )}
