@@ -115,6 +115,9 @@ export function ensureFeatureSchema() {
       CREATE UNIQUE INDEX IF NOT EXISTS idx_reports_pending_comment
         ON reports (reporter_id, comment_id) WHERE status = 'pending' AND comment_id IS NOT NULL;
 
+      ALTER TABLE documents ADD COLUMN IF NOT EXISTS content_hash TEXT;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_owner_content_hash ON documents (owner_id, content_hash) WHERE content_hash IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_documents_content_hash ON documents (content_hash) WHERE content_hash IS NOT NULL;
       ALTER TABLE documents ADD COLUMN IF NOT EXISTS tags TEXT[] NOT NULL DEFAULT '{}';
       CREATE INDEX IF NOT EXISTS idx_documents_tags ON documents USING GIN (tags);
       ALTER TABLE documents ADD COLUMN IF NOT EXISTS search_vector TSVECTOR GENERATED ALWAYS AS (to_tsvector('french', coalesce(title,'') || ' ' || coalesce(description,'') || ' ' || coalesce(category,''))) STORED;

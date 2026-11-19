@@ -15,6 +15,7 @@ export const fetchDocumentViewBlob = (id) =>
     responseType: "blob",
     withCredentials: true
   });
+export const checkDocumentDuplicate = (hash) => client.get("/documents/check-duplicate", { params: { hash } });
 export const uploadDocument = (formData, onProgress) =>
   client.post("/documents", formData, {
     headers: { "Content-Type": "multipart/form-data" },

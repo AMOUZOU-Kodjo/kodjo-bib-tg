@@ -76,6 +76,10 @@ function getViewerKey(req) {
   return crypto.createHash("sha256").update(ip.trim()).digest("hex");
 }
 
+function hashDocument(buffer) {
+  return crypto.createHash("sha256").update(buffer).digest("hex");
+}
+
 function canGeneratePreview(mimeType = "", filename = "") {
   const extension = String(filename).toLowerCase().split(".").pop();
   if (mimeType === "application/pdf" || extension === "pdf") return true;
@@ -251,6 +255,30 @@ router.get("/", optionalAuth, async (req, res, next) => {
   }
 });
 
+router.get("/check-duplicate", authRequired, requireVerified, async (req, res, next) => {
+  try {
+    const contentHash = asString(req.query.hash).trim().toLowerCase();
+    if (!/^[a-f0-9]{64}$/.test(contentHash)) {
+      return res.status(400).json({ error: { code: "INVALID_HASH", message: "Hash invalide" } });
+    }
+    const { rows } = await query(
+      "SELECT id, title, owner_id, visibility FROM documents WHERE content_hash = $1 ORDER BY created_at DESC LIMIT 20",
+      [contentHash]
+    );
+    const mine = rows.find((row) => String(row.owner_id) === String(req.user.id));
+    const othersPublic = rows
+      .filter((row) => String(row.owner_id) !== String(req.user.id) && row.visibility === "public")
+      .map((row) => ({ id: row.id, title: row.title }));
+    res.json({
+      duplicate: Boolean(mine),
+      document: mine ? { id: mine.id, title: mine.title } : null,
+      existing: othersPublic
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get("/:id", optionalAuth, async (req, res, next) => {
   try {
     if (!(await getSettings()).publicBrowsing && !req.user) {
@@ -344,6 +372,22 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     return res.status(400).json({ error: { code: "INVALID_VISIBILITY", message: "Visibilité invalide" } });
   }
 
+  const contentHash = hashDocument(req.file.buffer);
+  const duplicateRes = await query(
+    "SELECT id, title FROM documents WHERE content_hash = $1 AND owner_id = $2 LIMIT 1",
+    [contentHash, req.user.id]
+  );
+  const duplicate = duplicateRes.rows[0];
+  if (duplicate) {
+    return res.status(409).json({
+      error: {
+        code: "DUPLICATE_DOCUMENT",
+        message: `Vous avez déjà publié ce document : ${duplicate.title}`,
+        document: { id: duplicate.id, title: duplicate.title }
+      }
+    });
+  }
+
   let privateCreditRequired = false;
   if (visibility === "private") {
     const countRes = await query(
@@ -387,9 +431,9 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     client = await pool.connect();
     await client.query("BEGIN");
     const docRes = await client.query(
-      `INSERT INTO documents (owner_id, title, description, category, category_id, original_filename, mime_type, size_bytes, cloudinary_public_id, cloudinary_resource_type, preview_public_id, tags, visibility, price, seller_whatsapp)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'raw',$10,$11,$12,$13,$14) RETURNING *`,
-      [req.user.id, title, description || null, category || null, categoryId, req.file.originalname, req.file.mimetype, optimizedFile.finalSize, uploaded.public_id, preview?.public_id || null, tags, visibility, price, sellerWhatsapp]
+      `INSERT INTO documents (owner_id, title, description, category, category_id, original_filename, content_hash, mime_type, size_bytes, cloudinary_public_id, cloudinary_resource_type, preview_public_id, tags, visibility, price, seller_whatsapp)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'raw',$10,$11,$12,$13,$14,$15) RETURNING *`,
+      [req.user.id, title, description || null, category || null, categoryId, req.file.originalname, contentHash, req.file.mimetype, optimizedFile.finalSize, uploaded.public_id, preview?.public_id || null, tags, visibility, price, sellerWhatsapp]
     );
     const doc = docRes.rows[0];
     let credits = await addCreditsOnUpload(client, req.user.id, doc.id);
@@ -444,6 +488,20 @@ router.post("/", authRequired, requireVerified, uploadLimiter, uploadSingle("fil
     }
     if (preview && !committed) {
       await deletePreview(preview.public_id);
+    }
+    if (err?.code === "23505" && err?.constraint === "idx_documents_owner_content_hash") {
+      const conflictRes = await query(
+        "SELECT id, title FROM documents WHERE content_hash = $1 AND owner_id = $2 LIMIT 1",
+        [contentHash, req.user.id]
+      );
+      const conflict = conflictRes.rows[0] || { id: "", title: "" };
+      return res.status(409).json({
+        error: {
+          code: "DUPLICATE_DOCUMENT",
+          message: `Vous avez déjà publié ce document : ${conflict.title}`,
+          document: { id: conflict.id, title: conflict.title }
+        }
+      });
     }
     next(err);
   } finally {

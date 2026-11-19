@@ -41,6 +41,7 @@ CREATE TABLE documents (
   description TEXT,
   category TEXT,
   original_filename TEXT NOT NULL,
+  content_hash TEXT,
   mime_type TEXT NOT NULL,
   size_bytes BIGINT NOT NULL,
   cloudinary_public_id TEXT NOT NULL,
@@ -57,8 +58,11 @@ CREATE TABLE documents (
   comment_count INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS content_hash TEXT;
 CREATE INDEX idx_documents_created ON documents (created_at DESC);
 CREATE INDEX idx_documents_owner ON documents (owner_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_documents_owner_content_hash ON documents (owner_id, content_hash) WHERE content_hash IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_documents_content_hash ON documents (content_hash) WHERE content_hash IS NOT NULL;
 ALTER TABLE documents ADD COLUMN IF NOT EXISTS preview_public_id TEXT;
 ALTER TABLE documents ADD COLUMN IF NOT EXISTS tags TEXT[] NOT NULL DEFAULT '{}';
 ALTER TABLE documents ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'public';

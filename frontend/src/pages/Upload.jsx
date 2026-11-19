@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { uploadDocument, suggestDocumentCategory } from "../api/documents";
+import { uploadDocument, suggestDocumentCategory, checkDocumentDuplicate } from "../api/documents";
 import { generateDescription, suggestMetadata } from "../api/ai";
 import toast from "react-hot-toast";
 import { UploadCloud, FileText, X, CheckCircle2, Globe2, Lock, Sparkles, ArrowRight, Send, Loader2 } from "lucide-react";
@@ -23,6 +23,12 @@ function formatFileSize(bytes, t) {
   const kb = bytes / 1024;
   if (kb < 1024) return t("upload.sizeKb", { value: kb.toFixed(1) });
   return t("upload.sizeMb", { value: (kb / 1024).toFixed(1) });
+}
+
+async function hashFile(file) {
+  if (!globalThis.crypto?.subtle) return null;
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export default function Upload({ selling = false }) {
@@ -48,7 +54,10 @@ export default function Upload({ selling = false }) {
   const [createdDoc, setCreatedDoc] = useState(null);
   const [generatingDesc, setGeneratingDesc] = useState(false);
   const [suggestingMeta, setSuggestingMeta] = useState(false);
+  const [duplicateInfo, setDuplicateInfo] = useState(null);
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
   const inputRef = useRef(null);
+  const fileCheckIdRef = useRef(0);
 
   const handleSuggestMetadata = async () => {
     if (!file && !title.trim()) {
@@ -121,6 +130,21 @@ export default function Upload({ selling = false }) {
       const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, "");
       setTitle(nameWithoutExt);
     }
+    const checkId = ++fileCheckIdRef.current;
+    setDuplicateInfo(null);
+    setCheckingDuplicate(true);
+    hashFile(selectedFile)
+      .then((hash) => (hash ? checkDocumentDuplicate(hash) : null))
+      .then((res) => {
+        if (checkId !== fileCheckIdRef.current || !res) return;
+        setDuplicateInfo(res.data || null);
+      })
+      .catch(() => {
+        if (checkId === fileCheckIdRef.current) setDuplicateInfo(null);
+      })
+      .finally(() => {
+        if (checkId === fileCheckIdRef.current) setCheckingDuplicate(false);
+      });
     try {
       const res = await suggestDocumentCategory(selectedFile.name);
       const suggested = res.data?.suggestedCategory;
@@ -163,6 +187,9 @@ export default function Upload({ selling = false }) {
     if (tags.split(",").map((tag) => tag.trim()).filter(Boolean).length > 5) {
       return toast.error(t("upload.toastMaxTags"));
     }
+    if (duplicateInfo?.duplicate) {
+      return toast.error(t("upload.duplicateBlocked", { title: duplicateInfo.document?.title || "" }));
+    }
     const formData = new FormData();
     formData.append("file", file);
     formData.append("title", title.trim());
@@ -195,6 +222,9 @@ export default function Upload({ selling = false }) {
           : t("upload.toastDone")
       );
       setCreatedDoc(data.document || null);
+      fileCheckIdRef.current += 1;
+      setDuplicateInfo(null);
+      setCheckingDuplicate(false);
       setFile(null);
       setTitle("");
       setDescription("");
@@ -204,7 +234,17 @@ export default function Upload({ selling = false }) {
       setVisibility("public");
       if (inputRef.current) inputRef.current.value = "";
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || t("upload.toastError"));
+      const apiError = err.response?.data?.error;
+      if (apiError?.code === "DUPLICATE_DOCUMENT") {
+        setDuplicateInfo({
+          duplicate: true,
+          document: apiError.document || null,
+          existing: apiError.document ? [apiError.document] : []
+        });
+        toast.error(t("upload.duplicateBlocked", { title: apiError.document?.title || "" }));
+      } else {
+        toast.error(apiError?.message || t("upload.toastError"));
+      }
     } finally {
       setLoading(false);
       setProgress(0);
@@ -307,9 +347,12 @@ export default function Upload({ selling = false }) {
                     type="button"
                     onClick={(e) => {
                     e.stopPropagation();
+                    fileCheckIdRef.current += 1;
                     setFile(null);
                     setSuggestedCategory(null);
                     setSuggestionApplied(false);
+                    setDuplicateInfo(null);
+                    setCheckingDuplicate(false);
                     if (inputRef.current) inputRef.current.value = "";
                   }}
                     className="shrink-0 rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-slate-800"
@@ -328,8 +371,41 @@ export default function Upload({ selling = false }) {
                 </>
               )}
             </div>
+            {file && checkingDuplicate && (
+              <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">{t("upload.duplicateChecking")}</p>
+            )}
             {file && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) && (
               <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">{t("upload.pdfCompressionNote")}</p>
+            )}
+            {file && duplicateInfo?.duplicate && (
+              <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/40">
+                <p className="font-semibold text-amber-900 dark:text-amber-100">{t("upload.duplicateOwnTitle")}</p>
+                <p className="mt-1 text-amber-800 dark:text-amber-200">
+                  {t("upload.duplicateOwnDesc", { title: duplicateInfo.document?.title || "" })}
+                </p>
+                {duplicateInfo.document?.id && (
+                  <Link
+                    to={`/documents/${duplicateInfo.document.id}`}
+                    className="mt-2 inline-flex font-semibold text-amber-900 underline dark:text-amber-100"
+                  >
+                    {t("upload.duplicateView")}
+                  </Link>
+                )}
+              </div>
+            )}
+            {file && !duplicateInfo?.duplicate && duplicateInfo?.existing?.length > 0 && (
+              <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/40">
+                <p className="font-semibold text-amber-900 dark:text-amber-100">{t("upload.duplicateOtherTitle")}</p>
+                <p className="mt-1 text-amber-800 dark:text-amber-200">
+                  {t("upload.duplicateOtherDesc", { title: duplicateInfo.existing[0]?.title || "" })}
+                </p>
+                <Link
+                  to={`/documents/${duplicateInfo.existing[0].id}`}
+                  className="mt-2 inline-flex font-semibold text-amber-900 underline dark:text-amber-100"
+                >
+                  {t("upload.duplicateView")}
+                </Link>
+              </div>
             )}
           </div>
 
@@ -524,7 +600,7 @@ export default function Upload({ selling = false }) {
             <Button
               type="submit"
               className="flex w-full items-center justify-center gap-2 sm:w-auto sm:px-8"
-              disabled={loading || !file}
+              disabled={loading || !file || checkingDuplicate || Boolean(duplicateInfo?.duplicate)}
             >
               {loading ? (
                 <>
