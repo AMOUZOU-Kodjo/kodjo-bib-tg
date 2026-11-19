@@ -6,13 +6,36 @@ import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-function PageCanvas({ pdf, pageNumber, width }) {
+function PageCanvas({ pdf, pageNumber, width, rootRef }) {
+  const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
+  const renderTaskRef = useRef(null);
+  const [active, setActive] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!pdf || !width) return;
+    const element = wrapperRef.current;
+    if (!element) return undefined;
+    if (typeof IntersectionObserver === "undefined") {
+      setActive(true);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setActive(true);
+          observer.disconnect();
+        }
+      },
+      { root: rootRef?.current || null, rootMargin: "900px 0px" }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [rootRef]);
+
+  useEffect(() => {
+    if (!active || !pdf || !width) return undefined;
     let cancelled = false;
     const render = async () => {
       setLoading(true);
@@ -29,12 +52,12 @@ function PageCanvas({ pdf, pageNumber, width }) {
         canvas.height = Math.floor(viewport.height * pixelRatio);
         canvas.style.width = `${Math.floor(viewport.width)}px`;
         canvas.style.height = `${Math.floor(viewport.height)}px`;
-        const renderTask = pdfPage.render({
+        renderTaskRef.current = pdfPage.render({
           canvasContext: canvas.getContext("2d"),
           viewport,
-          transform: pixelRatio === 1 ? null : [pixelRatio, 0, 0, pixelRatio, 0, 0]
+          transform: pixelRatio === 1 ? undefined : [pixelRatio, 0, 0, pixelRatio, 0, 0]
         });
-        await renderTask.promise;
+        await renderTaskRef.current.promise;
       } catch (err) {
         if (!cancelled && err?.name !== "RenderingCancelledException") {
           console.error("Impossible d'afficher la page PDF:", err.message);
@@ -47,8 +70,10 @@ function PageCanvas({ pdf, pageNumber, width }) {
     render();
     return () => {
       cancelled = true;
+      renderTaskRef.current?.cancel();
+      renderTaskRef.current = null;
     };
-  }, [pdf, pageNumber, width]);
+  }, [active, pdf, pageNumber, width]);
 
   if (error) {
     return (
@@ -59,20 +84,22 @@ function PageCanvas({ pdf, pageNumber, width }) {
   }
 
   return (
-    <div className="relative w-full">
-      {loading && (
+    <div ref={wrapperRef} className="relative flex w-full justify-center">
+      {!active && <div className="h-[140px] w-full rounded-lg bg-gray-100 dark:bg-slate-800/60" />}
+      {active && loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-slate-900/70">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
         </div>
       )}
-      <canvas ref={canvasRef} className="block mx-auto shadow-sm" />
+      <canvas ref={canvasRef} className={`mx-auto block shadow-sm ${active ? "" : "hidden"}`} />
     </div>
   );
 }
 
-export default function PdfPreview({ src, title }) {
+export default function PdfPreview({ src, title, compact = false }) {
   const { t } = useTranslation();
-  const containerRef = useRef(null);
+  const wrapperRef = useRef(null);
+  const scrollRef = useRef(null);
   const [pdf, setPdf] = useState(null);
   const [numPages, setNumPages] = useState(0);
   const [width, setWidth] = useState(0);
@@ -111,8 +138,8 @@ export default function PdfPreview({ src, title }) {
   }, [src]);
 
   useEffect(() => {
-    const element = containerRef.current;
-    if (!element) return;
+    const element = wrapperRef.current;
+    if (!element) return undefined;
     const updateWidth = () => {
       const nextWidth = Math.max(0, Math.floor(element.clientWidth));
       setWidth((current) => (Math.abs(current - nextWidth) < 1 ? current : nextWidth));
@@ -123,15 +150,13 @@ export default function PdfPreview({ src, title }) {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    return () => {
-      pdf?.destroy().catch(() => {});
-    };
+  useEffect(() => () => {
+    pdf?.destroy().catch(() => {});
   }, [pdf]);
 
   if (error) {
     return (
-      <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-6 text-center dark:border-slate-700 dark:bg-slate-900">
+      <div className={`flex flex-col items-center justify-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-6 text-center dark:border-slate-700 dark:bg-slate-900 ${compact ? "h-full min-h-[240px]" : "min-h-[320px]"}`}>
         <FileText className="h-10 w-10 text-gray-400" />
         <p className="text-sm text-gray-600 dark:text-slate-400">{t("document.pdfPreviewError")}</p>
         <a
@@ -147,24 +172,32 @@ export default function PdfPreview({ src, title }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-950">
-      <div
-        ref={containerRef}
-        className="relative w-full overflow-auto max-h-[65vh] md:max-h-[900px] min-h-[320px]"
-      >
-        {loading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 text-sm text-gray-600 dark:bg-slate-900/80 dark:text-slate-400" aria-live="polite">
-            <div className="h-7 w-7 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
-            {t("document.loadingFullPreview")}
-          </div>
-        )}
-        {!loading && pdf && numPages > 0 && (
-          <div className="flex flex-col items-center gap-4 py-4">
-            {Array.from({ length: numPages }, (_, i) => (
-              <PageCanvas key={i + 1} pdf={pdf} pageNumber={i + 1} width={width} />
-            ))}
-          </div>
-        )}
+    <div className={`overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-950 ${compact ? "h-full" : ""}`}>
+      <div ref={wrapperRef} className={compact ? "h-full w-full" : "w-full"}>
+        <div
+          ref={scrollRef}
+          className={`relative w-full overflow-auto ${compact ? "h-full min-h-[240px]" : "max-h-[65vh] min-h-[320px] md:max-h-[900px]"}`}
+        >
+          {loading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 text-sm text-gray-600 dark:bg-slate-900/80 dark:text-slate-400" aria-live="polite">
+              <div className="h-7 w-7 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
+              {t("document.loadingFullPreview")}
+            </div>
+          )}
+          {!loading && pdf && numPages > 0 && (
+            <div className="flex flex-col items-center gap-4 py-4">
+              {Array.from({ length: numPages }, (_, i) => (
+                <PageCanvas
+                  key={i + 1}
+                  pdf={pdf}
+                  pageNumber={i + 1}
+                  width={width}
+                  rootRef={scrollRef}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

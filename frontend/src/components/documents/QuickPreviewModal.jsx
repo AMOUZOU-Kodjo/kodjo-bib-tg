@@ -8,10 +8,10 @@ import { formatCategoryName, getCategoryColor } from "../../utils/document";
 import { formatDate, formatSize } from "../../utils/format";
 import PdfPreview from "./PdfPreview";
 
-function PreviewContent({ mimeType, url, title }) {
+function PreviewContent({ mimeType, url, title, compact }) {
   const { t } = useTranslation();
   if (mimeType === "application/pdf") {
-    return <PdfPreview src={url} title={title} />;
+    return <PdfPreview src={url} title={title} compact={compact} />;
   }
   if (mimeType?.startsWith("image/")) {
     return <img src={url} alt={t("document.previewFrameTitle")} className="h-full w-full object-contain" />;
@@ -135,8 +135,8 @@ export default function QuickPreviewModal({ doc, onClose }) {
 
         <div className="relative min-h-[240px] flex-1 overflow-hidden bg-gray-50 dark:bg-slate-950">
           {blobUrl ? (
-            <div className="h-[58vh] max-h-[640px]">
-              <PreviewContent mimeType={doc.mime_type} url={blobUrl} title={doc.title} />
+            <div className="h-[58vh] max-h-[640px] min-h-0">
+              <PreviewContent mimeType={doc.mime_type} url={blobUrl} title={doc.title} compact />
             </div>
           ) : (
             <div className="relative h-[46vh] max-h-[520px] min-h-[220px]">
