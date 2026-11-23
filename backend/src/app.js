@@ -55,6 +55,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev", { skip: (req) => req.originalUrl.startsWith("/api/share/") || req.originalUrl.startsWith("/share/") }));
 app.use(liveUpdates);
+app.get("/api/ping", (req, res) => res.json({ status: "ok" }));
 app.use((req, res, next) => {
   touchDatabaseActivity();
   next();

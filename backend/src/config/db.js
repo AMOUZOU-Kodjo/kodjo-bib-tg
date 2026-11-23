@@ -199,6 +199,7 @@ let keepAliveTimer;
 
 export function startDatabaseKeepAlive() {
   if (keepAliveTimer) return;
+  if (process.env.DATABASE_KEEPALIVE_ENABLED !== "true") return;
   const interval = Number(process.env.DATABASE_KEEPALIVE_MS || 180000);
   const activityWindow = Number(process.env.DATABASE_ACTIVITY_WINDOW_MS || 600000);
   if (!Number.isFinite(interval) || interval <= 0) return;

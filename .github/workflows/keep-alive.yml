@@ -9,5 +9,5 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping health endpoint
-        run: curl -fsS https://archivia.onrender.com/api/health || true
+      - name: Ping backend sans réveiller la base
+        run: curl -fsS https://archivia.onrender.com/api/ping || true
