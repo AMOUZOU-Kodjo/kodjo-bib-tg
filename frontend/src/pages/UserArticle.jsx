@@ -13,7 +13,7 @@ export default function UserArticle() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const seoOrigin = typeof window !== "undefined" ? window.location.origin : "https://archivia.pages.dev";
+  const seoOrigin = typeof window !== "undefined" ? window.location.origin : "https://biblio-archivia.me";
   const seoUrl = `${seoOrigin}/actualites/article-utilisateur?id=${id}`;
   useSeo({
     title: article?.title || t("news.title"),

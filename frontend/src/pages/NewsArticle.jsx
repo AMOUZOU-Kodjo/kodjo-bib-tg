@@ -23,7 +23,7 @@ export default function NewsArticle() {
   const [error, setError] = useState("");
 
   const seoArticle = article || preview;
-  const seoOrigin = typeof window !== "undefined" ? window.location.origin : "https://archivia.pages.dev";
+  const seoOrigin = typeof window !== "undefined" ? window.location.origin : "https://biblio-archivia.me";
   const seoUrl = `${seoOrigin}/actualites/article?url=${encodeURIComponent(url)}`;
   useSeo({
     title: article?.title || preview?.title || t("news.seoTitle"),

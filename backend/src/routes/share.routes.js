@@ -213,7 +213,7 @@ function escapeHtml(text = "") {
 }
 
 function frontendBaseUrl() {
-  return String(config.frontendUrl || "https://archivia.pages.dev").replace(/\/+$/, "");
+  return String(config.frontendUrl || "https://biblio-archivia.me").replace(/\/+$/, "");
 }
 
 function backendBaseUrl(req) {

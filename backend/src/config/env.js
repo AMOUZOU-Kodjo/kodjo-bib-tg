@@ -50,7 +50,7 @@ export const config = {
   push: {
     publicKey: process.env.VAPID_PUBLIC_KEY,
     privateKey: process.env.VAPID_PRIVATE_KEY,
-    subject: process.env.VAPID_SUBJECT || "https://archivia.pages.dev"
+    subject: process.env.VAPID_SUBJECT || "https://biblio-archivia.me"
   },
   contactEmail: process.env.CONTACT_EMAIL || process.env.BREVO_SENDER_EMAIL || null,
   openAlexApiKey: process.env.OPENALEX_API_KEY || "",

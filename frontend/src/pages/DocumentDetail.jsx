@@ -52,7 +52,7 @@ export default function DocumentDetail() {
   const documentsVersion = useLiveVersion("documents");
   const { user, setUser } = useAuth();
 
-  const seoOrigin = typeof window !== "undefined" ? window.location.origin : "https://archivia.pages.dev";
+  const seoOrigin = typeof window !== "undefined" ? window.location.origin : "https://biblio-archivia.me";
   useSeo({
     title: doc ? doc.title : t("document.fallback"),
     description: doc?.description || (doc ? t("document.seoDesc", { title: doc.title }) : t("document.seoDescFallback")),

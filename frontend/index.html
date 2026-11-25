@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="AGUctfOoPV00jYbmjikuvgI6WwRko8G5t_HrLp3TnhM" />
     <meta name="google-site-verification" content="e6LIFn4idCIzduLJvBEzjlzHb4wu6mHf5f4B8Vj6BG4" />
+    <script>
+      if (window.location.hostname === "archivia.pages.dev") {
+        window.location.replace(
+          "https://biblio-archivia.me" +
+            window.location.pathname +
+            window.location.search +
+            window.location.hash
+        );
+      }
+    </script>
     <title>Archivia — Archives de Documents | Partage et archivage collaboratif</title>
     <meta name="description" content="Archivia est une plateforme collaborative gratuite pour archiver, classer et partager des documents. Accédez à des ressources utiles et partagez vos connaissances." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -12,7 +22,7 @@
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="canonical" href="https://archivia.pages.dev/" />
+    <link rel="canonical" href="https://biblio-archivia.me/" />
     <link rel="alternate" type="application/rss+xml" title="Archives de Documents — Nouveaux documents" href="/rss.xml" />
     <meta name="theme-color" content="#0f766e" />
     <script>
@@ -41,17 +51,17 @@
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:title" content="Archivia — Archives de Documents | Partage et archivage collaboratif" />
     <meta property="og:description" content="Archivia est une plateforme collaborative gratuite pour archiver, classer et partager des documents. Accédez à des ressources utiles et partagez vos connaissances." />
-    <meta property="og:url" content="https://archivia.pages.dev/" />
-    <meta property="og:image" content="https://archivia.pages.dev/og-image-v2.png" />
+    <meta property="og:url" content="https://biblio-archivia.me/" />
+    <meta property="og:image" content="https://biblio-archivia.me/og-image-v2.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Logo Archivia" />
-    <meta property="og:image:secure_url" content="https://archivia.pages.dev/og-image-v2.png" />
+    <meta property="og:image:secure_url" content="https://biblio-archivia.me/og-image-v2.png" />
     <meta property="og:image:type" content="image/png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Archivia — Archives de Documents | Partage et archivage collaboratif" />
     <meta name="twitter:description" content="Plateforme collaborative gratuite pour archiver, classer et partager des documents." />
-    <meta name="twitter:image" content="https://archivia.pages.dev/og-image-v2.png" />
+    <meta name="twitter:image" content="https://biblio-archivia.me/og-image-v2.png" />
     <meta name="twitter:image:alt" content="Logo Archivia" />
     <script type="application/ld+json">
       {
@@ -59,30 +69,30 @@
         "@graph": [
           {
             "@type": "WebSite",
-            "@id": "https://archivia.pages.dev/#website",
+            "@id": "https://biblio-archivia.me/#website",
             "name": "Archivia",
             "alternateName": ["Archives de Documents", "Kodjo Bib"],
-            "url": "https://archivia.pages.dev/",
+            "url": "https://biblio-archivia.me/",
             "description": "Plateforme collaborative gratuite pour archiver, classer et partager des documents.",
             "inLanguage": "fr",
             "potentialAction": {
               "@type": "SearchAction",
               "target": {
                 "@type": "EntryPoint",
-                "urlTemplate": "https://archivia.pages.dev/documents?q={search_term_string}"
+                "urlTemplate": "https://biblio-archivia.me/documents?q={search_term_string}"
               },
               "query-input": "required name=search_term_string"
             }
           },
           {
             "@type": "Organization",
-            "@id": "https://archivia.pages.dev/#organization",
+            "@id": "https://biblio-archivia.me/#organization",
             "name": "Archivia",
             "alternateName": "Archives de Documents",
-            "url": "https://archivia.pages.dev/",
+            "url": "https://biblio-archivia.me/",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://archivia.pages.dev/logo.png",
+              "url": "https://biblio-archivia.me/logo.png",
               "width": 132,
               "height": 127
             }

@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://archivia.pages.dev/</loc>
+    <loc>https://biblio-archivia.me/</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://archivia.pages.dev/documents</loc>
+    <loc>https://biblio-archivia.me/documents</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://archivia.pages.dev/contact</loc>
+    <loc>https://biblio-archivia.me/contact</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://archivia.pages.dev/mentions-legales</loc>
+    <loc>https://biblio-archivia.me/mentions-legales</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://archivia.pages.dev/confidentialite</loc>
+    <loc>https://biblio-archivia.me/confidentialite</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://archivia.pages.dev/cgu</loc>
+    <loc>https://biblio-archivia.me/cgu</loc>
     <lastmod>2026-10-27</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
