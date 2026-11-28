@@ -19,8 +19,9 @@ import {
   WifiOff
 } from "lucide-react";
 import heroImg from "../assets/hero.jpg";
-import { getDocumentStats } from "../api/documents";
+import { getDocuments, getDocumentStats } from "../api/documents";
 import { getNews } from "../api/news";
+import { DocumentCard } from "../components/documents/DocumentCard";
 import { useAuth } from "../context/AuthContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 import { useLiveVersion } from "../context/LiveUpdatesContext";
@@ -28,7 +29,7 @@ import InstallBanner from "../components/layout/InstallBanner";
 import useSeo from "../hooks/useSeo";
 import useCategories from "../hooks/useCategories";
 import { formatCategoryName } from "../utils/document";
-import { Reveal, Skeleton } from "../components/ui";
+import { Reveal, Skeleton, SkeletonCard } from "../components/ui";
 
 const NEWS_LIMIT = 4;
 const CATEGORY_LIMIT = 8;
@@ -112,6 +113,9 @@ export default function Home() {
   const documentsVersion = useLiveVersion("documents");
   const [query, setQuery] = useState("");
 
+  const [recentDocs, setRecentDocs] = useState([]);
+  const [recentLoading, setRecentLoading] = useState(true);
+
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -126,6 +130,24 @@ export default function Home() {
     description: t("home.seoDesc"),
     url: `${window.location.origin}/`
   });
+
+  useEffect(() => {
+    let active = true;
+    setRecentLoading(true);
+    getDocuments({ sort: "recent", limit: 12 })
+      .then((res) => {
+        if (active) setRecentDocs(res.data?.documents || []);
+      })
+      .catch(() => {
+        if (active) setRecentDocs([]);
+      })
+      .finally(() => {
+        if (active) setRecentLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [documentsVersion]);
 
   useEffect(() => {
     let active = true;
@@ -294,7 +316,36 @@ export default function Home() {
 
       <InstallBanner />
 
-      {/* 2. How it works */}
+      {/* 2. Recent documents */}
+      {(recentLoading || recentDocs.length > 0) && (
+        <Reveal>
+          <section className="py-12 sm:py-14">
+            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+              <SectionHeading title={t("home.recentTitle")} description={t("home.recentDesc")} />
+              <Link to="/documents" className="inline-flex shrink-0 items-center gap-1 self-start text-sm font-medium text-teal-700 hover:underline dark:text-teal-300 sm:self-auto">
+                {t("common.seeAll")} <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            {recentLoading ? (
+              <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+              </div>
+            ) : (
+              <div className="relative -mx-4 overflow-hidden px-4 sm:mx-0 sm:px-0">
+                <div className="home-news-marquee flex w-max gap-4 pb-2">
+                  {[...recentDocs, ...recentDocs].map((doc, index) => (
+                    <div key={`${doc.id}-${index}`} className="w-64 shrink-0 sm:w-72">
+                      <DocumentCard doc={doc} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        </Reveal>
+      )}
+
+      {/* 3. How it works */}
       <Reveal>
         <section className="py-14 sm:py-16">
           <SectionHeading align="center" eyebrow={t("home.howTitle")} title={t("home.howTitle")} description={t("home.howDesc")} />
@@ -315,7 +366,7 @@ export default function Home() {
         </section>
       </Reveal>
 
-      {/* 3. Why Archivia */}
+      {/* 4. Why Archivia */}
       <Reveal>
         <section className="py-4 sm:py-6">
           <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-6 dark:border-slate-700 dark:bg-slate-800/30 sm:p-8 lg:p-10">
@@ -335,7 +386,7 @@ export default function Home() {
         </section>
       </Reveal>
 
-      {/* 4. News & Discovery */}
+      {/* 5. News & Discovery */}
       <Reveal>
         <section className="py-14 sm:py-16">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -429,7 +480,7 @@ export default function Home() {
         </section>
       </Reveal>
 
-      {/* 5. Social proof / Stats */}
+      {/* 6. Social proof / Stats */}
       <Reveal>
         <section className="py-4 sm:py-6">
           <div className="rounded-3xl bg-slate-900 px-6 py-8 text-white dark:bg-slate-800/60 sm:px-8 sm:py-10">
@@ -463,7 +514,7 @@ export default function Home() {
         </section>
       </Reveal>
 
-      {/* 6. Final CTA */}
+      {/* 7. Final CTA */}
       <Reveal>
         <section className="py-14 sm:py-16">
           <div className="rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 via-white to-slate-50 p-6 shadow-sm dark:border-teal-900/50 dark:from-teal-950/30 dark:via-slate-900 dark:to-slate-900 sm:p-8 lg:p-10">
