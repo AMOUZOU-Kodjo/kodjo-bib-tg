@@ -120,14 +120,25 @@ router.get("/meta/stats", optionalAuth, async (req, res, next) => {
       return res.status(401).json({ error: { code: "UNAUTHORIZED", message: "Authentification requise" } });
     }
     await ensureFeatureSchema();
-    const statsRes = await query(
-      `SELECT COUNT(*)::int AS total,
-              COUNT(*) FILTER (WHERE visibility = 'public')::int AS public_count,
-              COUNT(*) FILTER (WHERE visibility = 'private')::int AS private_count
-       FROM documents`
-    );
-    const stats = statsRes.rows[0];
-    res.json({ total: stats.total, public: stats.public_count, private: stats.private_count });
+    await ensureCategoriesSchema();
+    const [statsRes, categoriesRes, membersRes] = await Promise.all([
+      query(
+        `SELECT COUNT(*)::int AS total,
+                COUNT(*) FILTER (WHERE visibility = 'public')::int AS public_count,
+                COUNT(*) FILTER (WHERE visibility = 'private')::int AS private_count
+         FROM documents`
+      ),
+      query("SELECT COUNT(*)::int AS total FROM categories WHERE is_active = TRUE"),
+      query("SELECT COUNT(*)::int AS total FROM users WHERE email_verified = TRUE")
+    ]);
+    const stats = statsRes.rows[0] || {};
+    res.json({
+      total: stats.total ?? 0,
+      public: stats.public_count ?? 0,
+      private: stats.private_count ?? 0,
+      categories: categoriesRes.rows[0]?.total ?? 0,
+      members: membersRes.rows[0]?.total ?? 0
+    });
   } catch (err) {
     next(err);
   }

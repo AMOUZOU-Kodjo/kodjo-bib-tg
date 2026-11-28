@@ -6,6 +6,7 @@ const DEFAULTS = {
   siteName: "Archivia",
   siteTagline: "Plateforme de documents",
   contactEmail: "",
+  creditsInitiaux: 0,
   creditsParUpload: 2,
   maxUploadSizeMb: 10,
   allowRegistrations: true,

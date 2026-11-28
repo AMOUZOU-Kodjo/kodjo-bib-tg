@@ -10,6 +10,7 @@ router.get("/", async (req, res, next) => {
       siteName: settings.siteName,
       siteTagline: settings.siteTagline,
       contactEmail: settings.contactEmail,
+      creditsInitiaux: settings.creditsInitiaux,
       creditsParUpload: settings.creditsParUpload,
       maxUploadSizeMb: settings.maxUploadSizeMb,
       allowRegistrations: settings.allowRegistrations,
